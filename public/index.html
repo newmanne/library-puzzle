@@ -114,7 +114,7 @@ const seedInput = document.getElementById('seedInput');
 const renderBtn = document.getElementById('renderBtn');
 const randomBtn = document.getElementById('randomBtn');
 const answerInput = document.getElementById('answerInput');
-const checkBtn = document.getElementById('checkBtn');
+// const checkBtn = document.getElementById('checkBtn');
 const epilogue = document.getElementById('epilogue');
 
 function showEpilogue(){ epilogue.style.display='block'; epilogue.scrollIntoView({behavior:'smooth', block:'nearest'}); }
@@ -162,21 +162,21 @@ document.addEventListener('keydown', (e)=>{
   }
 });
 
-// Answer checker (server-side)
-checkBtn.addEventListener('click', async ()=>{
-  const guess = answerInput.value || '';
-  const ok = await checkAnswer(guess);
-  answerInput.classList.remove('answer-ok','answer-bad');
-  answerInput.classList.add(ok? 'answer-ok':'answer-bad');
-  if(ok) showEpilogue();
-});
-answerInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); checkBtn.click(); } });
+// // Answer checker (server-side)
+// checkBtn.addEventListener('click', async ()=>{
+//   const guess = answerInput.value || '';
+//   const ok = await checkAnswer(guess);
+//   answerInput.classList.remove('answer-ok','answer-bad');
+//   answerInput.classList.add(ok? 'answer-ok':'answer-bad');
+//   if(ok) showEpilogue();
+// });
+// answerInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); checkBtn.click(); } });
 
 // Initial load
 (function init(){
   const url = new URL(window.location.href);
   const s = url.searchParams.get('seed'); if(s!==null) seedInput.value = s;
-  const a = url.searchParams.get('answer'); if(a){ answerInput.value=a; checkBtn.click(); }
+  // const a = url.searchParams.get('answer'); if(a){ answerInput.value=a; checkBtn.click(); }
   fetchAndRender(Number(seedInput.value)||0);
 })();
 </script>
