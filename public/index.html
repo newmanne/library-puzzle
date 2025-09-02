@@ -117,7 +117,6 @@ const answerInput = document.getElementById('answerInput');
 const checkBtn = document.getElementById('checkBtn');
 const epilogue = document.getElementById('epilogue');
 
-function isCorrectAnswer(s){ const a=(s||'').toUpperCase().replace(/[^A-Z]/g,''); return a==='ALEPH'||a==='THEALEPH'; }
 function showEpilogue(){ epilogue.style.display='block'; epilogue.scrollIntoView({behavior:'smooth', block:'nearest'}); }
 
 async function fetchAndRender(seed){
@@ -125,6 +124,18 @@ async function fetchAndRender(seed){
   const data = await r.json();
   document.getElementById('story').innerHTML = data.html;
   document.getElementById('catalogStr').textContent = data.catalog;
+}
+
+async function checkAnswer(guess){
+  try{
+    const r = await fetch('/api/check', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ guess })
+    });
+    const data = await r.json();
+    return !!data.ok;
+  }catch(_){ return false; }
 }
 
 renderBtn.addEventListener('click', ()=>{
@@ -151,9 +162,10 @@ document.addEventListener('keydown', (e)=>{
   }
 });
 
-// Answer checker
-checkBtn.addEventListener('click', ()=>{
-  const ok = isCorrectAnswer(answerInput.value);
+// Answer checker (server-side)
+checkBtn.addEventListener('click', async ()=>{
+  const guess = answerInput.value || '';
+  const ok = await checkAnswer(guess);
   answerInput.classList.remove('answer-ok','answer-bad');
   answerInput.classList.add(ok? 'answer-ok':'answer-bad');
   if(ok) showEpilogue();

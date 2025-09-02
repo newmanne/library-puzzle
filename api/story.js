@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   function mulberry32(a){ return function(){ let t = a += 0x6D2B79F5; t = Math.imul(t ^ (t>>>15), t | 1); t ^= t + Math.imul(t ^ (t>>>7), t | 61); return ((t ^ (t>>>14)) >>> 0) / 4294967296; } }
 
   // --- Bits & masks ---
-  const MESSAGE = "ALEPH"; // A=0..Z=25, 5 letters -> 25 bits
+  const MESSAGE = "ALEPH"; // server-side secret answer, used only to emit story bits
   function messageToBits(msg){ const bits=[]; for(const ch of msg.toUpperCase()){ if(ch<'A'||ch>'Z') continue; let v=ch.charCodeAt(0)-65; for(let i=4;i>=0;i--) bits.push((v>>i)&1); } return bits; }
   const MESSAGE_BITS = messageToBits(MESSAGE);
   function keystreamBits(seed, startIndex, count){
