@@ -1,6 +1,6 @@
-// api/story.js
-export default async function handler(req, res) {
-  const seed = parseInt((req.query.seed ?? '0'), 10) >>> 0;
+// api/story.js (CommonJS export)
+module.exports = async function (req, res) {
+  const seed = parseInt((req.query && req.query.seed ? req.query.seed : '0'), 10) >>> 0;
 
   // --- PRNG (mulberry32) ---
   function mulberry32(a){ return function(){ let t = a += 0x6D2B79F5; t = Math.imul(t ^ (t>>>15), t | 1); t ^= t + Math.imul(t ^ (t>>>7), t | 61); return ((t ^ (t>>>14)) >>> 0) / 4294967296; } }

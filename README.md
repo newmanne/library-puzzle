@@ -1,14 +1,15 @@
-# Bookseller’s Synonyms — Serverless Deploy (Server-side Answer Check)
+# Bookseller’s Synonyms — Vercel (CommonJS functions)
 
-- `/api/story.js`: serverless generator for prose + colophons (no secrets in client).
-- `/api/check.js`: server-side answer validator; never reveals the correct answer.
-- `/public/index.html`: static UI that fetches the story and posts guesses to `/api/check`.
-- `/vercel.json`: route root to the static HTML.
+This version fixes 404s on API routes by using **CommonJS exports** for serverless functions.
 
-## Deploy on Vercel
+- `/api/story.js` — serverless generator (CommonJS `module.exports = ...`)
+- `/api/check.js` — server-side answer validator
+- `/public/index.html` — static UI fetching `/api/story` and posting to `/api/check`
+
+## Deploy
 1. Create a new repo with these files.
-2. Import into Vercel and Deploy.
-3. Open the URL; use `?seed=` to test various editions.
+2. Import into Vercel (framework = **Other**). No build step required.
+3. Open your URL and try `/api/story?seed=23` and `/api/check` with a POST body.
 
-### Local dev
-- `npx vercel dev` to run both static and API routes locally.
+## Local test
+- `npx vercel dev` then open http://localhost:3000
