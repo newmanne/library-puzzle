@@ -33,8 +33,8 @@ module.exports = async function (req, res) {
     ["maze","labyrinth"], ["mirror","speculum"], ["shadow","umbra"], ["light","lumen"], ["sound","sonority"],
     ["list","enumeration"], ["change","alteration"], ["split","bifurcation"], ["secret","esoteric"], ["source","provenance"],
     ["image","simulacrum"], ["thread","filament"], ["network","lattice"], ["letter","grapheme"], ["beginning","commencement"],
-    ["answer","rejoinder"], ["hidden","occult"], ["word","lexeme"], ["door","portal"], ["opening","aperture"],
-    ["closing","occlusion"], ["room","chamber"], ["record","chronicle"], ["pattern","motif"], ["glass","crystal"],
+    ["answer","rejoinder"], ["hidden","occult"], ["word","lexeme"], ["smell","olfaction"], ["opening","aperture"],
+    ["closing","occlusion"], ["room","chamber"], ["record","chronicle"], ["pattern","motif"], ["name","appellation"],
   ];
 
   // --- Sentence generator (deterministic) ---
@@ -110,7 +110,7 @@ module.exports = async function (req, res) {
     const maskVal = bitsToInt(maskSlice);
 
     // First paragraph epigraph with the plain/learned rule
-    const prefix = (p===0 ? `<em>The vulgar word is naught; the learned word is one.</em> ` : "");
+    const prefix = (p===0 ? `<em>The vulgar word is naught; the learned word is unity.</em> ` : "");
     html += `<p>${prefix}${para}</p>\n`;
     html += `<div class="colophon">${intToRoman(maskVal)}</div>\n`;
 
