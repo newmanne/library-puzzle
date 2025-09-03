@@ -156,45 +156,54 @@ module.exports = async function (req, res) {
     const comma  = normalized? ',' : (r()<0.5 ? ',' : ';');
 
     const lines = [];
-    if (atLost(x,y)){
+    const isLost = (x===lostFound.x && y===lostFound.y);
+    const isRef = (x===refDesk.x && y===refDesk.y);
+    const isMath= (x===maths.x && y===maths.y);
+    const isScribe = (x===scriptor.x && y===scriptor.y);
+    const isVault = (x===vault.x && y===vault.y);
+    const isChute = (x===chute.x && y===chute.y);
+    const isUnity = (x===unity.x && y===unity.y);
+    const isSecretShelf = (`${x},${y}`===SECRET_SHELF_KEY);
+    const isSecretAnnex = (`${x},${y}`===SECRET_ANNEX_KEY);
+    const isSecretBook  = (`${x},${y}`===`${SECRET_BOOK.x},${SECRET_BOOK.y}`);
+
+    if (isLost){
       lines.push(`A narrow counter bristles with ${cart}s and a little sign: "Lost & Found".`);
       lines.push('A shallow drawer is ajar.');
-    } else if (atRef(x,y)){
+    } else if (isRef){
       lines.push('A high desk looms here. The librarian peers over spectacles.');
       lines.push('You could <present card> or <ask librarian about ...>.');
-    } else if (atMath(x,y)){
+    } else if (isMath){
       lines.push('You enter a mathematics alcove. Chalk dust hangs in the colorless light.');
       lines.push('Diagrams sprawl over a slate. You might <read primer>.');
-    } else if (atScribe(x,y)){
+    } else if (isScribe){
       lines.push('A scriptorium desk hums with a copying charm.');
       lines.push('You can <normalize on> to quiet the typographical noise, or <normalize off>.');
-    } else if (atVault(x,y)){
+    } else if (isVault){
       lines.push('An ironbound door dominates the west wall.');
       lines.push('A brass plaque reads: "When you have decrypted the library\'s whisper, <say WORD>."');
-    } else if (atChute(x,y)){
+    } else if (isChute){
       lines.push('A humming book‑return chute yawns to the south. A paper sign: "Mind the drop."');
-    } else if (atUnity(x,y)){
+    } else if (isUnity){
       lines.push('You pause. The stacks here align with uncanny symmetry.');
-      lines.push('You feel an overwhelming sense of **oneness** in this room.');
+      lines.push('You feel an overwhelming sense of oneness in this room.');
     }
-    if(`${x},${y}`===SECRET_SHELF_KEY){ const dirName={n:'north',e:'east',s:'south',w:'west'}[SECRET_SHELF.dir]; lines.push(`On the ${dirName} side, a shelf shows a conspicuous gap where a volume is missing.`); lines.push('A faint draft slips through the join between shelf and wall.'); }
-    if(`${x},${y}`===SECRET_ANNEX_KEY){ lines.push('A narrow secret annex hides behind a movable shelf. Dust lies untouched.'); }
-    lines.push(`You are in the library ${aisles} — twisty little corridors, all alike${comma}${space}lit by ${light} lamps.`);
-    lines.push(`The ${shelf} smell faintly of ${smell} and ${cat}. ${dust} drift in the ${colour}less light.`);
-    lines.push(`At the ${endcap}, a painted placard whispers ${quotes}${dash}${hush}.`);
+    if(isSecretShelf){ const dirName={n:'north',e:'east',s:'south',w:'west'}[SECRET_SHELF.dir]; lines.push(`On the ${dirName} side, a shelf shows a conspicuous gap where a volume is missing.`); lines.push('A faint draft slips through the join between shelf and wall.'); }
+    if(isSecretAnnex){ lines.push('A narrow secret annex hides behind a movable shelf. Dust lies untouched.'); }
+
+    const anySpecial = (isLost||isRef||isMath||isScribe||isVault||isChute||isSecretShelf||isSecretAnnex||isSecretBook);
+    if(!anySpecial || isUnity){
+      lines.push(`You are in the library ${aisles} — twisty little corridors, all alike${comma}${space}lit by ${light} lamps.`);
+      lines.push(`The ${shelf} smell faintly of ${smell} and ${cat}. ${dust} drift in the ${colour}less light.`);
+      lines.push(`At the ${endcap}, a painted placard whispers ${quotes}${dash}${hush}.`);
+    }
     if (normalized){ lines.push(`[normalized] features → ${colour}/${cat}/${shelf}/${endcap}/${dash}`); }
 
     const exitNames = {n:'north', e:'east', s:'south', w:'west'};
     const exits = exitsMaze(x,y);
     const exitsLine = `Exits: ${exits.map(d=>exitNames[d]).join(', ') || '(none)'}.`;
 
-    const flags = {
-      lost: atLost(x,y), ref: atRef(x,y), math: atMath(x,y), scribe: atScribe(x,y),
-      vault: atVault(x,y), chute: atChute(x,y), unity: atUnity(x,y),
-      secretShelf: (`${x},${y}`===`${SECRET_SHELF.x},${SECRET_SHELF.y}`),
-      secretAnnex: (`${x},${y}`===`${SECRET_ANNEX.x},${SECRET_ANNEX.y}`),
-      secretBook: (`${x},${y}`===`${SECRET_BOOK.x},${SECRET_BOOK.y}`)
-    };
+    const flags = { lost:isLost, ref:isRef, math:isMath, scribe:isScribe, vault:isVault, chute:isChute, unity:isUnity, secretShelf:isSecretShelf, secretAnnex:isSecretAnnex, secretBook:isSecretBook };
 
     res.setHeader('cache-control', 'no-store');
     return res.status(200).json({ ok:true, lines, exitsLine, isSignal: !!sig, exits, flags });

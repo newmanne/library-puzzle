@@ -107,7 +107,7 @@
   /********************
    * Dimensions & Params *
    ********************/
-  const WIDTH = 10, HEIGHT = 8; // expanded play-space (+2 cols, +2 rows) // widened horizontally for bigger play-space
+  // Dimensions handled server-side
   const urlParams = new URLSearchParams(location.search);
   const seedParam = urlParams.get('seed') || 'RESTRICTED-STACKS-VIG'; // controls signal placements only
   const runSelfTestsParam = urlParams.get('selftest') === '1';
@@ -199,7 +199,7 @@
       const data = await r.json();
       const lines = (data && data.lines) || [];
       lines.forEach(s=>print(s));
-    }catch(_){ print('[map unavailable]', 'muted'); }
+    }catch(e){ print('Error: Failed to load map.'); console.error(e); }
   }
 
   /********************
@@ -225,9 +225,9 @@
         state.x = data.x|0; state.y = data.y|0; state.inVault = !!data.inVault; state.steps++;
         visitTitle = null; await look();
       } else {
-        print('You hesitate, unsure of the way.');
+        print('Error: Movement failed.');
       }
-    }catch(_){ print('The air shivers; your steps falter.'); }
+    }catch(e){ print('Error: Movement request failed.'); console.error(e); }
   }
 
   function openThing(what){ clearForLastOnly(); if(!what){ print('Open what?'); return; } if((lastRoom && lastRoom.flags && lastRoom.flags.lost) && /(drawer|lost|found|counter)/.test(what)){ print('You slide the shallow drawer open. Inside lies a scuffed library card.'); return; } print("It doesn't seem to open."); }
@@ -251,19 +251,17 @@
     obj=(obj||'').toLowerCase();
     if(/^(card|library card)$/.test(obj)){
       if(!state.hasCard){ print('You do not seem to have a card.'); return; }
-      try{
-        const r = await fetch('/api/maze-card');
-        const data = await r.json();
-        const c = (data && data.card) || { title:'LIBRARY CARD', issuer:'', barcode:'', note:'' };
-        print(c.title || 'LIBRARY CARD');
+    try{
+      const r = await fetch('/api/maze-card');
+      const data = await r.json();
+      const c = (data && data.card) || { title:'LIBRARY CARD', issuer:'', barcode:'', note:'' };
+      print(c.title || 'LIBRARY CARD');
         print('  Patron: ______________');
         if(c.issuer)  print('  Issued by: ' + c.issuer);
         if(c.barcode) print('  Barcode: ' + c.barcode);
         if(c.note)    print('  Note: ' + c.note);
-      }catch(_){
-        print('LIBRARY CARD');
-        print('  Patron: ______________');
-        print('  Issued by: —');
+      }catch(e){
+        print('Error: Failed to load card.'); console.error(e);
       }
       return;
     }
@@ -307,9 +305,7 @@
       print(`  "${title}."`);
       print('You replace it carefully.');
       visitTitle = title;
-    }catch(_){
-      print('You tug a book loose, but the spine flakes to dust.');
-    }
+    }catch(e){ print('Error: Failed to pull book.'); console.error(e); }
   }
 
 
@@ -327,7 +323,7 @@
       } else {
         print('The vault remains cold. The word is not quite right.');
       }
-    }catch(_){ print('The vault shudders, then falls silent.'); }
+    }catch(e){ print('Error: Vault check failed.'); console.error(e); }
   }
 
 
@@ -356,6 +352,7 @@
     print('  normalize [on|off] — at the Scriptorium; hides decoy typography');
     print('  pull book — reveals a whimsical title; if it\'s a signal room, the title hides an index word');
     print('  put/insert/place book — at the gapped shelf, opens a hidden passage');
+    print('  reset — reset state to the start');
     print('  say <WORD> — at the Vault, speak the final word');
     print('  maze — print an ASCII map (debug). Signals are marked as *.');
     print('  selftest — run internal checks');
@@ -375,7 +372,7 @@
     if(cmd==='maze'){ clearForLastOnly(); printMaze(); return; }
     if(cmd==='selftest'){ clearForLastOnly(); runSelfTests(); return; }
     if(cmd==='map'){ clearForLastOnly(); print('You try to sketch a plan, but you can\'t seem to draw a reliable map.'); return; }
-    if(cmd==='quit'||cmd==='restart'){ view.innerHTML=''; visitTitle=null; intro(); return; }
+    if(cmd==='quit'||cmd==='restart'||cmd==='reset'){ view.innerHTML=''; visitTitle=null; lastRoom=null; state.x=0; state.y=0; state.steps=0; state.hasCard=false; state.normalized=false; state.inVault=false; state.hasSecretBook=false; state.secretOpen=false; intro(); return; }
 
     if(cmd.startsWith('open ')) return openThing(raw.slice(5));
     if(cmd.startsWith('take ')) return takeThing(raw.slice(5));

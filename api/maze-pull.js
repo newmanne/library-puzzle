@@ -118,13 +118,13 @@ module.exports = async function (req, res) {
     function numWord(n,mode='upper'){ const w = WORDS[n] || String(n); return formatCase(w,mode); }
     function ordWord(n,mode='upper'){ const w = ORD_WORDS[n] || String(n); return formatCase(w,mode); }
 
-    const rLoc = mulberry32(((x*73856093) ^ (y*19349663) ^ SEED) >>> 0);
+    // Random per request (not fixed per room)
     let title = '';
     if(sig){
       const modes=['lower','title'];
-      const template = TITLE_TEMPLATES[Math.floor(rLoc()*TITLE_TEMPLATES.length)];
-      const cardMode = modes[Math.floor(rLoc()*modes.length)];
-      const ordMode  = modes[Math.floor(rLoc()*modes.length)];
+      const template = TITLE_TEMPLATES[Math.floor(Math.random()*TITLE_TEMPLATES.length)];
+      const cardMode = modes[Math.floor(Math.random()*modes.length)];
+      const ordMode  = modes[Math.floor(Math.random()*modes.length)];
       const idx = sig.index;
       title = template
         .replaceAll('{CARD_LOWER}', numWord(idx, cardMode))
@@ -134,7 +134,7 @@ module.exports = async function (req, res) {
         .replaceAll('{ORD_TITLE}', ordWord(idx, ordMode))
         .replaceAll('{ORD_UPPER}', ordWord(idx, ordMode));
     } else {
-      title = FAUX_TEMPLATES[Math.floor(rLoc()*FAUX_TEMPLATES.length)];
+      title = FAUX_TEMPLATES[Math.floor(Math.random()*FAUX_TEMPLATES.length)];
     }
 
     res.setHeader('cache-control', 'no-store');
@@ -143,4 +143,3 @@ module.exports = async function (req, res) {
     return res.status(500).json({ ok:false, error:'server_error' });
   }
 }
-
