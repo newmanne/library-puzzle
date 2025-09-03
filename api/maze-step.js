@@ -106,9 +106,37 @@ module.exports = async function (req, res) {
     const chute = pickOne(chuteCand) || {x:WIDTH-2, y:HEIGHT-2};
 
     if(dir==='s' && x===chute.x && y===chute.y){
-      const rloc = mulberry32((SEED ^ 0xABCDEF ^ ((steps+1)>>>0))>>>0);
-      const rx = Math.floor(rloc()*WIDTH), ry = Math.floor(rloc()*HEIGHT);
-      return res.status(200).json({ ok:true, x:rx, y:ry, inVault:false, blocked:false });
+      // Teleport through the chute to a normal (non-special) room
+      const banned = new Set([
+        `${START.x},${START.y}`, // start is allowed or not? keep allowed by removing next line if desired
+      ]);
+      // Add known specials to banned set
+      const dist = distFromStart; // already computed
+      // Recompute placements similar to room endpoint for specials used here
+      const specials = [lostFound, refDesk, maths, vault, unity, SECRET];
+      const secretAnnex = {x:SECRET.nx, y:SECRET.ny};
+      for(const s of specials){ banned.add(`${s.x},${s.y}`); }
+      banned.add(`${secretAnnex.x},${secretAnnex.y}`);
+      banned.add(`${chute.x},${chute.y}`);
+
+      // Pick a random cell not in banned (with limit), else fallback scan
+      let rx=-1, ry=-1; let attempts=0; const MAX_ATTEMPTS=2000;
+      while(attempts<MAX_ATTEMPTS){
+        const rloc = mulberry32((SEED ^ 0xABCDEF ^ ((steps+1+attempts)>>>0))>>>0);
+        const tx = Math.floor(rloc()*WIDTH), ty = Math.floor(rloc()*HEIGHT);
+        if(!banned.has(`${tx},${ty}`)){ rx=tx; ry=ty; break; }
+        attempts++;
+      }
+      if(rx===-1){
+        // Fallback: first non-banned cell
+        outer: for(let yy=0; yy<HEIGHT; yy++){
+          for(let xx=0; xx<WIDTH; xx++){
+            if(!banned.has(`${xx},${yy}`)){ rx=xx; ry=yy; break outer; }
+          }
+        }
+        if(rx===-1){ rx = START.x; ry = START.y; }
+      }
+      return res.status(200).json({ ok:true, x:rx, y:ry, inVault:false, blocked:false, teleported:true, reason:'chute' });
     }
 
     // Normal neighbor step with wrap
@@ -123,4 +151,3 @@ module.exports = async function (req, res) {
     return res.status(500).json({ ok:false, error:'server_error' });
   }
 }
-

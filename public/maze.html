@@ -219,6 +219,9 @@
       clearForLastOnly();
       if(data && data.ok){
         if(data.blocked){ print('Towering shelves block your way.'); return; }
+        if(data.teleported && data.reason === 'chute'){
+          print('Whee! You fly through the return chute and land elsewhere.');
+        }
         state.x = data.x|0; state.y = data.y|0; state.inVault = !!data.inVault; state.steps++;
         visitTitle = null; await look();
       } else {
