@@ -14,7 +14,7 @@ module.exports = async function (req, res) {
     let data = {};
     try { data = JSON.parse(raw); } catch {}
     const word = String((data.word ?? data.guess ?? '')).toUpperCase().replace(/[^A-Z]/g, '');
-    const ACCEPTABLE = new Set(['LIBRARIUM']);
+    const ACCEPTABLE = new Set(['LATEFEES']);
     const ok = ACCEPTABLE.has(word);
     res.setHeader('cache-control', 'no-store');
     return res.status(200).json({ ok });
@@ -22,4 +22,3 @@ module.exports = async function (req, res) {
     return res.status(500).json({ ok: false, error: 'server_error' });
   }
 }
-

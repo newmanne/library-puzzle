@@ -36,8 +36,6 @@
     .legend{ margin-top:10px; color:var(--muted); font-size:14px; }
     .colophon{ text-align:right; margin:-4px 0 10px; font-family: var(--mono); letter-spacing:1.5px; color:#6f5b43; opacity:0.85; }
     .footer{ color:#777; font-size:13px; margin-top:16px; }
-    .epilogue{ display:none; margin-top:14px; padding:14px 16px; border:1px solid var(--rule); border-radius:12px; background:linear-gradient(180deg,#fff9e9,#fff4d8); box-shadow:0 6px 16px rgba(0,0,0,0.06); }
-    .epilogue h3{ margin:0 0 6px; font-family: var(--serif); }
     .mono{ font-family: var(--mono); }
     .answer-ok{ outline:2px solid #3aa55d; outline-offset:2px; }
     .answer-bad{ outline:2px solid #b64242; outline-offset:2px; }
@@ -57,7 +55,7 @@
         <input id="answerInput" type="text" placeholder="enter answer" />
       </label>
       <button id="checkBtn">Check Answer</button>
- -->      <span class="hint">Tip: use ← / → to step seeds; you can also set <code>?seed=12345</code> in the URL.</span>
+ -->      <span class="hint">Tip: use ← / → to step seeds</span>
     </div>
   </header>
 
@@ -100,11 +98,7 @@
 
       <article id="story"></article>
 
-      <div class="legend tiny">Roman numerals should be joined <em>aut exclusivum</em></div>
-      <div id="epilogue" class="epilogue">
-        <h3>Concordance Confirmed</h3>
-        <p>In the dim stacks you discover a point that contains all points: a bright mote beneath the stair, indifferent to scale, inexhaustible. Your edition closes itself.</p>
-      </div>
+      <div class="legend tiny">Romans <em>aut exclusivum</em></div>
       <div class="footer tiny"></div>
     </div>
   </main>
@@ -114,10 +108,6 @@ const seedInput = document.getElementById('seedInput');
 const renderBtn = document.getElementById('renderBtn');
 const randomBtn = document.getElementById('randomBtn');
 const answerInput = document.getElementById('answerInput');
-// const checkBtn = document.getElementById('checkBtn');
-const epilogue = document.getElementById('epilogue');
-
-function showEpilogue(){ epilogue.style.display='block'; epilogue.scrollIntoView({behavior:'smooth', block:'nearest'}); }
 
 async function fetchAndRender(seed){
   const r = await fetch(`/api/story?seed=${seed>>>0}`);
@@ -162,21 +152,10 @@ document.addEventListener('keydown', (e)=>{
   }
 });
 
-// // Answer checker (server-side)
-// checkBtn.addEventListener('click', async ()=>{
-//   const guess = answerInput.value || '';
-//   const ok = await checkAnswer(guess);
-//   answerInput.classList.remove('answer-ok','answer-bad');
-//   answerInput.classList.add(ok? 'answer-ok':'answer-bad');
-//   if(ok) showEpilogue();
-// });
-// answerInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); checkBtn.click(); } });
-
 // Initial load
 (function init(){
   const url = new URL(window.location.href);
   const s = url.searchParams.get('seed'); if(s!==null) seedInput.value = s;
-  // const a = url.searchParams.get('answer'); if(a){ answerInput.value=a; checkBtn.click(); }
   fetchAndRender(Number(seedInput.value)||0);
 })();
 </script>
