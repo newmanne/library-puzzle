@@ -114,185 +114,10 @@
   const SEED = hashStringToInt(String(seedParam));
   const rng0 = mulberry32(SEED);
 
+  
   /********************
-   * Maze (fixed, deliberate with a few toroidal wraps) *
+   * Maze graph handled server-side
    ********************/
-  const DX = {n:0,e:1,s:0,w:-1};
-  const DY = {n:-1,e:0,s:1,w:0};
-  const OPP = {n:'s', s:'n', e:'w', w:'e'};
-
-  function buildMaze(W,H,seed){
-    const dirs=['n','e','s','w'];
-    const grid={}; for(let y=0;y<H;y++){ for(let x=0;x<W;x++){ grid[`${x},${y}`]={}; } }
-    const r = mulberry32(seed);
-    const stack=[{x:Math.floor(r()*W), y:Math.floor(r()*H)}];
-    const seen=new Set([`${stack[0].x},${stack[0].y}`]);
-    while(stack.length){
-      const cur=stack[stack.length-1];
-      const nbrs=dirs.map(d=>({d, nx:cur.x+DX[d], ny:cur.y+DY[d]}))
-        .filter(n=> n.nx>=0 && n.nx<W && n.ny>=0 && n.ny<H && !seen.has(`${n.nx},${n.ny}`));
-      if(nbrs.length===0){ stack.pop(); continue; }
-      const pickN = nbrs[Math.floor(r()*nbrs.length)];
-      const a=`${cur.x},${cur.y}`, b=`${pickN.nx},${pickN.ny}`;
-      grid[a][pickN.d]=true; grid[b][OPP[pickN.d]]=true;
-      seen.add(b); stack.push({x:pickN.nx, y:pickN.ny});
-    }
-    // A few loops to reduce frustration and add routes
-    const extra=Math.floor(W*H*0.12);
-    for(let i=0;i<extra;i++){
-      const x=Math.floor(r()*W), y=Math.floor(r()*H); const d=dirs[Math.floor(r()*4)];
-      const nx=x+DX[d], ny=y+DY[d]; if(nx<0||ny<0||nx>=W||ny>=H) continue;
-      grid[`${x},${y}`][d]=true; grid[`${nx},${ny}`][OPP[d]]=true;
-    }
-    // Toroidal wraps: a few horizontal and vertical wrap corridors
-    const hWraps = Math.max(1, Math.floor(W*0.25));
-    for(let i=0;i<hWraps;i++){
-      const y=Math.floor(r()*H);
-      grid[`0,${y}`].w = true; grid[`${W-1},${y}`].e = true; // west<->east
-    }
-    const vWraps = Math.max(1, Math.floor(H*0.25));
-    for(let i=0;i<vWraps;i++){
-      const x=Math.floor(r()*W);
-      grid[`${x},0`].n = true; grid[`${x},${H-1}`].s = true; // north<->south
-    }
-    return grid;
-  }
-  const MAZE = buildMaze(WIDTH, HEIGHT, 0xC0FFEE); // fixed seed → one good maze by default
-
-  function exitsMaze(x,y){ const g=MAZE[`${x},${y}`]||{}; return Object.keys(g).filter(k=>g[k]); }
-  function neighborMaze(x,y,dir){
-    const g=MAZE[`${x},${y}`]||{}; if(g[dir]){
-      const nx=(x+DX[dir]+WIDTH)%WIDTH, ny=(y+DY[dir]+HEIGHT)%HEIGHT; // allow wrap on toroidal edges
-      return {x:nx, y:ny, blocked:false};
-    }
-    return {x,y,blocked:true};
-  }
-
-  // Distance helpers to place special rooms deliberately (respect wraps)
-  function bfsDistancesFrom(sx,sy){
-    const q=[[sx,sy]], dist={}; dist[`${sx},${sy}`]=0; let i=0;
-    while(i<q.length){ const [x,y]=q[i++]; const d=dist[`${x},${y}`];
-      for(const dir of exitsMaze(x,y)){
-        const nx=(x+DX[dir]+WIDTH)%WIDTH, ny=(y+DY[dir]+HEIGHT)%HEIGHT;
-        const k=`${nx},${ny}`; if(dist[k]==null){ dist[k]=d+1; q.push([nx,ny]); }
-      }
-    }
-    return dist;
-  }
-  function farthestCellFrom(sx,sy){ const dist=bfsDistancesFrom(sx,sy); let best={x:sx,y:sy,d:-1}; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const d=dist[`${x},${y}`]; if(d!=null && d>best.d){ best={x,y,d}; } } } return best; }
-  function cellsAtDistanceRange(sx,sy,min,max,excludeSet){ const dist=bfsDistancesFrom(sx,sy); const out=[]; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const k=`${x},${y}`; const d=dist[k]; if(d!=null && d>=min && d<=max && !excludeSet.has(k)) out.push({x,y}); } } return out; }
-
-  /********************
-   * Special locations (deliberate placement) *
-   ********************/
-  const keyOf=(o)=> `${o.x},${o.y}`;
-  const START = {x:0, y:0}; // fixed start for a stable experience
-  const FAR = farthestCellFrom(START.x, START.y); // ensure Scriptorium is far
-  const scriptor = {x:FAR.x, y:FAR.y};
-
-  function pickOne(list, used){ if(list.length===0) return null; const r = Math.floor(rng0()*list.length); let chosen=list[r]; let tries=0; while(used.has(keyOf(chosen)) && tries<list.length){ chosen=list[(r+tries)%list.length]; tries++; } return used.has(keyOf(chosen))?null:chosen; }
-
-  const used=new Set([keyOf(START), keyOf(scriptor)]);
-  const nearLF = cellsAtDistanceRange(START.x, START.y, 1, 2, used); // Lost & Found close by
-  const lostFound = pickOne(nearLF, used) || {x:1,y:0}; used.add(keyOf(lostFound));
-  const midMath = cellsAtDistanceRange(START.x, START.y, 2, 4, used); // Maths Alcove early-ish
-  const maths = pickOne(midMath, used) || {x:2,y:0}; used.add(keyOf(maths));
-  const midRef  = cellsAtDistanceRange(START.x, START.y, 3, 6, used); // Reference Desk mid
-  const refDesk = pickOne(midRef, used) || {x:3,y:0}; used.add(keyOf(refDesk));
-  // Vault: one of the most distant spots (not the scriptorium)
-  const distFromStart = bfsDistancesFrom(START.x, START.y);
-  let farList=[]; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const d=distFromStart[`${x},${y}`]; if(d!=null) farList.push({x,y,d}); } }
-  farList.sort((a,b)=>b.d-a.d);
-  const vault = farList.find(c=> keyOf(c)!==keyOf(scriptor) && !used.has(keyOf(c))) || {x:WIDTH-1,y:HEIGHT-1}; used.add(keyOf(vault));
-  const chuteCand = cellsAtDistanceRange(START.x, START.y, 2, 5, used);
-  const chute = pickOne(chuteCand, used) || {x:WIDTH-2, y:HEIGHT-2}; used.add(keyOf(chute));
-
-  // Oneness room: demonstrates that all five toggles "on" correspond to value bits set
-  const unityCand = cellsAtDistanceRange(START.x, START.y, 2, 6, used);
-  const unity = pickOne(unityCand, used) || {x:1, y:HEIGHT-1}; used.add(keyOf(unity));
-
-  const LOST_KEY=keyOf(lostFound), REF_KEY=keyOf(refDesk), MATH_KEY=keyOf(maths), SCRIPTOR_KEY=keyOf(scriptor), VAULT_KEY=keyOf(vault), CHUTE_KEY=keyOf(chute), START_KEY=keyOf(START), UNITY_KEY=keyOf(unity);
-
-  function atLost(x,y){return `${x},${y}`===LOST_KEY}
-  function atRef(x,y){return `${x},${y}`===REF_KEY}
-  function atMath(x,y){return `${x},${y}`===MATH_KEY}
-  function atScribe(x,y){return `${x},${y}`===SCRIPTOR_KEY}
-  function atVault(x,y){return `${x},${y}`===VAULT_KEY}
-  function atChute(x,y){return `${x},${y}`===CHUTE_KEY}
-  function atStart(x,y){return `${x},${y}`===START_KEY}
-  function atUnity(x,y){return `${x},${y}`===UNITY_KEY}
-
-  /********************
-   * Secret shelf + annex (hidden signal room)
-   ********************/
-  function findSecretShelf(){
-    const dirs=['n','e','s','w'];
-    const r = mulberry32((SEED ^ 0xB00B1E)>>>0);
-    const cands=[];
-    for(let y=0;y<HEIGHT;y++){
-      for(let x=0;x<WIDTH;x++){
-        const g = MAZE[`${x},${y}`]||{};
-        for(const d of dirs){
-          const nx = x+DX[d], ny = y+DY[d];
-          if(d==='w'&&x===0) continue; if(d==='e'&&x===WIDTH-1) continue; if(d==='n'&&y===0) continue; if(d==='s'&&y===HEIGHT-1) continue;
-          if(!g[d]){
-            const k2 = `${nx},${ny}`;
-            if(!used.has(k2)) cands.push({x,y,dir:d,nx,ny});
-          }
-        }
-      }
-    }
-    if(!cands.length){ return {x:1,y:1,dir:'e',nx:2,ny:1}; }
-    return cands[Math.floor(r()*cands.length)];
-  }
-  const SECRET = findSecretShelf();
-  const SECRET_SHELF = {x:SECRET.x, y:SECRET.y, dir:SECRET.dir};
-  const SECRET_ANNEX = {x:SECRET.nx, y:SECRET.ny};
-  const SECRET_SHELF_KEY = `${SECRET_SHELF.x},${SECRET_SHELF.y}`;
-  const SECRET_ANNEX_KEY = `${SECRET_ANNEX.x},${SECRET_ANNEX.y}`;
-
-  function pickBookSpot(){
-    const excl = new Set([...used, SECRET_SHELF_KEY, SECRET_ANNEX_KEY]);
-    const pool = cellsAtDistanceRange(START.x, START.y, 2, WIDTH+HEIGHT, excl);
-    return pickOne(pool,{ has:(k)=>excl.has(k), add:()=>{} }) || {x:1,y:2};
-  }
-  const SECRET_BOOK = pickBookSpot();
-  const SECRET_BOOK_KEY = `${SECRET_BOOK.x},${SECRET_BOOK.y}`;
-
-  function atSecretShelf(x,y){ return `${x},${y}`===SECRET_SHELF_KEY; }
-  function atSecretAnnex(x,y){ return `${x},${y}`===SECRET_ANNEX_KEY; }
-  function atSecretBook(x,y){ return `${x},${y}`===SECRET_BOOK_KEY; }
-
-  /********************
-   * Cipher placement  *
-   ********************/
-  const SIGNAL_COUNT = 12; // fixed number of signal rooms
-  // No client ciphertext; letters handled server-side
-
-  function chooseUniqueCells(count, banned) { 
-    const chosen=new Set(), cells=[];
-    let attempts=0; 
-    const maxAttempts=10000; 
-    const isBanned=(k)=> banned && banned.has(k); 
-    while(cells.length<count && attempts<maxAttempts){ 
-      const x=Math.floor(rng0()*WIDTH), y=Math.floor(rng0()*HEIGHT);
-      const k=`${x},${y}`; 
-      if(!isBanned(k) && !chosen.has(k)){ 
-        chosen.add(k); cells.push({x,y}); 
-      } 
-      attempts++; 
-    } return cells; 
-  }
-
-  const bannedSignals = new Set([...used]);
-  let signalCells = chooseUniqueCells(SIGNAL_COUNT, bannedSignals);
-  // Ensure the hidden annex is a signal room
-  const _annexKey = `${SECRET_ANNEX.x},${SECRET_ANNEX.y}`;
-  if(!signalCells.some(c=> `${c.x},${c.y}`===_annexKey)){
-    if(signalCells.length>=SIGNAL_COUNT){ signalCells[signalCells.length-1] = {x:SECRET_ANNEX.x, y:SECRET_ANNEX.y}; }
-    else { signalCells.push({x:SECRET_ANNEX.x, y:SECRET_ANNEX.y}); }
-  }
-  function signalHere(x,y){ return null; }
 
 
   let visitTitle = null; // per-visit cache of last title shown
@@ -358,51 +183,15 @@
    * Game State        *
    ********************/
   const state = {
-    x: START.x, y: START.y, steps:0,
+    x: 0, y: 0, steps:0,
     hasCard:false, normalized:false,
     inVault:false, hasSecretBook:false, secretOpen:false
   };
   function hereKey(){ return `${state.x},${state.y}` }
 
   /********************
-   * Map rendering (debug, with signal markers) *
+   * Map rendering (server)
    ********************/
-  function asciiMazeLines(){
-    const lines=[];
-    const isSignal = (x,y)=> false; // server-mode: do not mark signals on debug map
-    const baseChar=(x,y)=>{
-      if(atStart(x,y)) return 'S';
-      if(atScribe(x,y)) return 'T';
-      if(atLost(x,y)) return 'F';
-      if(atRef(x,y)) return 'R';
-      if(atMath(x,y)) return 'A';
-      if(atVault(x,y)) return 'V';
-      if(atChute(x,y)) return 'C';
-      if(atUnity(x,y)) return 'O';
-      return ' ';
-    };
-    for(let y=0;y<HEIGHT;y++){
-      // top borders (show wrap gaps on top row)
-      let top='+'; for(let x=0;x<WIDTH;x++){ const openN = (MAZE[`${x},${y}`]||{}).n; top += (openN? '   ' : '---') + '+'; } lines.push(top);
-      // middle row with left borders; mark signals
-      let mid=''; for(let x=0;x<WIDTH;x++){
-        const g=MAZE[`${x},${y}`]||{}; const openW = g.w; const bc = baseChar(x,y);
-        let ch = bc;
-        if(state.x===x && state.y===y){ ch='@'; }
-        else if(isSignal(x,y)){
-          ch='*';
-        }
-        mid += (openW? ' ' : '|') + ' ' + ch + ' ';
-      }
-      // right border: show wrap gap if the last cell has an east wrap
-      const openEedge = (MAZE[`${WIDTH-1},${y}`]||{}).e; mid += (openEedge? ' ' : '|');
-      lines.push(mid);
-    }
-    // bottom border (show wrap gaps on bottom row)
-    let bottom='+'; for(let x=0;x<WIDTH;x++){ const openSedge = (MAZE[`${x},${HEIGHT-1}`]||{}).s; bottom += (openSedge? '   ' : '---') + '+'; } lines.push(bottom);
-    lines.push('Legend: @ you, S start, T scriptorium, F lost&found, R reference, A mathematics, V vault, C chute, O oneness, * signal. Border gaps indicate wrap corridors.');
-    return lines;
-  }
   async function printMaze(){
     try{
       const params = new URLSearchParams({ x:String(state.x), y:String(state.y), seed:String(seedParam) });
@@ -456,8 +245,7 @@
       return;
     }
     print("You can't take that.");
-    if(atLost(state.x,state.y) && /(card|library card)/.test(what)){ if(state.hasCard){ print('You already pocketed the card.'); } else { state.hasCard=true; print('Taken: a scuffed library card warm from your palm.'); } return;} print("You can't take that."); 
-  }
+}
   async function readThing(obj){
     clearForLastOnly();
     obj=(obj||'').toLowerCase();
@@ -492,7 +280,7 @@
       print('  "When you have deciphered the library\'s whisper, speak it here: say <WORD>."');
       return;
     }
-    if((/^(librarian|desk|reference|reference desk)$/).test(obj) && atRef(state.x,state.y)){
+    if((/^(librarian|desk|reference|reference desk)$/).test(obj) && lastRoom && lastRoom.flags && lastRoom.flags.ref){
       print('The librarian murmurs:');
       print('  "Titles sometimes hide an **order**. Cards, a **key**."');
       return;
@@ -501,7 +289,7 @@
 
   function presentCard(){ clearForLastOnly(); if(!state.hasCard){ print('You have no card to present.'); return; } print('The librarian stamps your card and nods. "You will find that some titles are more helpful than others."'); }
 
-  function normalizeCmd(arg){ if(!atScribe(state.x,state.y)){ clearForLastOnly(); print("The scriptorium spell doesn't reach this far."); return; } const a=(arg||'').trim().toLowerCase(); if(a==='on'){ state.normalized=true; } else if(a==='off'){ state.normalized=false; } else { state.normalized=!state.normalized; } clearForLastOnly(); print('Normalization ' + (state.normalized?'on.':'off.')); look(); }
+  function normalizeCmd(arg){ const a=(arg||'').trim().toLowerCase(); if(a==='on'){ state.normalized=true; } else if(a==='off'){ state.normalized=false; } else { state.normalized=!state.normalized; } clearForLastOnly(); print('Normalization ' + (state.normalized?'on.':'off.')); look(); }
 
   async function pullBook(){
     clearForLastOnly();
@@ -528,7 +316,7 @@
 
   async function sayWord(raw){
     clearForLastOnly();
-    if(!atVault(state.x,state.y)){ print('Your whisper is swallowed by the stacks.'); return; }
+    if(!(lastRoom && lastRoom.flags && lastRoom.flags.vault)){ print('Your whisper is swallowed by the stacks.'); return; }
     const spoken = (raw||'').trim(); if(!spoken){ print('Say what?'); return; }
     try{
       const r = await fetch('/api/maze-check', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ word: spoken }) });
@@ -600,7 +388,7 @@
     if(cmd==='put book' || cmd==='insert book' || cmd==='place book' || cmd==='use book' || cmd==='return book') return placeBook();
 
     if(cmd.startsWith('ask ')){
-      if(!atRef(state.x,state.y)){ clearForLastOnly(); print('No one answers.'); return; }
+      if(!(lastRoom && lastRoom.flags && lastRoom.flags.ref)){ clearForLastOnly(); print('No one answers.'); return; }
       const about = raw.slice(4).trim();
       if(/(cipher|vigenere|key|card|keyword|index|title|maze)/i.test(about)){ clearForLastOnly(); print('The librarian whispers: "The **issuer** names a key; the **title** names a place in line. Those who love maps may say ‘maze’."'); return; }
       clearForLastOnly(); print('The librarian raises an eyebrow and waits.'); return;
