@@ -54,8 +54,8 @@
 </head>
 <body>
   <header>
-    <h1>📚 The Restricted Stacks</h1>
-    <div class="subtitle">Text adventure in a maze of twisty passages (library edition). Differences hide a cipher. <em>Maze mode is now the default.</em> Pull a book in any aisle for a subtle index; the library card holds your Vigenère key.</div>
+    <h1>📚 Lost in The Stacks</h1>
+    <div class="subtitle">Text adventure!</div>
   </header>
 
   <div class="terminal" role="region" aria-label="Adventure terminal">
@@ -71,7 +71,6 @@
     </form>
   </div>
   <div class="footer">
-    Tip: Press <strong>Esc</strong> while text is animating to reveal the rest of the line. Use <code>?seed=HOGWARTS</code> to fix a layout (signal placement only). Add <code>?selftest=1</code> to run internal checks.</div>
 
   <dialog id="settingsDialog">
     <form method="dialog" style="min-width: min(640px, 90vw); background:#0e1318; color:var(--ink); border:1px solid #1b2129; border-radius:12px; padding:16px;">
@@ -218,8 +217,12 @@
   const chuteCand = cellsAtDistanceRange(START.x, START.y, 2, 5, used);
   const chute = pickOne(chuteCand, used) || {x:WIDTH-2, y:HEIGHT-2}; used.add(keyOf(chute));
 
+  // Oneness room: demonstrates that all five toggles "on" correspond to value bits set
+  const unityCand = cellsAtDistanceRange(START.x, START.y, 2, 6, used);
+  const unity = pickOne(unityCand, used) || {x:1, y:HEIGHT-1}; used.add(keyOf(unity));
+
   const KEY_CARRIER = 'BIBLIOTHECA';
-  const LOST_KEY=keyOf(lostFound), REF_KEY=keyOf(refDesk), MATH_KEY=keyOf(maths), SCRIPTOR_KEY=keyOf(scriptor), VAULT_KEY=keyOf(vault), CHUTE_KEY=keyOf(chute), START_KEY=keyOf(START);
+  const LOST_KEY=keyOf(lostFound), REF_KEY=keyOf(refDesk), MATH_KEY=keyOf(maths), SCRIPTOR_KEY=keyOf(scriptor), VAULT_KEY=keyOf(vault), CHUTE_KEY=keyOf(chute), START_KEY=keyOf(START), UNITY_KEY=keyOf(unity);
 
   function atLost(x,y){return `${x},${y}`===LOST_KEY}
   function atRef(x,y){return `${x},${y}`===REF_KEY}
@@ -228,6 +231,7 @@
   function atVault(x,y){return `${x},${y}`===VAULT_KEY}
   function atChute(x,y){return `${x},${y}`===CHUTE_KEY}
   function atStart(x,y){return `${x},${y}`===START_KEY}
+  function atUnity(x,y){return `${x},${y}`===UNITY_KEY}
 
   /********************
    * Secret shelf + annex (hidden signal room)
@@ -479,7 +483,9 @@
     const localSeed = (x*2654435761 ^ y*1597334677 ^ SEED) >>> 0; const r = mulberry32(localSeed);
 
     const sig = signalHere(x,y);
-    const forced = sig ? featuresForLetter(sig.letter) : null;
+    const forced = atUnity(x,y)
+      ? { ukColour:true, ukCatalogue:true, badPlural:true, hyphenEndcap:true, enDash:true }
+      : (sig ? featuresForLetter(sig.letter) : null);
 
     // Scoring quirks
     const colour = (forced? forced.ukColour : (r()<0.5)) ? 'colour' : 'color';
@@ -512,7 +518,7 @@
       lines.push('You could <present card> or <ask librarian about ...>.');
     }
     else if (atMath(x,y)){
-      lines.push(`You enter a mathematics alcove. Chalk dust hangs in the ${colour}less light.`);
+      lines.push(`You enter a mathematics alcove. Chalk dust hangs in the colorless light.`);
       lines.push('Diagrams sprawl over a slate. You might <read primer>.');
     }
     else if (atScribe(x,y)){
@@ -525,6 +531,10 @@
     }
     else if (atChute(x,y)){
       lines.push('A humming book‑return chute yawns to the south. A paper sign: "Mind the drop."');
+    }
+    else if (atUnity(x,y)){
+      lines.push('You pause. The stacks here align with uncanny symmetry.');
+      lines.push('You feel an overwhelming sense of oneness in this room.');
     }
 
     // Baseline description with scoring features woven in
@@ -617,6 +627,7 @@
       if(atMath(x,y)) return 'A';
       if(atVault(x,y)) return 'V';
       if(atChute(x,y)) return 'C';
+      if(atUnity(x,y)) return 'O';
       return ' ';
     };
     for(let y=0;y<HEIGHT;y++){
@@ -638,7 +649,7 @@
     }
     // bottom border (show wrap gaps on bottom row)
     let bottom='+'; for(let x=0;x<WIDTH;x++){ const openSedge = (MAZE[`${x},${HEIGHT-1}`]||{}).s; bottom += (openSedge? '   ' : '---') + '+'; } lines.push(bottom);
-    lines.push('Legend: @ you, S start, T scriptorium, F lost&found, R reference, A mathematics, V vault, C chute, * signal. Border gaps indicate wrap corridors.');
+    lines.push('Legend: @ you, S start, T scriptorium, F lost&found, R reference, A mathematics, V vault, C chute, O oneness, * signal. Border gaps indicate wrap corridors.');
     return lines;
   }
   function printMaze(){ asciiMazeLines().forEach(s=>print(s)); }
@@ -693,11 +704,11 @@
   function readThing(obj){ clearForLastOnly(); obj=(obj||'').toLowerCase(); if(/^(card|library card)$/.test(obj)){ if(!state.hasCard){ print('You do not seem to have a card.'); return;} print('LIBRARY CARD'); print('  Patron: ______________'); print('  Issued by: Bibliotheca'); print('  Barcode: BIBLIOTHECA'); print('  Note: Card may activate certain catalogue enchantments.'); return; }
     if((/^(primer|chalkboard|slate|math|mathematics|board)$/).test(obj) && atMath(state.x,state.y)){
       print('Primer on the Vigenère Cipher:');
-      print('  1) Strip text to letters A–Z.');
-      print('  2) Your library card whispers the KEYWORD.');
-      print('  3) Encrypt/decrypt by shifting each letter by the keyword letter (wrap 26).');
-      print('  4) Here, special aisles hide a letter using five toggles weighted 1,2,4,8,16 → A=1…Z=26.');
-      print('  5) Pull a book in any aisle; if it belongs to the whisper, its title includes a spelled-out index (e.g., "Twelfth"). Collect letters in that order.');
+      print('  1) Ciphertext should be letters A–Z.');
+      print('  2) You will need a KEY to decrypt.');
+      print('  3) Encrypt/decrypt by shifting each letter in the ciphertext by the keyword letter.');
+      // print('  4) Here, special aisles hide a letter using five toggles weighted 1,2,4,8,16 → A=1…Z=26.');
+      // print('  5) Pull a book in any aisle; if it belongs to the whisper, its title includes a spelled-out index (e.g., "Twelfth"). Collect letters in that order.');
       return;
     }
     if((/^(plaque|sign|note|instructions)$/).test(obj) && atVault(state.x,state.y)){
@@ -833,9 +844,8 @@
 
   function intro(){
     clearForLastOnly();
-    print('Your lantern guttered as you slipped past the rope into the Restricted Stacks.');
+    print('Your lantern guttered as you slipped past the roped barrier into the Restricted Stacks.');
     print('A labyrinth of aisles stretches in every direction — twisty, almost identical.');
-    print('Some differences are subtle. Attentive readers will notice what the hurried eye misses.');
     look();
   }
 
