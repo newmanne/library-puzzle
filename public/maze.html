@@ -109,10 +109,7 @@
    ********************/
   // Dimensions handled server-side
   const urlParams = new URLSearchParams(location.search);
-  const seedParam = urlParams.get('seed') || 'RESTRICTED-STACKS-VIG'; // controls signal placements only
   const runSelfTestsParam = urlParams.get('selftest') === '1';
-  const SEED = hashStringToInt(String(seedParam));
-  const rng0 = mulberry32(SEED);
 
   
   /********************
@@ -126,7 +123,7 @@
    * Room description *
    ********************/
   async function roomDescriptor(x,y, normalized){
-    const params = new URLSearchParams({ x:String(x), y:String(y), seed:String(seedParam), normalized:String(!!normalized) });
+    const params = new URLSearchParams({ x:String(x), y:String(y), normalized:String(!!normalized) });
     try{
       const r = await fetch('/api/maze-room?'+params.toString());
       const data = await r.json();
@@ -194,7 +191,7 @@
    ********************/
   async function printMaze(){
     try{
-      const params = new URLSearchParams({ x:String(state.x), y:String(state.y), seed:String(seedParam) });
+      const params = new URLSearchParams({ x:String(state.x), y:String(state.y) });
       const r = await fetch('/api/maze-map?'+params.toString());
       const data = await r.json();
       const lines = (data && data.lines) || [];
@@ -216,7 +213,7 @@
 
   async function move(dir){
     try{
-      const params = new URLSearchParams({ x:String(state.x), y:String(state.y), dir:String(dir||'').toLowerCase(), seed:String(seedParam), steps:String(state.steps), secretOpen:String(!!state.secretOpen), inVault:String(!!state.inVault) });
+      const params = new URLSearchParams({ x:String(state.x), y:String(state.y), dir:String(dir||'').toLowerCase(), steps:String(state.steps), secretOpen:String(!!state.secretOpen), inVault:String(!!state.inVault) });
       const r = await fetch('/api/maze-step?'+params.toString());
       const data = await r.json();
       clearForLastOnly();
@@ -292,7 +289,7 @@
   async function pullBook(){
     clearForLastOnly();
     try{
-      const params = new URLSearchParams({ x:String(state.x), y:String(state.y), seed:String(seedParam) });
+      const params = new URLSearchParams({ x:String(state.x), y:String(state.y) });
       const r = await fetch('/api/maze-pull?'+params.toString());
       const data = await r.json();
       const title = (data && data.title) || 'Untitled Monograph';
@@ -356,7 +353,7 @@
     print('  say <WORD> — at the Vault, speak the final word');
     print('  maze — print an ASCII map (debug). Signals are marked as *.');
     print('  selftest — run internal checks');
-    print('  seed — show world seed (signal placement only); settings — open settings; map — declines politely; quit — clears the screen');
+    print('  settings — open settings; map — declines politely; quit — clears the screen');
   }
 
   function parse(cmd){ cmd = (cmd||'').trim(); if(!cmd) return; const raw=cmd; cmd=cmd.toLowerCase();
@@ -368,7 +365,7 @@
     if(['l','look','examine','x'].includes(cmd)) return look();
     if(cmd==='help'||cmd==='?') return help();
     if(cmd==='settings'){ settingsDialog.showModal(); return; }
-    if(cmd==='seed'){ clearForLastOnly(); print(`Seed: ${seedParam}`); return; }
+    
     if(cmd==='maze'){ clearForLastOnly(); printMaze(); return; }
     if(cmd==='selftest'){ clearForLastOnly(); runSelfTests(); return; }
     if(cmd==='map'){ clearForLastOnly(); print('You try to sketch a plan, but you can\'t seem to draw a reliable map.'); return; }
