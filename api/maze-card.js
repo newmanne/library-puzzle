@@ -9,9 +9,8 @@ module.exports = async function (req, res) {
   }
   // Display strings only; logic-level secrets are not exposed here
   const card = {
-    barcode: 'BNRQORPZLAJE',     // printed code on the card
+    barcode: 'BIBLIOTE',     // 8-letter barcode on the card
   };
   res.setHeader('cache-control', 'no-store');
   return res.status(200).json({ ok: true, card });
 }
-

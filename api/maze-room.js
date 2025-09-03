@@ -11,7 +11,7 @@ module.exports = async function (req, res) {
     const normalized = false;
 
     // Constants
-    const WIDTH = 10, HEIGHT = 8;
+    const WIDTH = 8, HEIGHT = 7;
 
     // PRNG & helpers
     function hashStringToInt(str){ let h = 2166136261 >>> 0; for (let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -63,7 +63,7 @@ module.exports = async function (req, res) {
     function cellsAtDistanceRange(sx,sy,min,max,excludeSet){ const dist=bfsDistancesFrom(sx,sy); const out=[]; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const k=`${x},${y}`; const d=dist[k]; if(d!=null && d>=min && d<=max && !excludeSet.has(k)) out.push({x,y}); } } return out; }
     function pickOne(list, used){ if(list.length===0) return null; const r = Math.floor(rng0()*list.length); let chosen=list[r]; let tries=0; while(used.has(keyOf(chosen)) && tries<list.length){ chosen=list[(r+tries)%list.length]; tries++; } return used.has(keyOf(chosen))?null:chosen; }
     const used=new Set([keyOf(START)]);
-    const nearLF = cellsAtDistanceRange(START.x, START.y, 1, 2, used); const lostFound = pickOne(nearLF, used) || {x:1,y:0}; used.add(keyOf(lostFound));
+    const nearLF = cellsAtDistanceRange(START.x, START.y, 3, 5, used); const lostFound = pickOne(nearLF, used) || {x:1,y:0}; used.add(keyOf(lostFound));
     const midMath = cellsAtDistanceRange(START.x, START.y, 2, 4, used); const maths = pickOne(midMath, used) || {x:2,y:0}; used.add(keyOf(maths));
     // Reading room: a comfy chair and a binary treatise
     const midRead = cellsAtDistanceRange(START.x, START.y, 2, 6, used); const reading = pickOne(midRead, used) || {x:2,y:1}; used.add(keyOf(reading));
@@ -118,9 +118,9 @@ module.exports = async function (req, res) {
     const SECRET_ANNEX_KEY = `${SECRET_ANNEX.x},${SECRET_ANNEX.y}`;
 
     // Signals (server-side letters)
-    const FINAL = 'LIBRARIUM';
-    const KEY = 'BIBLIOTHECA';
-    const SIGNAL_COUNT = 12;
+    const FINAL = 'LIBRARIA';
+    const KEY = 'BIBLIOTE';
+    const SIGNAL_COUNT = 8;
     const onlyAZ=(s)=> String(s||'').toUpperCase().replace(/[^A-Z]/g,'');
     const A2I=(ch)=> ch.charCodeAt(0)-64; const I2A=(n)=> String.fromCharCode(64 + ((n-1)%26 + 1));
     function vigenereEncrypt(plain, key){ plain=onlyAZ(plain); key=onlyAZ(key); let out=''; for(let i=0;i<plain.length;i++){ const p=A2I(plain[i]); const k=A2I(key[i%key.length]); const c=((p+k-1-1)%26)+1; out+=I2A(c); } return out; }

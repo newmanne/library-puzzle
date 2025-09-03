@@ -8,7 +8,7 @@ module.exports = async function (req, res) {
     const cx = parseInt(q.x ?? '0', 10) || 0;
     const cy = parseInt(q.y ?? '0', 10) || 0;
 
-    const WIDTH = 10, HEIGHT = 8;
+    const WIDTH = 8, HEIGHT = 7;
 
     // PRNG & helpers
     function hashStringToInt(str){ let h = 2166136261 >>> 0; for (let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -69,6 +69,13 @@ module.exports = async function (req, res) {
     const chute = (function(){ const out=[]; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const d=distFromStart[`${x},${y}`]; if(d!=null && d>=2 && d<=5) out.push({x,y}); } } return out.length? out[Math.floor(rng0()*out.length)] : {x:WIDTH-2,y:HEIGHT-2}; })();
 
     const lines=[];
+    // Optionally mark signal rooms
+    const showSignals = String(q.signals||'0') === '1';
+    // Reconstruct signal cells (no letters)
+    function chooseUniqueCells(count, bannedSet){ const chosen=new Set(), cells=[]; let attempts=0; const maxAttempts=10000; const isBanned=(k)=> bannedSet && bannedSet.has(k); while(cells.length<count && attempts<maxAttempts){ const xx=Math.floor(rng0()*WIDTH), yy=Math.floor(rng0()*HEIGHT); const k=`${xx},${yy}`; if(!isBanned(k) && !chosen.has(k)){ chosen.add(k); cells.push({x:xx,y:yy}); } attempts++; } return cells; }
+    const used = new Set([`${START.x},${START.y}`, `${lostFound.x},${lostFound.y}`, `${maths.x},${maths.y}`, `${reading.x},${reading.y}`, `${vault.x},${vault.y}`, `${chute.x},${chute.y}`, `${unity.x},${unity.y}`]);
+    const SIGNAL_COUNT = 8;
+    let signals = chooseUniqueCells(SIGNAL_COUNT, used);
     const baseChar=(x,y)=>{
       if(x===START.x && y===START.y) return 'S';
       if(x===lostFound.x && y===lostFound.y) return 'F';
@@ -84,6 +91,10 @@ module.exports = async function (req, res) {
       let mid=''; for(let x=0;x<WIDTH;x++){
         const g=MAZE[`${x},${y}`]||{}; const openW = g.w; const bc = baseChar(x,y);
         let ch = bc;
+        if(showSignals){
+          const key=`${x},${y}`;
+          if(signals.some(c=> c.x===x && c.y===y)) ch='*';
+        }
         if(cx===x && cy===y){ ch='@'; }
         mid += (openW? ' ' : '|') + ' ' + ch + ' ';
       }

@@ -12,7 +12,7 @@ module.exports = async function (req, res) {
     const secretOpen = String(q.secretOpen ?? 'false') === 'true';
     const inVault = String(q.inVault ?? 'false') === 'true';
 
-    const WIDTH = 10, HEIGHT = 8;
+    const WIDTH = 8, HEIGHT = 7;
 
     // PRNG & helpers
     function hashStringToInt(str){ let h = 2166136261 >>> 0; for (let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }

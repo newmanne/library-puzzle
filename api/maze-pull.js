@@ -9,7 +9,7 @@ module.exports = async function (req, res) {
     const seedStr = String(q.seed ?? 'RESTRICTED-STACKS-VIG');
 
     // Constants
-    const WIDTH = 10, HEIGHT = 8;
+    const WIDTH = 8, HEIGHT = 7;
 
     // PRNG & helpers
     function hashStringToInt(str){ let h = 2166136261 >>> 0; for (let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -73,9 +73,9 @@ module.exports = async function (req, res) {
     const SECRET_ANNEX = {x:SECRET.nx, y:SECRET.ny};
 
     // Signals and ciphertext
-    const FINAL = 'LIBRARIUM';
-    const KEY = 'BIBLIOTHECA';
-    const SIGNAL_COUNT = 12;
+    const FINAL = 'LIBRARIA';
+    const KEY = 'BIBLIOTE';
+    const SIGNAL_COUNT = 8;
     const onlyAZ=(s)=> String(s||'').toUpperCase().replace(/[^A-Z]/g,'');
     const A2I=(ch)=> ch.charCodeAt(0)-64; const I2A=(n)=> String.fromCharCode(64 + ((n-1)%26 + 1));
     function vigenereEncrypt(plain, key){ plain=onlyAZ(plain); key=onlyAZ(key); let out=''; for(let i=0;i<plain.length;i++){ const p=A2I(plain[i]); const k=A2I(key[i%key.length]); const c=((p+k-1-1)%26)+1; out+=I2A(c); } return out; }

@@ -191,7 +191,7 @@
    ********************/
   async function printMaze(){
     try{
-      const params = new URLSearchParams({ x:String(state.x), y:String(state.y) });
+      const params = new URLSearchParams({ x:String(state.x), y:String(state.y), signals:'1' });
       const r = await fetch('/api/maze-map?'+params.toString());
       const data = await r.json();
       const lines = (data && data.lines) || [];
@@ -264,11 +264,12 @@
       return;
     }
     if((/^(primer|chalkboard|slate|math|mathematics|board)$/).test(obj) && lastRoom && lastRoom.flags && lastRoom.flags.math){
-      print('Primer on the Vigenère Cipher:');
-      print('  1) The ciphertext should be letters A–Z.');
-      print('  2) You will need a CODE to decrypt. You cannot hope to decrypt without a CODE');
-      print('  3) Encrypt/decrypt by shifting each letter in the ciphertext by the keyword letter. Many online tools exist...');   
-      
+      try{
+        const params = new URLSearchParams({ x:String(state.x), y:String(state.y), action:'primer' });
+        const r = await fetch('/api/maze-action?'+params.toString());
+        const data = await r.json();
+        if(data && data.ok && Array.isArray(data.lines)) data.lines.forEach(t=>print(t)); else print('Nothing useful here.');
+      }catch(e){ print('Error: Failed to read primer.'); console.error(e); }
       return;
     }
     if((/^(plaque|sign|note|instructions)$/).test(obj) && lastRoom && lastRoom.flags && lastRoom.flags.vault){
@@ -282,7 +283,7 @@
   function sitHere(){
     clearForLastOnly();
     if(!(lastRoom && lastRoom.flags && lastRoom.flags.reading)){
-      print('There's nowhere comfortable to sit.');
+      print("There's nowhere comfortable to sit.");
       return;
     }
     print('You settle into the comfy chair. A slim volume slides into your lap:');
@@ -345,6 +346,7 @@
       const data = await r.json();
       if(data && data.ok){
         print('The door warms beneath your hand and swings inward. A codex on a lectern lies open to the answer you sought.');
+        print('You are blinded by light as the library fades away and you find yourself outside. Go call Neil.');
         state.inVault = true;
       } else {
         print('The vault remains cold. The word is not quite right.');
