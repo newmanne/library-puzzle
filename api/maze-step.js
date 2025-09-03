@@ -99,25 +99,34 @@ module.exports = async function (req, res) {
     const distFromStart = bfsDistancesFrom(START.x, START.y);
     let farList=[]; for(let yy=0;yy<HEIGHT;yy++){ for(let xx=0;xx<WIDTH;xx++){ const d=distFromStart[`${xx},${yy}`]; if(d!=null) farList.push({x:xx,y:yy,d}); } }
     farList.sort((a,b)=>b.d-a.d);
-    const scriptor = farList[0] || START;
     const pickOne=(list)=> list && list.length ? list[Math.floor(rng0()*list.length)] : null;
     const cellsAtDistanceRange=(sx,sy,min,max)=>{ const out=[]; for(let yy=0;yy<HEIGHT;yy++){ for(let xx=0;xx<WIDTH;xx++){ const k=`${xx},${yy}`; const d=distFromStart[k]; if(d!=null && d>=min && d<=max) out.push({x:xx,y:yy}); } } return out; };
+    // Place key specials similarly to room endpoint
+    const used2 = new Set([`${START.x},${START.y}`]);
+    const nearLF = cellsAtDistanceRange(START.x, START.y, 1, 2); const lostFound = pickOne(nearLF) || {x:1,y:0}; used2.add(`${lostFound.x},${lostFound.y}`);
+    const midMath = cellsAtDistanceRange(START.x, START.y, 2, 4); const maths = pickOne(midMath) || {x:2,y:0}; used2.add(`${maths.x},${maths.y}`);
+    const midRef  = cellsAtDistanceRange(START.x, START.y, 3, 6); const refDesk = pickOne(midRef) || {x:3,y:0}; used2.add(`${refDesk.x},${refDesk.y}`);
+    const vault = (function(){ for(const c of farList){ const k=`${c.x},${c.y}`; if(!used2.has(k)) return {x:c.x,y:c.y}; } return {x:WIDTH-1,y:HEIGHT-1}; })(); used2.add(`${vault.x},${vault.y}`);
     const chuteCand = cellsAtDistanceRange(START.x, START.y, 2, 5);
     const chute = pickOne(chuteCand) || {x:WIDTH-2, y:HEIGHT-2};
 
     if(dir==='s' && x===chute.x && y===chute.y){
-      // Teleport through the chute to a normal (non-special) room
-      const banned = new Set([
-        `${START.x},${START.y}`, // start is allowed or not? keep allowed by removing next line if desired
-      ]);
-      // Add known specials to banned set
-      const dist = distFromStart; // already computed
-      // Recompute placements similar to room endpoint for specials used here
-      const specials = [lostFound, refDesk, maths, vault, unity, SECRET];
-      const secretAnnex = {x:SECRET.nx, y:SECRET.ny};
+      // Teleport through the chute to a normal (non-special, non-signal) room
+      const banned = new Set();
+      const specials = [lostFound, refDesk, maths, vault, unity, SECRET, {x:SECRET.nx, y:SECRET.ny}, chute];
       for(const s of specials){ banned.add(`${s.x},${s.y}`); }
-      banned.add(`${secretAnnex.x},${secretAnnex.y}`);
-      banned.add(`${chute.x},${chute.y}`);
+
+      // Compute signal rooms (server-side placement, without exposing letters)
+      function chooseUniqueCells(count, bannedSet){ const chosen=new Set(), cells=[]; let attempts=0; const maxAttempts=10000; const isBanned=(k)=> bannedSet && bannedSet.has(k); while(cells.length<count && attempts<maxAttempts){ const xx=Math.floor(rng0()*WIDTH), yy=Math.floor(rng0()*HEIGHT); const k=`${xx},${yy}`; if(!isBanned(k) && !chosen.has(k)){ chosen.add(k); cells.push({x:xx,y:yy}); } attempts++; } return cells; }
+      const SIGNAL_COUNT = 12;
+      const bannedSignals = new Set(used2);
+      let signalCells = chooseUniqueCells(SIGNAL_COUNT, bannedSignals);
+      const annexKey = `${SECRET.nx},${SECRET.ny}`;
+      if(!signalCells.some(c=> `${c.x},${c.y}`===annexKey)){
+        if(signalCells.length>=SIGNAL_COUNT){ signalCells[signalCells.length-1] = {x:SECRET.nx, y:SECRET.ny}; }
+        else { signalCells.push({x:SECRET.nx, y:SECRET.ny}); }
+      }
+      for(const c of signalCells){ banned.add(`${c.x},${c.y}`); }
 
       // Pick a random cell not in banned (with limit), else fallback scan
       let rx=-1, ry=-1; let attempts=0; const MAX_ATTEMPTS=2000;

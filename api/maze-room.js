@@ -132,33 +132,27 @@ module.exports = async function (req, res) {
     const signalHere = (xx,yy)=> SIGNALS.get(`${xx},${yy}`) || null;
 
     // Feature mapping
-    function featuresForLetter(letter){ const v=A2I(letter); const bits=[1,2,4,8,16].map(bit=> (v & bit)?1:0); const [b1,b2,b3,b4,b5]=bits; return { ukColour: !!b1, ukCatalogue: !!b2, badPlural: !!b3, hyphenEndcap: !!b4, enDash: !!b5 }; }
+    function featuresForLetter(letter){ const v=A2I(letter); const bits=[1,2,4,8,16].map(bit=> (v & bit)?1:0); const [b1,b2,b3,b4,b5]=bits; return { space: !!b1, light: !!b2, dust: !!b3, color: !!b4, quotes: !!b5 }; }
 
     // Room description
     const localSeed = (x*2654435761 ^ y*1597334677 ^ SEED) >>> 0; const r = mulberry32(localSeed);
     const sig = signalHere(x,y);
-    const forced = atUnity(x,y) ? { ukColour:true, ukCatalogue:true, badPlural:true, hyphenEndcap:true, enDash:true } : (sig ? featuresForLetter(sig.letter) : null);
-    const colour = (forced? forced.ukColour : (r()<0.5)) ? 'colour' : 'color';
-    const cat    = (forced? forced.ukCatalogue : (r()<0.5)) ? 'catalogue' : 'catalog';
-    const shelf  = (forced? forced.badPlural : (r()<0.2)) ? 'shelfs' : 'shelves';
-    const endcap = (forced? forced.hyphenEndcap : (r()<0.5)) ? 'end-cap' : 'endcap';
-    const dash   = (forced? forced.enDash : (r()<0.4)) ? '–' : '-';
-    const pickOr = (a)=> normalized? a[0] : pick(r,a);
-    const light  = pickOr(['faint','wan','thin','flickering','flickring','guttering']);
-    const dust   = pickOr(['dust motes','dust‑motes','motes of dust']);
-    const hush   = pickOr(['please be quiet','quiet please','hush']);
-    const quotes = pickOr(['"Restricted Section"','“Restricted Section”','‘Restricted Section’']);
-    const cart   = pickOr(['book cart','book‑cart','bookcart']);
-    const smell  = pickOr(['glue','adhesive','paste']);
-    const aisles = pickOr(['aisles','stacks','passages']);
-    const space  = normalized? ' ' : (r()<0.5 ? ' ' : '  ');
-    const comma  = normalized? ',' : (r()<0.5 ? ',' : ';');
+    const forced = atUnity(x,y) ? { space:true, light:true, dust:true, color:true, quotes:true } : (sig ? featuresForLetter(sig.letter) : null);
+
+    const space   = (forced? forced.space : (r()<0.5)) ? ' ' : '  '
+    const light  = (forced? forced.light : (r()<0.5)) ? 'flickering' : 'flickring';   
+    const dust = (forced? forced.dust : (r()<0.5)) ? 'dust motes' : 'dust‑motes'; 
+    const color = (forced? forced.color : (r()<0.5)) ? 'colour' : 'color';
+    const quotes = (forced? forced.quotes : (r()<0.5)) ? '"Restricted Section"' : '“Restricted Section”';
+
+    
+  
+    // const comma  = normalized? ',' : (r()<0.5 ? ',' : ';');
 
     const lines = [];
     const isLost = (x===lostFound.x && y===lostFound.y);
     const isRef = (x===refDesk.x && y===refDesk.y);
     const isMath= (x===maths.x && y===maths.y);
-    const isScribe = false;
     const isVault = (x===vault.x && y===vault.y);
     const isChute = (x===chute.x && y===chute.y);
     const isUnity = (x===unity.x && y===unity.y);
@@ -167,7 +161,7 @@ module.exports = async function (req, res) {
     const isSecretBook  = (`${x},${y}`===`${SECRET_BOOK.x},${SECRET_BOOK.y}`);
 
     if (isLost){
-      lines.push(`A narrow counter bristles with ${cart}s and a little sign: "Lost & Found".`);
+      lines.push(`A narrow counter bristles with bookcarts and a little sign: "Lost & Found".`);
       lines.push('A shallow drawer is ajar.');
     } else if (isRef){
       lines.push('A high desk looms here. The librarian peers over spectacles.');
@@ -189,9 +183,9 @@ module.exports = async function (req, res) {
 
     const anySpecial = (isLost||isRef||isMath||isVault||isChute||isSecretShelf||isSecretAnnex||isSecretBook);
     if(!anySpecial || isUnity){
-      lines.push(`You are in the library ${aisles} — twisty little corridors, all alike${comma}${space}lit by ${light} lamps.`);
-      lines.push(`The ${shelf} smell faintly of ${smell} and ${cat}. ${dust} drift in the ${colour}less light.`);
-      lines.push(`At the ${endcap}, a painted placard whispers ${quotes}${dash}${hush}.`);
+      lines.push(`You are in the library aisles — twisty little corridors, all alike,${space}lit by ${light} lamps.`);
+      lines.push(`The shelves smell faintly of must. ${dust} drift in the ${color}less light.`);
+      lines.push(`A painted placard whispers ${quotes}-quiet please.`);
     }
     // normalized output removed
 
