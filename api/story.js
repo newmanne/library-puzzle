@@ -23,14 +23,14 @@ module.exports = async function (req, res) {
 
   // --- Lexicons (trimmed, deterministic flavor only) ---
   const ADJ = [
-    "antique","dusty","quiet","hexagonal","mirror-bright","pensive","endless","narrow","infinite","luminous",
-    "shadowed","archival","baroque","austere","gilded","musty","incunabular","esoteric","scholastic",
-    "vellum","brittle","labyrinthine","sepulchral","palimpsestic","marginal","illuminated","foxed","dog-eared",
+    "antique","dusty","quiet","hexagonal","pensive","endless","narrow","infinite","luminous",
+    "archival","baroque","austere","gilded","musty","incunabular","esoteric","scholastic",
+    "vellum","brittle","sepulchral","palimpsestic","marginal","illuminated","foxed","dog-eared",
     "leather-bound","scholarly","oblique","cryptic","stately","murmurous","cavernous","cobwebbed","latticed",
     "oak-paneled","ink-stained","tattered","forgotten","rare","forbidden","catalogued","quietus","dust-laden"
   ];
   const NOUN= [
-    "librarian","catalogue","hexagon","volume","ladder","mirror","index","folio","shelf","footnote",
+    "librarian","catalogue","hexagon","volume","ladder","index","folio","shelf","footnote",
     "errata","margin","archive","codex","colophon","stacks","bookplate","ligature","galley","proof",
     "leaf","quire","signature","rubric","gloss","treatise","manuscript","scriptorium","lexicon","codicil",
     "bookmark","palimpsest","glossary","register","ledger","lamp","lantern","stair","railing","spine",
@@ -38,7 +38,7 @@ module.exports = async function (req, res) {
   ];
   const VERB= [
     "argues","retrieves","annotates","traverses","indexes","consults","arranges","catalogues","debates",
-    "observes","peruses","collates","glosses","binds","dusts","shelves","reshelves","illuminates","records",
+    "observes","peruses","collates","glosses","binds","dusts","shelves","reshelves","illuminates",
     "inscribes","deciphers","transcribes","restores","preserves","repairs","files","refiles","misfiles",
     "reclassifies","footnotes","leafs","misreads","cross-references","catalogs","stamps","whispers","curates"
   ];
