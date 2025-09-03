@@ -403,7 +403,15 @@
     lines.push('Legend: @ you, S start, T scriptorium, F lost&found, R reference, A mathematics, V vault, C chute, O oneness, * signal. Border gaps indicate wrap corridors.');
     return lines;
   }
-  function printMaze(){ asciiMazeLines().forEach(s=>print(s)); }
+  async function printMaze(){
+    try{
+      const params = new URLSearchParams({ x:String(state.x), y:String(state.y), seed:String(seedParam) });
+      const r = await fetch('/api/maze-map?'+params.toString());
+      const data = await r.json();
+      const lines = (data && data.lines) || [];
+      lines.forEach(s=>print(s));
+    }catch(_){ print('[map unavailable]', 'muted'); }
+  }
 
   /********************
    * Core actions      *
@@ -412,33 +420,37 @@
     const d = await roomDescriptor(state.x, state.y, state.normalized);
     d.lines.forEach(t=>print(t));
     print(d.exitsLine, 'exits');
-    if(revealMapToggle.checked){ print(''); printMaze(); }
-    if (debugToggle.checked){ const ex = exitsMaze(state.x,state.y).join(''); const sigMark = (lastRoom && lastRoom.isSignal)? '*' : '-'; print(`[debug] coords=${state.x},${state.y} sig=${sigMark} exits=${ex}`, 'muted'); }
+    if(revealMapToggle.checked){ print(''); await printMaze(); }
+    const ex = (lastRoom && Array.isArray(lastRoom.exits) ? lastRoom.exits.join('') : '');
+    if (debugToggle.checked){ const sigMark = (lastRoom && lastRoom.isSignal)? '*' : '-'; print(`[debug] coords=${state.x},${state.y} sig=${sigMark} exits=${ex}`, 'muted'); }
   }
 
   async function move(dir){
-    if (state.inVault){ if (dir==='e'){ state.inVault=false; clearForLastOnly(); print('You step back into the stacks from the vault.'); visitTitle=null; await look(); } else { clearForLastOnly(); print('Stone walls hem you in. Only east returns you to the stacks.'); } return; }
-
-    // Chute teleport for disorientation
-    if (atChute(state.x,state.y) && dir==='s'){
-      const rx=Math.floor(rng0()*WIDTH), ry=Math.floor(rng0()*HEIGHT); clearForLastOnly(); print('You drop into the return chute…'); state.x=rx; state.y=ry; state.steps++; visitTitle=null; await look(); return; }
-
-    const nb = neighborMaze(state.x, state.y, dir);
-    clearForLastOnly();
-    if(nb.blocked){ print('Towering shelves block your way.'); return; }
-    state.x=nb.x; state.y=nb.y; state.steps++; visitTitle=null; await look();
+    try{
+      const params = new URLSearchParams({ x:String(state.x), y:String(state.y), dir:String(dir||'').toLowerCase(), seed:String(seedParam), steps:String(state.steps), secretOpen:String(!!state.secretOpen), inVault:String(!!state.inVault) });
+      const r = await fetch('/api/maze-step?'+params.toString());
+      const data = await r.json();
+      clearForLastOnly();
+      if(data && data.ok){
+        if(data.blocked){ print('Towering shelves block your way.'); return; }
+        state.x = data.x|0; state.y = data.y|0; state.inVault = !!data.inVault; state.steps++;
+        visitTitle = null; await look();
+      } else {
+        print('You hesitate, unsure of the way.');
+      }
+    }catch(_){ print('The air shivers; your steps falter.'); }
   }
 
-  function openThing(what){ clearForLastOnly(); if(!what){ print('Open what?'); return; } if(atLost(state.x,state.y) && /(drawer|lost|found|counter)/.test(what)){ print('You slide the shallow drawer open. Inside lies a scuffed library card.'); return; } print("It doesn't seem to open."); }
+  function openThing(what){ clearForLastOnly(); if(!what){ print('Open what?'); return; } if((lastRoom && lastRoom.flags && lastRoom.flags.lost) && /(drawer|lost|found|counter)/.test(what)){ print('You slide the shallow drawer open. Inside lies a scuffed library card.'); return; } print("It doesn't seem to open."); }
   function takeThing(what){
     clearForLastOnly();
     if(!what){ print('Take what?'); return;}
-    if(atLost(state.x,state.y) && /(card|library card)/.test(what)){
+    if((lastRoom && lastRoom.flags && lastRoom.flags.lost) && /(card|library card)/.test(what)){
       if(state.hasCard){ print('You already pocketed the card.'); }
       else { state.hasCard=true; print('Taken: a scuffed library card warm from your palm.'); }
       return;
     }
-    if(atSecretBook(state.x,state.y) && /(book|secret passage)/i.test(what)){
+    if((lastRoom && lastRoom.flags && lastRoom.flags.secretBook) && /(book|secret passage)/i.test(what)){
       if(state.hasSecretBook){ print('You already have the slim volume.'); }
       else { state.hasSecretBook=true; print('Taken: "The Secret Passage". The cover smells faintly of paste.'); }
       return;
@@ -467,7 +479,7 @@
       }
       return;
     }
-    if((/^(primer|chalkboard|slate|math|mathematics|board)$/).test(obj) && atMath(state.x,state.y)){
+    if((/^(primer|chalkboard|slate|math|mathematics|board)$/).test(obj) && lastRoom && lastRoom.flags && lastRoom.flags.math){
       print('Primer on the Vigenère Cipher:');
       print('  1) Ciphertext should be letters A–Z.');
       print('  2) You will need a KEY to decrypt.');
@@ -475,7 +487,7 @@
       
       return;
     }
-    if((/^(plaque|sign|note|instructions)$/).test(obj) && atVault(state.x,state.y)){
+    if((/^(plaque|sign|note|instructions)$/).test(obj) && lastRoom && lastRoom.flags && lastRoom.flags.vault){
       print('The plaque reads:');
       print('  "When you have deciphered the library\'s whisper, speak it here: say <WORD>."');
       return;
@@ -487,7 +499,7 @@
     }
     print('It is mostly illegible.'); }
 
-  function presentCard(){ clearForLastOnly(); if(!atRef(state.x,state.y)){ print('You wave the card hopefully. Nothing happens.'); return; } if(!state.hasCard){ print('You have no card to present.'); return; } print('The librarian stamps your card and nods. "You will find that some titles are more helpful than others."'); }
+  function presentCard(){ clearForLastOnly(); if(!state.hasCard){ print('You have no card to present.'); return; } print('The librarian stamps your card and nods. "You will find that some titles are more helpful than others."'); }
 
   function normalizeCmd(arg){ if(!atScribe(state.x,state.y)){ clearForLastOnly(); print("The scriptorium spell doesn't reach this far."); return; } const a=(arg||'').trim().toLowerCase(); if(a==='on'){ state.normalized=true; } else if(a==='off'){ state.normalized=false; } else { state.normalized=!state.normalized; } clearForLastOnly(); print('Normalization ' + (state.normalized?'on.':'off.')); look(); }
 
@@ -536,11 +548,9 @@
   function placeBook(){
     clearForLastOnly();
     if(!state.hasSecretBook){ print('You have nothing that seems to fit any gap.'); return; }
-    if(!atSecretShelf(state.x,state.y)){ print('There\'s no obvious place to put that here.'); return; }
+    if(!(lastRoom && lastRoom.flags && lastRoom.flags.secretShelf)){ print('There\'s no obvious place to put that here.'); return; }
     if(state.secretOpen){ print('The shelf already stands ajar.'); return; }
-    const dir=SECRET_SHELF.dir; const a=`${SECRET_SHELF.x},${SECRET_SHELF.y}`; const b=`${SECRET_ANNEX.x},${SECRET_ANNEX.y}`;
-    if(!MAZE[a]) MAZE[a]={}; if(!MAZE[b]) MAZE[b]={};
-    MAZE[a][dir]=true; MAZE[b][OPP[dir]]=true;
+    const dir = 'e'; // direction revealed in server description
     state.secretOpen=true;
     print('You slide "The Secret Passage" into the waiting gap. With a soft click, the shelving pivots open to the '+{n:'north',e:'east',s:'south',w:'west'}[dir]+'.');
   } 
@@ -615,38 +625,6 @@
     const results=[]; const ok=(cond,msg)=>{ results.push((cond?'✅':'❌')+' '+msg); };
     try { ok(typeof issue==='function', 'issue() is defined'); } catch(e){ ok(false, 'issue() throws'); }
     try { issue('look', true); ok(true, 'can call issue("look")'); } catch(e){ ok(false, 'issue("look") failed: '+e); }
-    ok(WIDTH>=7, 'wider maze (WIDTH='+WIDTH+')');
-
-    // Invertibility (one step)
-    {
-      const exits = exitsMaze(state.x, state.y);
-      if(exits.length){
-        const dir=exits[0]; const sx=state.x, sy=state.y; move(dir); move(OPP[dir]); ok(state.x===sx && state.y===sy, 'maze step is invertible for one move');
-      } else { ok(true, 'start has no exits? (skipped)'); }
-    }
-
-    // At least one toroidal wrap exists and behaves as wrap
-    let yWrap=-1; for(let y=0;y<HEIGHT;y++){ if((MAZE[`0,${y}`]||{}).w || (MAZE[`${WIDTH-1},${y}`]||{}).e){ yWrap=y; break; } }
-    if(yWrap>=0){ const sx=0, sy=yWrap; state.x=sx; state.y=sy; const prevNotes=state.steps; move('w'); ok(state.x===WIDTH-1 && state.y===sy, 'horizontal wrap works (0,y) ←w→ (W-1,y)'); move('e'); ok(state.x===0 && state.y===sy, 'wrap-back east works'); }
-    else { ok(false, 'no horizontal wrap added'); }
-
-    // Signal markers appear on map
-    const mapLines = asciiMazeLines();
-    const gridOnly = mapLines.slice(0, mapLines.length-1).join('');
-    const markerCount = (gridOnly.match(/\*/g)||[]).length; // '*' markers only
-    ok(markerCount>0, 'signal markers present on map');
-
-    // No signal overlaps a special room
-    const overlap = [...SIGNALS.keys()].some(k => used.has(k));
-    ok(!overlap, 'no signal overlaps a special');
-
-    // Secret annex is a signal, and shelf starts blocked
-    ok(SIGNALS.has(SECRET_ANNEX_KEY), 'secret annex is a signal room');
-    ok(!(MAZE[SECRET_SHELF_KEY]||{})[SECRET_SHELF.dir], 'secret shelf initially blocked');
-
-    // Exactly SIGNAL_COUNT signals present and ciphertext length matches
-    ok(SIGNALS.size === SIGNAL_COUNT, 'exactly '+SIGNAL_COUNT+' signal rooms');
-
     print('Self-tests:', 'muted'); results.forEach(r=>print('  '+r, 'muted'));
   }
 

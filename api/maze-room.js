@@ -104,6 +104,15 @@ module.exports = async function (req, res) {
     const SECRET = findSecretShelf();
     const SECRET_SHELF = {x:SECRET.x, y:SECRET.y, dir:SECRET.dir};
     const SECRET_ANNEX = {x:SECRET.nx, y:SECRET.ny};
+    // Secret book placement (deterministic, non-overlapping)
+    function pickBookSpot(){
+      const excl = new Set([...used, `${SECRET_SHELF.x},${SECRET_SHELF.y}`, `${SECRET_ANNEX.x},${SECRET_ANNEX.y}`]);
+      const dist=bfsDistancesFrom(START.x, START.y); const pool=[];
+      for(let yy=0;yy<HEIGHT;yy++){ for(let xx=0;xx<WIDTH;xx++){ const k=`${xx},${yy}`; const d=dist[k]; if(d!=null && d>=2 && !excl.has(k)) pool.push({x:xx,y:yy}); } }
+      if(!pool.length) return {x:1,y:2};
+      return pool[Math.floor(rng0()*pool.length)];
+    }
+    const SECRET_BOOK = pickBookSpot();
     const SECRET_SHELF_KEY = `${SECRET_SHELF.x},${SECRET_SHELF.y}`;
     const SECRET_ANNEX_KEY = `${SECRET_ANNEX.x},${SECRET_ANNEX.y}`;
 
@@ -166,7 +175,7 @@ module.exports = async function (req, res) {
       lines.push('A humming book‑return chute yawns to the south. A paper sign: "Mind the drop."');
     } else if (atUnity(x,y)){
       lines.push('You pause. The stacks here align with uncanny symmetry.');
-      lines.push('You feel an overwhelming sense of oneness in this room.');
+      lines.push('You feel an overwhelming sense of **oneness** in this room.');
     }
     if(`${x},${y}`===SECRET_SHELF_KEY){ const dirName={n:'north',e:'east',s:'south',w:'west'}[SECRET_SHELF.dir]; lines.push(`On the ${dirName} side, a shelf shows a conspicuous gap where a volume is missing.`); lines.push('A faint draft slips through the join between shelf and wall.'); }
     if(`${x},${y}`===SECRET_ANNEX_KEY){ lines.push('A narrow secret annex hides behind a movable shelf. Dust lies untouched.'); }
@@ -179,10 +188,17 @@ module.exports = async function (req, res) {
     const exits = exitsMaze(x,y);
     const exitsLine = `Exits: ${exits.map(d=>exitNames[d]).join(', ') || '(none)'}.`;
 
+    const flags = {
+      lost: atLost(x,y), ref: atRef(x,y), math: atMath(x,y), scribe: atScribe(x,y),
+      vault: atVault(x,y), chute: atChute(x,y), unity: atUnity(x,y),
+      secretShelf: (`${x},${y}`===`${SECRET_SHELF.x},${SECRET_SHELF.y}`),
+      secretAnnex: (`${x},${y}`===`${SECRET_ANNEX.x},${SECRET_ANNEX.y}`),
+      secretBook: (`${x},${y}`===`${SECRET_BOOK.x},${SECRET_BOOK.y}`)
+    };
+
     res.setHeader('cache-control', 'no-store');
-    return res.status(200).json({ ok:true, lines, exitsLine, isSignal: !!sig });
+    return res.status(200).json({ ok:true, lines, exitsLine, isSignal: !!sig, exits, flags });
   }catch(e){
     return res.status(500).json({ ok:false, error:'server_error' });
   }
 }
-
