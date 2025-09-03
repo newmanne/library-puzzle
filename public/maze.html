@@ -221,7 +221,6 @@
   const unityCand = cellsAtDistanceRange(START.x, START.y, 2, 6, used);
   const unity = pickOne(unityCand, used) || {x:1, y:HEIGHT-1}; used.add(keyOf(unity));
 
-  const KEY_CARRIER = 'BIBLIOTHECA';
   const LOST_KEY=keyOf(lostFound), REF_KEY=keyOf(refDesk), MATH_KEY=keyOf(maths), SCRIPTOR_KEY=keyOf(scriptor), VAULT_KEY=keyOf(vault), CHUTE_KEY=keyOf(chute), START_KEY=keyOf(START), UNITY_KEY=keyOf(unity);
 
   function atLost(x,y){return `${x},${y}`===LOST_KEY}
@@ -278,7 +277,6 @@
    * Cipher placement  *
    ********************/
   const SIGNAL_COUNT = 12; // fixed number of signal rooms
-  const CIPHER_KEY = KEY_CARRIER; // carried by the card (key only; no auto-decode routes)
   let CIPHERTEXT = [];
   async function loadCipherLetters(){
     try{
@@ -701,7 +699,27 @@
     print("You can't take that.");
     if(atLost(state.x,state.y) && /(card|library card)/.test(what)){ if(state.hasCard){ print('You already pocketed the card.'); } else { state.hasCard=true; print('Taken: a scuffed library card warm from your palm.'); } return;} print("You can't take that."); 
   }
-  function readThing(obj){ clearForLastOnly(); obj=(obj||'').toLowerCase(); if(/^(card|library card)$/.test(obj)){ if(!state.hasCard){ print('You do not seem to have a card.'); return;} print('LIBRARY CARD'); print('  Patron: ______________'); print('  Issued by: Bibliotheca'); print('  Barcode: BIBLIOTHECA'); print('  Note: Card may activate certain catalogue enchantments.'); return; }
+  async function readThing(obj){
+    clearForLastOnly();
+    obj=(obj||'').toLowerCase();
+    if(/^(card|library card)$/.test(obj)){
+      if(!state.hasCard){ print('You do not seem to have a card.'); return; }
+      try{
+        const r = await fetch('/api/maze-card');
+        const data = await r.json();
+        const c = (data && data.card) || { title:'LIBRARY CARD', issuer:'', barcode:'', note:'' };
+        print(c.title || 'LIBRARY CARD');
+        print('  Patron: ______________');
+        if(c.issuer)  print('  Issued by: ' + c.issuer);
+        if(c.barcode) print('  Barcode: ' + c.barcode);
+        if(c.note)    print('  Note: ' + c.note);
+      }catch(_){
+        print('LIBRARY CARD');
+        print('  Patron: ______________');
+        print('  Issued by: —');
+      }
+      return;
+    }
     if((/^(primer|chalkboard|slate|math|mathematics|board)$/).test(obj) && atMath(state.x,state.y)){
       print('Primer on the Vigenère Cipher:');
       print('  1) Ciphertext should be letters A–Z.');
