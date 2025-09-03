@@ -65,11 +65,9 @@ module.exports = async function (req, res) {
     farList.sort((a,b)=>b.d-a.d);
     const vault = farList[0] || {x:WIDTH-1,y:HEIGHT-1};
     const unityCand = cellsAtDistanceRange(START.x, START.y, 2, 6); const unity = pickOne(unityCand) || {x:1, y:HEIGHT-1};
-    // Lost & Found: place above unity, else fallback farther away
-    let lostFound = {x:unity.x, y:(unity.y-1+HEIGHT)%HEIGHT};
-    if((lostFound.x===maths.x && lostFound.y===maths.y) || (lostFound.x===reading.x && lostFound.y===reading.y) || (lostFound.x===vault.x && lostFound.y===vault.y)){
-      const nearLF = cellsAtDistanceRange(START.x, START.y, 4, 6); lostFound = pickOne(nearLF) || lostFound;
-    }
+    // Lost & Found: must be at least 6 steps from Start
+    const farLF = cellsAtDistanceRange(START.x, START.y, 6, WIDTH+HEIGHT);
+    let lostFound = pickOne(farLF) || {x:(START.x+3)%WIDTH,y:(START.y+3)%HEIGHT};
     const chute = (function(){ const out=[]; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const d=distFromStart[`${x},${y}`]; if(d!=null && d>=2 && d<=5) out.push({x,y}); } } return out.length? out[Math.floor(rng0()*out.length)] : {x:WIDTH-2,y:HEIGHT-2}; })();
 
     const lines=[];

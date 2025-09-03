@@ -73,17 +73,9 @@ module.exports = async function (req, res) {
     const vault = farList.find(c=> !used.has(keyOf(c))) || {x:WIDTH-1,y:HEIGHT-1}; used.add(keyOf(vault));
     const chuteCand = cellsAtDistanceRange(START.x, START.y, 2, 5, used); const chute = pickOne(chuteCand, used) || {x:WIDTH-2, y:HEIGHT-2}; used.add(keyOf(chute));
     const unityCand = cellsAtDistanceRange(START.x, START.y, 2, 6, used); const unity = pickOne(unityCand, used) || {x:1, y:HEIGHT-1}; used.add(keyOf(unity));
-    // Place Lost & Found relative to Unity: prefer directly above Unity, otherwise farther away
-    let lostFound = {x: (unity.x), y: ((unity.y - 1 + HEIGHT) % HEIGHT)};
-    if(used.has(keyOf(lostFound))){
-      // try neighbors around unity
-      const neigh=[{x:unity.x+1,y:unity.y},{x:unity.x-1,y:unity.y},{x:unity.x,y:unity.y+1}].map(p=>({x:(p.x+WIDTH)%WIDTH,y:(p.y+HEIGHT)%HEIGHT}));
-      const cand = neigh.find(p=> !used.has(keyOf(p)) ) || null;
-      if(cand) lostFound=cand; else {
-        const farLF = cellsAtDistanceRange(START.x, START.y, 4, 6, used);
-        lostFound = pickOne(farLF, used) || lostFound;
-      }
-    }
+    // Place Lost & Found at least 6 steps from Start
+    const farLF = cellsAtDistanceRange(START.x, START.y, 6, WIDTH+HEIGHT, used);
+    const lostFound = pickOne(farLF, used) || {x: (START.x+3)%WIDTH, y:(START.y+3)%HEIGHT};
     used.add(keyOf(lostFound));
     const LOST_KEY=keyOf(lostFound), MATH_KEY=keyOf(maths), READ_KEY=keyOf(reading), VAULT_KEY=keyOf(vault), CHUTE_KEY=keyOf(chute), START_KEY=keyOf(START), UNITY_KEY=keyOf(unity);
     const atLost=(xx,yy)=> `${xx},${yy}`===LOST_KEY;
