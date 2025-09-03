@@ -275,16 +275,7 @@
    * Cipher placement  *
    ********************/
   const SIGNAL_COUNT = 12; // fixed number of signal rooms
-  let CIPHERTEXT = [];
-  async function loadCipherLetters(){
-    try{
-      const r = await fetch('/api/maze-letters');
-      const data = await r.json();
-      if(data && data.letters && Array.isArray(data.letters)){
-        CIPHERTEXT = data.letters;
-      }
-    }catch(_){ CIPHERTEXT = []; }
-  }
+  // No client ciphertext; letters handled server-side
 
   function chooseUniqueCells(count, banned) { 
     const chosen=new Set(), cells=[];
@@ -309,9 +300,8 @@
     if(signalCells.length>=SIGNAL_COUNT){ signalCells[signalCells.length-1] = {x:SECRET_ANNEX.x, y:SECRET_ANNEX.y}; }
     else { signalCells.push({x:SECRET_ANNEX.x, y:SECRET_ANNEX.y}); }
   }
-  let SIGNALS = new Map();
-  function buildSignals(){ SIGNALS = new Map(signalCells.map((c,i)=>[keyOf(c), {index:i+1, letter:CIPHERTEXT[i]}])); }
-  function signalHere(x,y){ return SIGNALS.get(`${x},${y}`) || null; }
+  // No global signals client-side in server mode
+  function signalHere(x,y){ return null; }
 
   function valueToBits(v){ return [1,2,4,8,16].map(bit=> (v & bit)?1:0); }
   function featuresForLetter(letter){ const v=A2I(letter); const [b1,b2,b3,b4,b5]=valueToBits(v); return { ukColour: !!b1, ukCatalogue: !!b2, badPlural: !!b3, hyphenEndcap: !!b4, enDash: !!b5 }; }
@@ -475,7 +465,22 @@
    ********************/
   
 
-  function roomDescriptor(x,y, normalized){
+  async function roomDescriptor(x,y, normalized){
+    if (SERVER_MODE){
+      const params = new URLSearchParams({ x:String(x), y:String(y), seed:String(seedParam), normalized:String(!!normalized) });
+      try{
+        const r = await fetch('/api/maze-room?'+params.toString());
+        const data = await r.json();
+        lastRoom = data || null;
+        const lines = (data && data.lines) || ['You are somewhere in the stacks.'];
+        const exitsLine = (data && data.exitsLine) || 'Exits: (unknown).';
+        return { lines, exitsLine, features: {ukColour:false, ukCatalogue:false, badPlural:false, hyphenEndcap:false, enDash:false}, sig: null };
+      }catch(_){
+        const lines = ['You are somewhere in the stacks.'];
+        const exitsLine = 'Exits: (unknown).';
+        return { lines, exitsLine, features: {ukColour:false, ukCatalogue:false, badPlural:false, hyphenEndcap:false, enDash:false}, sig: null };
+      }
+    }
     const localSeed = (x*2654435761 ^ y*1597334677 ^ SEED) >>> 0; const r = mulberry32(localSeed);
 
     const sig = signalHere(x,y);
@@ -612,7 +617,7 @@
    ********************/
   function asciiMazeLines(){
     const lines=[];
-    const isSignal = (x,y)=> !!signalHere(x,y);
+    const isSignal = (x,y)=> false; // server-mode: do not mark signals on debug map
     const baseChar=(x,y)=>{
       if(atStart(x,y)) return 'S';
       if(atScribe(x,y)) return 'T';
@@ -651,12 +656,12 @@
   /********************
    * Core actions      *
    ********************/
-  function look(){
-    const d = roomDescriptor(state.x, state.y, state.normalized);
+  async function look(){
+    const d = await roomDescriptor(state.x, state.y, state.normalized);
     d.lines.forEach(t=>print(t));
     print(d.exitsLine, 'exits');
     if(revealMapToggle.checked){ print(''); printMaze(); }
-    if (debugToggle.checked){ const sig = signalHere(state.x, state.y); const ex = exitsMaze(state.x,state.y).join(''); print(`[debug] coords=${state.x},${state.y} sig=${sig?sig.index+'('+sig.letter+')':'-'} exits=${ex}`, 'muted'); }
+    if (debugToggle.checked){ const ex = exitsMaze(state.x,state.y).join(''); const sigMark = (lastRoom && lastRoom.isSignal)? '*' : '-'; print(`[debug] coords=${state.x},${state.y} sig=${sigMark} exits=${ex}`, 'muted'); }
   }
 
   function move(dir){
@@ -664,12 +669,12 @@
 
     // Chute teleport for disorientation
     if (atChute(state.x,state.y) && dir==='s'){
-      const rx=Math.floor(rng0()*WIDTH), ry=Math.floor(rng0()*HEIGHT); clearForLastOnly(); print('You drop into the return chute…'); state.x=rx; state.y=ry; state.steps++; visitTitle=null; look(); return; }
+      const rx=Math.floor(rng0()*WIDTH), ry=Math.floor(rng0()*HEIGHT); clearForLastOnly(); print('You drop into the return chute…'); state.x=rx; state.y=ry; state.steps++; visitTitle=null; await look(); return; }
 
     const nb = neighborMaze(state.x, state.y, dir);
     clearForLastOnly();
     if(nb.blocked){ print('Towering shelves block your way.'); return; }
-    state.x=nb.x; state.y=nb.y; state.steps++; visitTitle=null; look();
+    state.x=nb.x; state.y=nb.y; state.steps++; visitTitle=null; await look();
   }
 
   function openThing(what){ clearForLastOnly(); if(!what){ print('Open what?'); return; } if(atLost(state.x,state.y) && /(drawer|lost|found|counter)/.test(what)){ print('You slide the shallow drawer open. Inside lies a scuffed library card.'); return; } print("It doesn't seem to open."); }
@@ -890,7 +895,7 @@
 
     // Exactly SIGNAL_COUNT signals present and ciphertext length matches
     ok(SIGNALS.size === SIGNAL_COUNT, 'exactly '+SIGNAL_COUNT+' signal rooms');
-    ok(CIPHERTEXT.length === SIGNAL_COUNT, 'ciphertext length = '+SIGNAL_COUNT);
+    // ciphertext length check removed in server mode
 
     print('Self-tests:', 'muted'); results.forEach(r=>print('  '+r, 'muted'));
   }
@@ -898,8 +903,7 @@
   // Boot (robust)
   async function boot(){
     try{
-      await loadCipherLetters();
-      buildSignals();
+      // Server mode: no ciphertext/signals loaded on client
       intro();
       if(runSelfTestsParam){ runSelfTests(); }
       const form = document.getElementById('cmdbar');
