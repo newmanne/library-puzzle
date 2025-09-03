@@ -63,7 +63,6 @@ module.exports = async function (req, res) {
     function cellsAtDistanceRange(sx,sy,min,max,excludeSet){ const dist=bfsDistancesFrom(sx,sy); const out=[]; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const k=`${x},${y}`; const d=dist[k]; if(d!=null && d>=min && d<=max && !excludeSet.has(k)) out.push({x,y}); } } return out; }
     function pickOne(list, used){ if(list.length===0) return null; const r = Math.floor(rng0()*list.length); let chosen=list[r]; let tries=0; while(used.has(keyOf(chosen)) && tries<list.length){ chosen=list[(r+tries)%list.length]; tries++; } return used.has(keyOf(chosen))?null:chosen; }
     const used=new Set([keyOf(START)]);
-    const nearLF = cellsAtDistanceRange(START.x, START.y, 3, 5, used); const lostFound = pickOne(nearLF, used) || {x:1,y:0}; used.add(keyOf(lostFound));
     const midMath = cellsAtDistanceRange(START.x, START.y, 2, 4, used); const maths = pickOne(midMath, used) || {x:2,y:0}; used.add(keyOf(maths));
     // Reading room: a comfy chair and a binary treatise
     const midRead = cellsAtDistanceRange(START.x, START.y, 2, 6, used); const reading = pickOne(midRead, used) || {x:2,y:1}; used.add(keyOf(reading));
@@ -74,6 +73,18 @@ module.exports = async function (req, res) {
     const vault = farList.find(c=> !used.has(keyOf(c))) || {x:WIDTH-1,y:HEIGHT-1}; used.add(keyOf(vault));
     const chuteCand = cellsAtDistanceRange(START.x, START.y, 2, 5, used); const chute = pickOne(chuteCand, used) || {x:WIDTH-2, y:HEIGHT-2}; used.add(keyOf(chute));
     const unityCand = cellsAtDistanceRange(START.x, START.y, 2, 6, used); const unity = pickOne(unityCand, used) || {x:1, y:HEIGHT-1}; used.add(keyOf(unity));
+    // Place Lost & Found relative to Unity: prefer directly above Unity, otherwise farther away
+    let lostFound = {x: (unity.x), y: ((unity.y - 1 + HEIGHT) % HEIGHT)};
+    if(used.has(keyOf(lostFound))){
+      // try neighbors around unity
+      const neigh=[{x:unity.x+1,y:unity.y},{x:unity.x-1,y:unity.y},{x:unity.x,y:unity.y+1}].map(p=>({x:(p.x+WIDTH)%WIDTH,y:(p.y+HEIGHT)%HEIGHT}));
+      const cand = neigh.find(p=> !used.has(keyOf(p)) ) || null;
+      if(cand) lostFound=cand; else {
+        const farLF = cellsAtDistanceRange(START.x, START.y, 4, 6, used);
+        lostFound = pickOne(farLF, used) || lostFound;
+      }
+    }
+    used.add(keyOf(lostFound));
     const LOST_KEY=keyOf(lostFound), MATH_KEY=keyOf(maths), READ_KEY=keyOf(reading), VAULT_KEY=keyOf(vault), CHUTE_KEY=keyOf(chute), START_KEY=keyOf(START), UNITY_KEY=keyOf(unity);
     const atLost=(xx,yy)=> `${xx},${yy}`===LOST_KEY;
     const atRef=(xx,yy)=> `${xx},${yy}`===REF_KEY;
@@ -143,7 +154,7 @@ module.exports = async function (req, res) {
 
     const space   = (forced? forced.space : (r()<0.5)) ? ' ' : '  '
     const light  = (forced? forced.light : (r()<0.5)) ? 'flickering' : 'flickring';   
-    const dust = (forced? forced.dust : (r()<0.5)) ? 'dust motes' : 'dust‑motes'; 
+    const dust = (forced? forced.dust : (r()<0.5)) ? 'Dust motes' : 'Dust‑motes'; 
     const color = (forced? forced.color : (r()<0.5)) ? 'colour' : 'color';
     const quotes = (forced? forced.quotes : (r()<0.5)) ? '"Restricted Section"' : '“Restricted Section”';
 

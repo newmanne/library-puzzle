@@ -58,7 +58,6 @@ module.exports = async function (req, res) {
     // Place key specials deterministically (mirror of room endpoint)
     const cellsAtDistanceRange=(sx,sy,min,max)=>{ const out=[]; for(let yy=0;yy<HEIGHT;yy++){ for(let xx=0;xx<WIDTH;xx++){ const k=`${xx},${yy}`; const d=distFromStart[k]; if(d!=null && d>=min && d<=max) out.push({x:xx,y:yy}); } } return out; };
     const pickOne=(list)=> list && list.length ? list[Math.floor(rng0()*list.length)] : null;
-    const nearLF = cellsAtDistanceRange(START.x, START.y, 1, 2); const lostFound = pickOne(nearLF) || {x:1,y:0};
     const midMath = cellsAtDistanceRange(START.x, START.y, 2, 4); const maths = pickOne(midMath) || {x:2,y:0};
     const midRead = cellsAtDistanceRange(START.x, START.y, 2, 6); const reading = pickOne(midRead) || {x:2,y:1};
     // Reference room removed
@@ -66,6 +65,11 @@ module.exports = async function (req, res) {
     farList.sort((a,b)=>b.d-a.d);
     const vault = farList[0] || {x:WIDTH-1,y:HEIGHT-1};
     const unityCand = cellsAtDistanceRange(START.x, START.y, 2, 6); const unity = pickOne(unityCand) || {x:1, y:HEIGHT-1};
+    // Lost & Found: place above unity, else fallback farther away
+    let lostFound = {x:unity.x, y:(unity.y-1+HEIGHT)%HEIGHT};
+    if((lostFound.x===maths.x && lostFound.y===maths.y) || (lostFound.x===reading.x && lostFound.y===reading.y) || (lostFound.x===vault.x && lostFound.y===vault.y)){
+      const nearLF = cellsAtDistanceRange(START.x, START.y, 4, 6); lostFound = pickOne(nearLF) || lostFound;
+    }
     const chute = (function(){ const out=[]; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const d=distFromStart[`${x},${y}`]; if(d!=null && d>=2 && d<=5) out.push({x,y}); } } return out.length? out[Math.floor(rng0()*out.length)] : {x:WIDTH-2,y:HEIGHT-2}; })();
 
     const lines=[];

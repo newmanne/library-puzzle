@@ -103,12 +103,20 @@ module.exports = async function (req, res) {
     const cellsAtDistanceRange=(sx,sy,min,max)=>{ const out=[]; for(let yy=0;yy<HEIGHT;yy++){ for(let xx=0;xx<WIDTH;xx++){ const k=`${xx},${yy}`; const d=distFromStart[k]; if(d!=null && d>=min && d<=max) out.push({x:xx,y:yy}); } } return out; };
     // Place key specials similarly to room endpoint
     const used2 = new Set([`${START.x},${START.y}`]);
-    const nearLF = cellsAtDistanceRange(START.x, START.y, 1, 2); const lostFound = pickOne(nearLF) || {x:1,y:0}; used2.add(`${lostFound.x},${lostFound.y}`);
+    // Compute unity first for relative placement of Lost & Found
     const midMath = cellsAtDistanceRange(START.x, START.y, 2, 4); const maths = pickOne(midMath) || {x:2,y:0}; used2.add(`${maths.x},${maths.y}`);
     const midRead = cellsAtDistanceRange(START.x, START.y, 2, 6); const reading = pickOne(midRead) || {x:2,y:1}; used2.add(`${reading.x},${reading.y}`);
     const vault = (function(){ for(const c of farList){ const k=`${c.x},${c.y}`; if(!used2.has(k)) return {x:c.x,y:c.y}; } return {x:WIDTH-1,y:HEIGHT-1}; })(); used2.add(`${vault.x},${vault.y}`);
     const chuteCand = cellsAtDistanceRange(START.x, START.y, 2, 5);
     const chute = pickOne(chuteCand) || {x:WIDTH-2, y:HEIGHT-2};
+    const unityCand = cellsAtDistanceRange(START.x, START.y, 2, 6); const unity = pickOne(unityCand) || {x:1, y:HEIGHT-1};
+    // Lost & Found above unity, else fallback farther range
+    let lostFound = {x:unity.x, y:(unity.y-1+HEIGHT)%HEIGHT};
+    if(used2.has(`${lostFound.x},${lostFound.y}`)){
+      const farLF = cellsAtDistanceRange(START.x, START.y, 4, 6);
+      lostFound = pickOne(farLF) || lostFound;
+    }
+    used2.add(`${lostFound.x},${lostFound.y}`);
 
     if(dir==='s' && x===chute.x && y===chute.y){
       // Teleport through the chute to a normal (non-special, non-signal) room
