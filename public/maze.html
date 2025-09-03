@@ -355,23 +355,18 @@
 
   function help(){ clearForLastOnly();
     print('Commands:');
-    print('  n/e/s/w — move (chain with ";" e.g., n;n;e;look)');
+    print('  n/e/s/w — move');
     print('  look — re-describe this aisle');
-    print('  open <drawer> — at Lost & Found');
-    print('  take <card|book> — pick up the library card (keyword) or the slim volume "The Secret Passage"');
-    print('  read <card|primer|plaque|librarian> — lore & instructions');
-    print('  present card — at the Reference Desk (flavor hint only)');
-    print('  pull book — reveals a whimsical title; if it\'s a signal room, the title hides an index word');
+    print('  pull book — grab a book from the library shelf');
     print('  put/insert/place book — at the gapped shelf, opens a hidden passage');
     print('  reset — reset state to the start');
     print('  say <WORD> — at the Vault, speak the final word');
-    print('  maze — print an ASCII map (debug). Signals are marked as *.');
+    print('  maze — print an ASCII map (debug) with special rooms');
     print('  selftest — run internal checks');
-    print('  settings — open settings; map — declines politely; quit — clears the screen');
+    print('  settings — open settings; quit — clears the screen');
   }
 
   function parse(cmd){ cmd = (cmd||'').trim(); if(!cmd) return; const raw=cmd; cmd=cmd.toLowerCase();
-    if(cmd.includes(';')){ const parts=cmd.split(';').map(s=>s.trim()).filter(Boolean); let i=0; const runNext=()=>{ if(i<parts.length){ issue(parts[i++], true, runNext); } }; runNext(); return; }
     if(['n','north'].includes(cmd)) return move('n');
     if(['e','east'].includes(cmd)) return move('e');
     if(['s','south'].includes(cmd)) return move('s');
@@ -382,7 +377,7 @@
     
     if(cmd==='maze'){ clearForLastOnly(); printMaze(); return; }
     if(cmd==='selftest'){ clearForLastOnly(); runSelfTests(); return; }
-    if(cmd==='map'){ clearForLastOnly(); print('You try to sketch a plan, but you can\'t seem to draw a reliable map.'); return; }
+    
     if(cmd==='quit'||cmd==='restart'||cmd==='reset'){ view.innerHTML=''; visitTitle=null; lastRoom=null; state.x=0; state.y=0; state.steps=0; state.hasCard=false; state.normalized=false; state.inVault=false; state.hasSecretBook=false; state.secretOpen=false; intro(); return; }
 
     if(cmd.startsWith('open ')) return openThing(raw.slice(5));
