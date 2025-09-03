@@ -268,8 +268,8 @@
     if((/^(primer|chalkboard|slate|math|mathematics|board)$/).test(obj) && lastRoom && lastRoom.flags && lastRoom.flags.math){
       print('Primer on the Vigenère Cipher:');
       print('  1) Ciphertext should be letters A–Z.');
-      print('  2) You will need a KEY to decrypt.');
-      print('  3) Encrypt/decrypt by shifting each letter in the ciphertext by the keyword letter.');
+      print('  2) You will need a KEY to decrypt. You cannot hope to decrypt without a KEY');
+      print('  3) Encrypt/decrypt by shifting each letter in the ciphertext by the keyword letter. Many online tools exist...');   
       
       return;
     }
@@ -278,14 +278,10 @@
       print('  "When you have deciphered the library\'s whisper, speak it here: say <WORD>."');
       return;
     }
-    if((/^(librarian|desk|reference|reference desk)$/).test(obj) && lastRoom && lastRoom.flags && lastRoom.flags.ref){
-      print('The librarian murmurs:');
-      print('  "Titles sometimes hide an **order**. Cards, a **key**."');
-      return;
-    }
+    
     print('It is mostly illegible.'); }
 
-  function presentCard(){ clearForLastOnly(); if(!state.hasCard){ print('You have no card to present.'); return; } print('The librarian stamps your card and nods. "You will find that some titles are more helpful than others."'); }
+  
 
   function normalizeCmd(arg){ const a=(arg||'').trim().toLowerCase(); if(a==='on'){ state.normalized=true; } else if(a==='off'){ state.normalized=false; } else { state.normalized=!state.normalized; } clearForLastOnly(); print('Normalization ' + (state.normalized?'on.':'off.')); look(); }
 
@@ -384,19 +380,14 @@
     if(cmd.startsWith('open ')) return openThing(raw.slice(5));
     if(cmd.startsWith('take ')) return takeThing(raw.slice(5));
     if(cmd.startsWith('read ')) return readThing(raw.slice(5));
-    if(cmd==='present card') return presentCard();
+    
     
     if(cmd==='pull book' || cmd==='pull' || cmd==='browse' || cmd==='check shelf' || cmd==='inspect book' || cmd==='take book') return pullBook();
     
     if(cmd.startsWith('say ')) return sayWord(raw.slice(4));
     if(cmd==='put book' || cmd==='insert book' || cmd==='place book' || cmd==='use book' || cmd==='return book') return placeBook();
 
-    if(cmd.startsWith('ask ')){
-      if(!(lastRoom && lastRoom.flags && lastRoom.flags.ref)){ clearForLastOnly(); print('No one answers.'); return; }
-      const about = raw.slice(4).trim();
-      if(/(cipher|vigenere|key|card|keyword|index|title|maze)/i.test(about)){ clearForLastOnly(); print('The librarian whispers: "The **issuer** names a key; the **title** names a place in line. Those who love maps may say ‘maze’."'); return; }
-      clearForLastOnly(); print('The librarian raises an eyebrow and waits.'); return;
-    }
+    
 
     clearForLastOnly();
     print(`I don't understand "${cmd}".`);

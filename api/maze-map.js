@@ -60,7 +60,7 @@ module.exports = async function (req, res) {
     const pickOne=(list)=> list && list.length ? list[Math.floor(rng0()*list.length)] : null;
     const nearLF = cellsAtDistanceRange(START.x, START.y, 1, 2); const lostFound = pickOne(nearLF) || {x:1,y:0};
     const midMath = cellsAtDistanceRange(START.x, START.y, 2, 4); const maths = pickOne(midMath) || {x:2,y:0};
-    const midRef  = cellsAtDistanceRange(START.x, START.y, 3, 6); const refDesk = pickOne(midRef) || {x:3,y:0};
+    // Reference room removed
     let farList=[]; for(let yy=0;yy<HEIGHT;yy++){ for(let xx=0;xx<WIDTH;xx++){ const d=distFromStart[`${xx},${yy}`]; if(d!=null) farList.push({x:xx,y:yy,d}); } }
     farList.sort((a,b)=>b.d-a.d);
     const vault = farList[0] || {x:WIDTH-1,y:HEIGHT-1};
@@ -71,7 +71,6 @@ module.exports = async function (req, res) {
     const baseChar=(x,y)=>{
       if(x===START.x && y===START.y) return 'S';
       if(x===lostFound.x && y===lostFound.y) return 'F';
-      if(x===refDesk.x && y===refDesk.y) return 'R';
       if(x===maths.x && y===maths.y) return 'A';
       if(x===vault.x && y===vault.y) return 'V';
       if(x===chute.x && y===chute.y) return 'C';
@@ -90,7 +89,7 @@ module.exports = async function (req, res) {
       lines.push(mid);
     }
     let bottom='+'; for(let x=0;x<WIDTH;x++){ const openSedge = (MAZE[`${x},${HEIGHT-1}`]||{}).s; bottom += (openSedge? '   ' : '---') + '+'; } lines.push(bottom);
-    lines.push('Legend: @ you, S start, F lost&found, R reference, A mathematics, V vault, C chute, O oneness. Wrap gaps show corridors.');
+    lines.push('Legend: @ you, S start, F lost&found, A mathematics, V vault, C chute, O oneness. Wrap gaps show corridors.');
 
     res.setHeader('cache-control', 'no-store');
     return res.status(200).json({ ok:true, lines });

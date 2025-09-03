@@ -105,7 +105,6 @@ module.exports = async function (req, res) {
     const used2 = new Set([`${START.x},${START.y}`]);
     const nearLF = cellsAtDistanceRange(START.x, START.y, 1, 2); const lostFound = pickOne(nearLF) || {x:1,y:0}; used2.add(`${lostFound.x},${lostFound.y}`);
     const midMath = cellsAtDistanceRange(START.x, START.y, 2, 4); const maths = pickOne(midMath) || {x:2,y:0}; used2.add(`${maths.x},${maths.y}`);
-    const midRef  = cellsAtDistanceRange(START.x, START.y, 3, 6); const refDesk = pickOne(midRef) || {x:3,y:0}; used2.add(`${refDesk.x},${refDesk.y}`);
     const vault = (function(){ for(const c of farList){ const k=`${c.x},${c.y}`; if(!used2.has(k)) return {x:c.x,y:c.y}; } return {x:WIDTH-1,y:HEIGHT-1}; })(); used2.add(`${vault.x},${vault.y}`);
     const chuteCand = cellsAtDistanceRange(START.x, START.y, 2, 5);
     const chute = pickOne(chuteCand) || {x:WIDTH-2, y:HEIGHT-2};
@@ -113,7 +112,7 @@ module.exports = async function (req, res) {
     if(dir==='s' && x===chute.x && y===chute.y){
       // Teleport through the chute to a normal (non-special, non-signal) room
       const banned = new Set();
-      const specials = [lostFound, refDesk, maths, vault, unity, SECRET, {x:SECRET.nx, y:SECRET.ny}, chute];
+      const specials = [lostFound, maths, vault, unity, SECRET, {x:SECRET.nx, y:SECRET.ny}, chute];
       for(const s of specials){ banned.add(`${s.x},${s.y}`); }
 
       // Compute signal rooms (server-side placement, without exposing letters)

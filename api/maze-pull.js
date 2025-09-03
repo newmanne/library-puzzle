@@ -91,7 +91,6 @@ module.exports = async function (req, res) {
     // Forbid pulling in special rooms
     const isSpecial = (
       (x===lostFound.x && y===lostFound.y) ||
-      (x===refDesk.x && y===refDesk.y)   ||
       (x===maths.x && y===maths.y)       ||
       (x===vault.x && y===vault.y)       ||
       (x===unity.x && y===unity.y)       ||
