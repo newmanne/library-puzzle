@@ -8,7 +8,7 @@ module.exports = async function (req, res) {
     const x = parseInt(q.x ?? '0', 10) || 0;
     const y = parseInt(q.y ?? '0', 10) || 0;
     const seedStr = String(q.seed ?? 'RESTRICTED-STACKS-VIG');
-    const normalized = String(q.normalized ?? 'false') === 'true';
+    const normalized = false;
 
     // Constants
     const WIDTH = 10, HEIGHT = 8;
@@ -59,25 +59,24 @@ module.exports = async function (req, res) {
     function bfsDistancesFrom(sx,sy){ const q=[[sx,sy]], dist={}; dist[`${sx},${sy}`]=0; let i=0; while(i<q.length){ const [x,y]=q[i++]; const d=dist[`${x},${y}`]; for(const dir of exitsMaze(x,y)){ const nx=(x+DX[dir]+WIDTH)%WIDTH, ny=(y+DY[dir]+HEIGHT)%HEIGHT; const k=`${nx},${ny}`; if(dist[k]==null){ dist[k]=d+1; q.push([nx,ny]); } } } return dist; }
     const keyOf=(o)=> `${o.x},${o.y}`;
     const START = {x:0, y:0};
-    const FAR = (function(){ const dist=bfsDistancesFrom(START.x, START.y); let best={x:START.x,y:START.y,d:-1}; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const d=dist[`${x},${y}`]; if(d!=null && d>best.d){ best={x,y,d}; } } } return best; })();
-    const scriptor = {x:FAR.x, y:FAR.y};
+    // Scriptorium removed
     function cellsAtDistanceRange(sx,sy,min,max,excludeSet){ const dist=bfsDistancesFrom(sx,sy); const out=[]; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const k=`${x},${y}`; const d=dist[k]; if(d!=null && d>=min && d<=max && !excludeSet.has(k)) out.push({x,y}); } } return out; }
     function pickOne(list, used){ if(list.length===0) return null; const r = Math.floor(rng0()*list.length); let chosen=list[r]; let tries=0; while(used.has(keyOf(chosen)) && tries<list.length){ chosen=list[(r+tries)%list.length]; tries++; } return used.has(keyOf(chosen))?null:chosen; }
-    const used=new Set([keyOf(START), keyOf(scriptor)]);
+    const used=new Set([keyOf(START)]);
     const nearLF = cellsAtDistanceRange(START.x, START.y, 1, 2, used); const lostFound = pickOne(nearLF, used) || {x:1,y:0}; used.add(keyOf(lostFound));
     const midMath = cellsAtDistanceRange(START.x, START.y, 2, 4, used); const maths = pickOne(midMath, used) || {x:2,y:0}; used.add(keyOf(maths));
     const midRef  = cellsAtDistanceRange(START.x, START.y, 3, 6, used); const refDesk = pickOne(midRef, used) || {x:3,y:0}; used.add(keyOf(refDesk));
     const distFromStart = bfsDistancesFrom(START.x, START.y);
     let farList=[]; for(let yy=0;yy<HEIGHT;yy++){ for(let xx=0;xx<WIDTH;xx++){ const d=distFromStart[`${xx},${yy}`]; if(d!=null) farList.push({x:xx,y:yy,d}); } }
     farList.sort((a,b)=>b.d-a.d);
-    const vault = farList.find(c=> keyOf(c)!==keyOf(scriptor) && !used.has(keyOf(c))) || {x:WIDTH-1,y:HEIGHT-1}; used.add(keyOf(vault));
+    const vault = farList.find(c=> !used.has(keyOf(c))) || {x:WIDTH-1,y:HEIGHT-1}; used.add(keyOf(vault));
     const chuteCand = cellsAtDistanceRange(START.x, START.y, 2, 5, used); const chute = pickOne(chuteCand, used) || {x:WIDTH-2, y:HEIGHT-2}; used.add(keyOf(chute));
     const unityCand = cellsAtDistanceRange(START.x, START.y, 2, 6, used); const unity = pickOne(unityCand, used) || {x:1, y:HEIGHT-1}; used.add(keyOf(unity));
-    const LOST_KEY=keyOf(lostFound), REF_KEY=keyOf(refDesk), MATH_KEY=keyOf(maths), SCRIPTOR_KEY=keyOf(scriptor), VAULT_KEY=keyOf(vault), CHUTE_KEY=keyOf(chute), START_KEY=keyOf(START), UNITY_KEY=keyOf(unity);
+    const LOST_KEY=keyOf(lostFound), REF_KEY=keyOf(refDesk), MATH_KEY=keyOf(maths), VAULT_KEY=keyOf(vault), CHUTE_KEY=keyOf(chute), START_KEY=keyOf(START), UNITY_KEY=keyOf(unity);
     const atLost=(xx,yy)=> `${xx},${yy}`===LOST_KEY;
     const atRef=(xx,yy)=> `${xx},${yy}`===REF_KEY;
     const atMath=(xx,yy)=> `${xx},${yy}`===MATH_KEY;
-    const atScribe=(xx,yy)=> `${xx},${yy}`===SCRIPTOR_KEY;
+    // scriptorium removed
     const atVault=(xx,yy)=> `${xx},${yy}`===VAULT_KEY;
     const atChute=(xx,yy)=> `${xx},${yy}`===CHUTE_KEY;
     const atStart=(xx,yy)=> `${xx},${yy}`===START_KEY;
@@ -159,7 +158,7 @@ module.exports = async function (req, res) {
     const isLost = (x===lostFound.x && y===lostFound.y);
     const isRef = (x===refDesk.x && y===refDesk.y);
     const isMath= (x===maths.x && y===maths.y);
-    const isScribe = (x===scriptor.x && y===scriptor.y);
+    const isScribe = false;
     const isVault = (x===vault.x && y===vault.y);
     const isChute = (x===chute.x && y===chute.y);
     const isUnity = (x===unity.x && y===unity.y);
@@ -176,9 +175,6 @@ module.exports = async function (req, res) {
     } else if (isMath){
       lines.push('You enter a mathematics alcove. Chalk dust hangs in the colorless light.');
       lines.push('Diagrams sprawl over a slate. You might <read primer>.');
-    } else if (isScribe){
-      lines.push('A scriptorium desk hums with a copying charm.');
-      lines.push('You can <normalize on> to quiet the typographical noise, or <normalize off>.');
     } else if (isVault){
       lines.push('An ironbound door dominates the west wall.');
       lines.push('A brass plaque reads: "When you have decrypted the library\'s whisper, <say WORD>."');
@@ -191,19 +187,19 @@ module.exports = async function (req, res) {
     if(isSecretShelf){ const dirName={n:'north',e:'east',s:'south',w:'west'}[SECRET_SHELF.dir]; lines.push(`On the ${dirName} side, a shelf shows a conspicuous gap where a volume is missing.`); lines.push('A faint draft slips through the join between shelf and wall.'); }
     if(isSecretAnnex){ lines.push('A narrow secret annex hides behind a movable shelf. Dust lies untouched.'); }
 
-    const anySpecial = (isLost||isRef||isMath||isScribe||isVault||isChute||isSecretShelf||isSecretAnnex||isSecretBook);
+    const anySpecial = (isLost||isRef||isMath||isVault||isChute||isSecretShelf||isSecretAnnex||isSecretBook);
     if(!anySpecial || isUnity){
       lines.push(`You are in the library ${aisles} — twisty little corridors, all alike${comma}${space}lit by ${light} lamps.`);
       lines.push(`The ${shelf} smell faintly of ${smell} and ${cat}. ${dust} drift in the ${colour}less light.`);
       lines.push(`At the ${endcap}, a painted placard whispers ${quotes}${dash}${hush}.`);
     }
-    if (normalized){ lines.push(`[normalized] features → ${colour}/${cat}/${shelf}/${endcap}/${dash}`); }
+    // normalized output removed
 
     const exitNames = {n:'north', e:'east', s:'south', w:'west'};
     const exits = exitsMaze(x,y);
     const exitsLine = `Exits: ${exits.map(d=>exitNames[d]).join(', ') || '(none)'}.`;
 
-    const flags = { lost:isLost, ref:isRef, math:isMath, scribe:isScribe, vault:isVault, chute:isChute, unity:isUnity, secretShelf:isSecretShelf, secretAnnex:isSecretAnnex, secretBook:isSecretBook };
+    const flags = { lost:isLost, ref:isRef, math:isMath, vault:isVault, chute:isChute, unity:isUnity, secretShelf:isSecretShelf, secretAnnex:isSecretAnnex, secretBook:isSecretBook };
 
     res.setHeader('cache-control', 'no-store');
     return res.status(200).json({ ok:true, lines, exitsLine, isSignal: !!sig, exits, flags });

@@ -55,18 +55,10 @@ module.exports = async function (req, res) {
     function bfsDistancesFrom(sx,sy){ const q=[[sx,sy]], dist={}; dist[`${sx},${sy}`]=0; let i=0; while(i<q.length){ const [x,y]=q[i++]; const d=dist[`${x},${y}`]; for(const dir of exitsMaze(x,y)){ const nx=(x+DX[dir]+WIDTH)%WIDTH, ny=(y+DY[dir]+HEIGHT)%HEIGHT; const k=`${nx},${ny}`; if(dist[k]==null){ dist[k]=d+1; q.push([nx,ny]); } } } return dist; }
     const START = {x:0, y:0};
     const distFromStart = bfsDistancesFrom(START.x, START.y);
-    let farList=[]; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const d=distFromStart[`${x},${y}`]; if(d!=null) farList.push({x,y,d}); } }
-    farList.sort((a,b)=>b.d-a.d);
-    const scriptor = farList[0] || START;
     const chute = (function(){ const out=[]; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const d=distFromStart[`${x},${y}`]; if(d!=null && d>=2 && d<=5) out.push({x,y}); } } return out.length? out[Math.floor(rng0()*out.length)] : {x:WIDTH-2,y:HEIGHT-2}; })();
 
     const lines=[];
-    const baseChar=(x,y)=>{
-      if(x===START.x && y===START.y) return 'S';
-      if(x===scriptor.x && y===scriptor.y) return 'T';
-      // Other specials omitted for simplicity here; server room describes them
-      return ' ';
-    };
+    const baseChar=(x,y)=> (x===START.x && y===START.y) ? 'S' : ' ';
     for(let y=0;y<HEIGHT;y++){
       let top='+'; for(let x=0;x<WIDTH;x++){ const openN = (MAZE[`${x},${y}`]||{}).n; top += (openN? '   ' : '---') + '+'; } lines.push(top);
       let mid=''; for(let x=0;x<WIDTH;x++){
@@ -79,7 +71,7 @@ module.exports = async function (req, res) {
       lines.push(mid);
     }
     let bottom='+'; for(let x=0;x<WIDTH;x++){ const openSedge = (MAZE[`${x},${HEIGHT-1}`]||{}).s; bottom += (openSedge? '   ' : '---') + '+'; } lines.push(bottom);
-    lines.push('Legend: @ you, S start, T scriptorium. Wrap gaps show corridors.');
+    lines.push('Legend: @ you, S start. Wrap gaps show corridors.');
 
     res.setHeader('cache-control', 'no-store');
     return res.status(200).json({ ok:true, lines });
@@ -87,4 +79,3 @@ module.exports = async function (req, res) {
     return res.status(500).json({ ok:false, error:'server_error' });
   }
 }
-

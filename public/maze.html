@@ -122,8 +122,8 @@
   /********************
    * Room description *
    ********************/
-  async function roomDescriptor(x,y, normalized){
-    const params = new URLSearchParams({ x:String(x), y:String(y), normalized:String(!!normalized) });
+  async function roomDescriptor(x,y){
+    const params = new URLSearchParams({ x:String(x), y:String(y) });
     try{
       const r = await fetch('/api/maze-room?'+params.toString());
       const data = await r.json();
@@ -181,7 +181,7 @@
    ********************/
   const state = {
     x: 0, y: 0, steps:0,
-    hasCard:false, normalized:false,
+    hasCard:false,
     inVault:false, hasSecretBook:false, secretOpen:false
   };
   function hereKey(){ return `${state.x},${state.y}` }
@@ -203,7 +203,7 @@
    * Core actions      *
    ********************/
   async function look(){
-    const d = await roomDescriptor(state.x, state.y, state.normalized);
+    const d = await roomDescriptor(state.x, state.y);
     d.lines.forEach(t=>print(t));
     print(d.exitsLine, 'exits');
     if(revealMapToggle.checked){ print(''); await printMaze(); }
@@ -346,7 +346,6 @@
     print('  take <card|book> — pick up the library card (keyword) or the slim volume "The Secret Passage"');
     print('  read <card|primer|plaque|librarian> — lore & instructions');
     print('  present card — at the Reference Desk (flavor hint only)');
-    print('  normalize [on|off] — at the Scriptorium; hides decoy typography');
     print('  pull book — reveals a whimsical title; if it\'s a signal room, the title hides an index word');
     print('  put/insert/place book — at the gapped shelf, opens a hidden passage');
     print('  reset — reset state to the start');
@@ -375,7 +374,7 @@
     if(cmd.startsWith('take ')) return takeThing(raw.slice(5));
     if(cmd.startsWith('read ')) return readThing(raw.slice(5));
     if(cmd==='present card') return presentCard();
-    if(cmd.startsWith('normalize')){ return normalizeCmd(raw.slice(9).trim()); }
+    
     if(cmd==='pull book' || cmd==='pull' || cmd==='browse' || cmd==='check shelf' || cmd==='inspect book' || cmd==='take book') return pullBook();
     
     if(cmd.startsWith('say ')) return sayWord(raw.slice(4));
