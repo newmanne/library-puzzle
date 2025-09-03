@@ -291,6 +291,18 @@
 
   async function pullBook(){
     clearForLastOnly();
+    // If we've already pulled a book in this room visit, reuse it
+    if(visitTitle){
+      const isSig = !!(lastRoom && lastRoom.isSignal);
+      if(isSig){
+        print('You slide out a slim volume. Its gilt title reads:');
+      } else {
+        print('You pull a cracked volume from the shelf. Its title reads:');
+      }
+      print(`  "${visitTitle}."`);
+      print('You replace it carefully.');
+      return;
+    }
     try{
       const params = new URLSearchParams({ x:String(state.x), y:String(state.y) });
       const r = await fetch('/api/maze-pull?'+params.toString());
