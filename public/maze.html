@@ -86,8 +86,6 @@
         <input id="debugToggle" type="checkbox">
         <label>Last response only</label>
         <input id="lastOnlyToggle" type="checkbox" checked>
-        <label>Maze mode (invertible, dead ends)</label>
-        <input id="biToggle" type="checkbox" checked>
         <label>Reveal maze map on look (debug)</label>
         <input id="revealMapToggle" type="checkbox">
       </div>
@@ -475,7 +473,7 @@
   /********************
    * Room description *
    ********************/
-  function exitsFromTwisty(){ return ['n','e','s','w']; }
+  
 
   function roomDescriptor(x,y, normalized){
     const localSeed = (x*2654435761 ^ y*1597334677 ^ SEED) >>> 0; const r = mulberry32(localSeed);
@@ -554,7 +552,7 @@
 
     if (normalized){ lines.push(`[normalized] features → ${colour}/${cat}/${shelf}/${endcap}/${dash}`); }
 
-    const exits = biToggle.checked ? exitsMaze(x,y) : exitsFromTwisty();
+    const exits = exitsMaze(x,y);
     const exitNames = {n:'north', e:'east', s:'south', w:'west'};
     const exitsLine = `Exits: ${exits.map(d=>exitNames[d]).join(', ') || '(none)'}.`;
 
@@ -575,7 +573,6 @@
   const contrastToggle = document.getElementById('contrastToggle');
   const debugToggle = document.getElementById('debugToggle');
   const lastOnlyToggle = document.getElementById('lastOnlyToggle');
-  const biToggle = document.getElementById('biToggle');
   const revealMapToggle = document.getElementById('revealMapToggle');
 
   let typing=false, skipCurrent=false, typeSpeed=Number(speedInput.value);
@@ -658,8 +655,8 @@
     const d = roomDescriptor(state.x, state.y, state.normalized);
     d.lines.forEach(t=>print(t));
     print(d.exitsLine, 'exits');
-    if(revealMapToggle.checked && biToggle.checked){ print(''); printMaze(); }
-    if (debugToggle.checked){ const sig = signalHere(state.x, state.y); const ex = biToggle.checked? exitsMaze(state.x,state.y).join(''):'nesw'; print(`[debug] coords=${state.x},${state.y} sig=${sig?sig.index+'('+sig.letter+')':'-'} exits=${ex}`, 'muted'); }
+    if(revealMapToggle.checked){ print(''); printMaze(); }
+    if (debugToggle.checked){ const sig = signalHere(state.x, state.y); const ex = exitsMaze(state.x,state.y).join(''); print(`[debug] coords=${state.x},${state.y} sig=${sig?sig.index+'('+sig.letter+')':'-'} exits=${ex}`, 'muted'); }
   }
 
   function move(dir){
@@ -669,16 +666,10 @@
     if (atChute(state.x,state.y) && dir==='s'){
       const rx=Math.floor(rng0()*WIDTH), ry=Math.floor(rng0()*HEIGHT); clearForLastOnly(); print('You drop into the return chute…'); state.x=rx; state.y=ry; state.steps++; visitTitle=null; look(); return; }
 
-    if (biToggle.checked){
-      const nb = neighborMaze(state.x, state.y, dir);
-      clearForLastOnly();
-      if(nb.blocked){ print('Towering shelves block your way.'); return; }
-      state.x=nb.x; state.y=nb.y; state.steps++; visitTitle=null; look(); return;
-    }
-
-    // Fallback: twisty (legacy) — not default
-    const di={n:0,e:1,s:2,w:3}[dir]; const localSeed=(state.x*73856093) ^ (state.y*19349663) ^ (di*83492791) ^ SEED; const r=mulberry32(localSeed); let dx=Math.floor(r()*3)-1, dy=Math.floor(r()*3)-1; if(dx===0&&dy===0) dy=-1; if (di===0 && r()<0.6) dy=-1; if (di===2 && r()<0.6) dy=1; if (di===1 && r()<0.6) dx=1; if (di===3 && r()<0.6) dx=-1;
-    state.x = Math.max(0, Math.min(WIDTH-1, state.x+dx)); state.y = Math.max(0, Math.min(HEIGHT-1, state.y+dy)); state.steps++; visitTitle=null; clearForLastOnly(); look();
+    const nb = neighborMaze(state.x, state.y, dir);
+    clearForLastOnly();
+    if(nb.blocked){ print('Towering shelves block your way.'); return; }
+    state.x=nb.x; state.y=nb.y; state.steps++; visitTitle=null; look();
   }
 
   function openThing(what){ clearForLastOnly(); if(!what){ print('Open what?'); return; } if(atLost(state.x,state.y) && /(drawer|lost|found|counter)/.test(what)){ print('You slide the shallow drawer open. Inside lies a scuffed library card.'); return; } print("It doesn't seem to open."); }
@@ -827,7 +818,7 @@
     if(cmd==='help'||cmd==='?') return help();
     if(cmd==='settings'){ settingsDialog.showModal(); return; }
     if(cmd==='seed'){ clearForLastOnly(); print(`Seed: ${seedParam}`); return; }
-    if(cmd==='maze'){ clearForLastOnly(); if(!biToggle.checked){ print('Maze view only works in Maze mode. Toggle it on in settings.'); } else { printMaze(); } return; }
+    if(cmd==='maze'){ clearForLastOnly(); printMaze(); return; }
     if(cmd==='selftest'){ clearForLastOnly(); runSelfTests(); return; }
     if(cmd==='map'){ clearForLastOnly(); print('You try to sketch a plan, but you can\'t seem to draw a reliable map.'); return; }
     if(cmd==='quit'||cmd==='restart'){ view.innerHTML=''; visitTitle=null; intro(); return; }
@@ -870,13 +861,13 @@
     try { issue('look', true); ok(true, 'can call issue("look")'); } catch(e){ ok(false, 'issue("look") failed: '+e); }
     ok(WIDTH>=7, 'wider maze (WIDTH='+WIDTH+')');
 
-    // Invertibility (one step) in maze mode
-    if(biToggle.checked){
+    // Invertibility (one step)
+    {
       const exits = exitsMaze(state.x, state.y);
       if(exits.length){
         const dir=exits[0]; const sx=state.x, sy=state.y; move(dir); move(OPP[dir]); ok(state.x===sx && state.y===sy, 'maze step is invertible for one move');
       } else { ok(true, 'start has no exits? (skipped)'); }
-    } else { ok(true, 'maze mode off — invertibility test skipped'); }
+    }
 
     // At least one toroidal wrap exists and behaves as wrap
     let yWrap=-1; for(let y=0;y<HEIGHT;y++){ if((MAZE[`0,${y}`]||{}).w || (MAZE[`${WIDTH-1},${y}`]||{}).e){ yWrap=y; break; } }
