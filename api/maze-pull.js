@@ -88,7 +88,22 @@ module.exports = async function (req, res) {
     const SIGNALS = new Map(signalCells.map((c,i)=>[keyOf(c), {index:i+1, letter:CIPHERTEXT[i]}]));
     const sig = SIGNALS.get(`${x},${y}`) || null;
 
-    // Title generation (deterministic per-room)
+    // Forbid pulling in special rooms
+    const isSpecial = (
+      (x===lostFound.x && y===lostFound.y) ||
+      (x===refDesk.x && y===refDesk.y)   ||
+      (x===maths.x && y===maths.y)       ||
+      (x===vault.x && y===vault.y)       ||
+      (x===unity.x && y===unity.y)       ||
+      (x===SECRET.x && y===SECRET.y)     ||
+      (x===SECRET.nx && y===SECRET.ny)
+    );
+    if(isSpecial){
+      res.setHeader('cache-control', 'no-store');
+      return res.status(200).json({ ok:false, error:'special_room' });
+    }
+
+    // Title generation (random per request)
     const TITLE_TEMPLATES=[
       'The curious case of the {CARD_LOWER} ring',
       'Proceedings of the {ORD_TITLE} Annual Symposium',

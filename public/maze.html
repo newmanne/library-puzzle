@@ -291,6 +291,10 @@
 
   async function pullBook(){
     clearForLastOnly();
+    // Disallow pulling in special rooms
+    const f = (lastRoom && lastRoom.flags) || {};
+    const isSpecial = !!(f.lost || f.ref || f.math || f.vault || f.chute || f.unity || f.secretShelf || f.secretAnnex || f.secretBook);
+    if(isSpecial){ print('You do not find any pullable books here.'); return; }
     // If we've already pulled a book in this room visit, reuse it
     if(visitTitle){
       const isSig = !!(lastRoom && lastRoom.isSignal);
@@ -307,6 +311,10 @@
       const params = new URLSearchParams({ x:String(state.x), y:String(state.y) });
       const r = await fetch('/api/maze-pull?'+params.toString());
       const data = await r.json();
+      if(!(data && data.ok)){
+        print('You do not find any pullable books here.');
+        return;
+      }
       const title = (data && data.title) || 'Untitled Monograph';
       const isSig = !!(data && data.isSignal);
       if(isSig){
@@ -351,19 +359,12 @@
     print('You slide "The Secret Passage" into the waiting gap. With a soft click, the shelving pivots open to the '+{n:'north',e:'east',s:'south',w:'west'}[dir]+'.');
   } 
 
-
-
   function help(){ clearForLastOnly();
     print('Commands:');
     print('  n/e/s/w — move');
     print('  look — re-describe this aisle');
     print('  pull book — grab a book from the library shelf');
-    print('  put/insert/place book — at the gapped shelf, opens a hidden passage');
-    print('  reset — reset state to the start');
-    print('  say <WORD> — at the Vault, speak the final word');
-    print('  maze — print an ASCII map (debug) with special rooms');
-    print('  selftest — run internal checks');
-    print('  settings — open settings; quit — clears the screen');
+    print('  reset — reset the adventure');
   }
 
   function parse(cmd){ cmd = (cmd||'').trim(); if(!cmd) return; const raw=cmd; cmd=cmd.toLowerCase();
