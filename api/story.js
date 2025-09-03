@@ -22,11 +22,35 @@ module.exports = async function (req, res) {
   }
 
   // --- Lexicons (trimmed, deterministic flavor only) ---
-  const ADJ = ["antique","dusty","quiet","hexagonal","mirror-bright","pensive","endless","narrow","infinite","luminous","shadowed","archival","baroque","austere","gilded","musty","incunabular","esoteric","scholastic"];
-  const NOUN= ["librarian","catalogue","hexagon","volume","ladder","mirror","index","folio","shelf","footnote","errata","margin","archive","codex","colophon","stacks","bookplate","ligature","galley","proof","leaf","quire","signature","rubric","gloss"];
-  const VERB= ["argues","retrieves","annotates","traverses","indexes","consults","arranges","catalogues","debates","observes","peruses","collates","glosses","binds","dusts","shelves","reshelves","illuminates","records","inscribes","deciphers"];
-  const ADV = ["softly","therefore","again","perhaps","secretly","precisely","eventually","formally","quietly","gingerly","methodically","idly"];
-  const CONJ= ["because","although","while","since","nonetheless","meanwhile","thus","hence","whereas","accordingly"];
+  const ADJ = [
+    "antique","dusty","quiet","hexagonal","mirror-bright","pensive","endless","narrow","infinite","luminous",
+    "shadowed","archival","baroque","austere","gilded","musty","incunabular","esoteric","scholastic",
+    "vellum","brittle","labyrinthine","sepulchral","palimpsestic","marginal","illuminated","foxed","dog-eared",
+    "leather-bound","scholarly","oblique","cryptic","stately","murmurous","cavernous","cobwebbed","latticed",
+    "oak-paneled","ink-stained","tattered","forgotten","rare","forbidden","catalogued","quietus","dust-laden"
+  ];
+  const NOUN= [
+    "librarian","catalogue","hexagon","volume","ladder","mirror","index","folio","shelf","footnote",
+    "errata","margin","archive","codex","colophon","stacks","bookplate","ligature","galley","proof",
+    "leaf","quire","signature","rubric","gloss","treatise","manuscript","scriptorium","lexicon","codicil",
+    "bookmark","palimpsest","glossary","register","ledger","lamp","lantern","stair","railing","spine",
+    "binding","balcony","alcove","catalog-card","index-card","inkwell","quill","cataloger","folio-case"
+  ];
+  const VERB= [
+    "argues","retrieves","annotates","traverses","indexes","consults","arranges","catalogues","debates",
+    "observes","peruses","collates","glosses","binds","dusts","shelves","reshelves","illuminates","records",
+    "inscribes","deciphers","transcribes","restores","preserves","repairs","files","refiles","misfiles",
+    "reclassifies","footnotes","leafs","misreads","cross-references","catalogs","stamps","whispers","curates"
+  ];
+  const ADV = [
+    "softly","therefore","again","perhaps","secretly","precisely","eventually","formally","quietly","gingerly",
+    "methodically","idly","meticulously","absently","furtively","deliberately","slowly","briskly","noiselessly",
+    "curiously","patiently","dutifully","carefully","silently","earnestly"
+  ];
+  const CONJ= [
+    "because","although","while","since","nonetheless","meanwhile","thus","hence","whereas","accordingly",
+    "but","and","however","nevertheless","before","after","until","unless","once"
+  ];
 
   // --- Synonym pairs (25 total; left=plain 0, right=learned 1) ---
   const PAIRS = [

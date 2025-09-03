@@ -61,14 +61,22 @@ module.exports = async function (req, res) {
       }
       return out;
     };
-    // Mirror room placement to ensure flags match
+    // Mirror room placement to ensure flags match (exact RNG sequence)
     const used = new Set([`${START.x},${START.y}`]);
-    const farLF = cellsAtDistanceRange(START.x, START.y, 6, WIDTH+HEIGHT, used); const lostFound = pickOne(farLF) || {x:(START.x+3)%WIDTH,y:(START.y+3)%HEIGHT}; used.add(`${lostFound.x},${lostFound.y}`);
+    // Math 2-4 from start
     const midMath = cellsAtDistanceRange(START.x, START.y, 2, 4, used); const maths = pickOne(midMath) || {x:2,y:0}; used.add(`${maths.x},${maths.y}`);
+    // Reading 2-6 from start
     const midRead = cellsAtDistanceRange(START.x, START.y, 2, 6, used); const reading = pickOne(midRead) || {x:2,y:1}; used.add(`${reading.x},${reading.y}`);
+    // Vault: farthest from start not yet used
     let farList=[]; for(let yy=0;yy<HEIGHT;yy++){ for(let xx=0;xx<WIDTH;xx++){ const d=distFromStart[`${xx},${yy}`]; if(d!=null) farList.push({x:xx,y:yy,d}); } }
     farList.sort((a,b)=>b.d-a.d);
     const vault = (function(){ for(const c of farList){ const k=`${c.x},${c.y}`; if(!used.has(k)) return {x:c.x,y:c.y}; } return {x:WIDTH-1,y:HEIGHT-1}; })(); used.add(`${vault.x},${vault.y}`);
+    // Chute band 2-5
+    const chuteCand = cellsAtDistanceRange(START.x, START.y, 2, 5, used); const chute = pickOne(chuteCand) || {x:WIDTH-2,y:HEIGHT-2}; used.add(`${chute.x},${chute.y}`);
+    // Unity 2-6
+    const unityCand = cellsAtDistanceRange(START.x, START.y, 2, 6, used); const unity = pickOne(unityCand) || {x:1,y:HEIGHT-1}; used.add(`${unity.x},${unity.y}`);
+    // Lost & Found >= 6 from start (after previous picks)
+    const farLF = cellsAtDistanceRange(START.x, START.y, 6, WIDTH+HEIGHT, used); const lostFound = pickOne(farLF) || {x:(START.x+3)%WIDTH,y:(START.y+3)%HEIGHT}; used.add(`${lostFound.x},${lostFound.y}`);
     const at = (o)=> (x===o.x && y===o.y);
     const flags = { math: at(maths), reading: at(reading) };
 
