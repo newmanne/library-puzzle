@@ -1,6 +1,7 @@
 // api/maze-check.js — server-side validator for the final spoken word
 // CommonJS export for Vercel runtime
 
+module.exports.config = { runtime: 'nodejs18.x' };
 module.exports = async function (req, res) {
   try {
     const method = (req.method || 'GET').toUpperCase();

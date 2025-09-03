@@ -2,6 +2,7 @@
 // Stateless: computes next position based on seed, current x,y, dir, and flags
 
 const COMMON = require('./maze-common');
+module.exports.config = { runtime: 'nodejs18.x' };
 
 module.exports = async function (req, res) {
   try{

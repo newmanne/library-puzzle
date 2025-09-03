@@ -1,6 +1,7 @@
 // api/maze-card.js — server-side provider for in-world library card text
 // Keeps the keyword carrier off the client source
 
+module.exports.config = { runtime: 'nodejs18.x' };
 module.exports = async function (req, res) {
   const method = (req.method || 'GET').toUpperCase();
   if (method !== 'GET') {
