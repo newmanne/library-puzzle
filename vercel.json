@@ -1,1 +1,11 @@
-{ "routes": [ { "src": "/", "dest": "/public/index.html" } ] }
+{ "routes": [
+  { "src": "/",           "dest": "/public/library.html" },
+  { "src": "/library",    "dest": "/public/library.html" },
+  { "src": "/library.html","dest": "/public/library.html" },
+
+  { "src": "/clicker",    "dest": "/public/clicker.html" },
+  { "src": "/clicker.html","dest": "/public/clicker.html" },
+
+  { "src": "/maze",       "dest": "/public/maze.html" },
+  { "src": "/maze.html",  "dest": "/public/maze.html" }
+] }

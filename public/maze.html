@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Restricted Stacks — Vigenère Build (Maze Default)</title>
+  <title>The Restricted Stacks — Vigenère Build (Maze)</title>
   <style>
     :root{
       --bg:#0c0f12;           /* deep library midnight */
@@ -121,7 +121,7 @@
   const urlParams = new URLSearchParams(location.search);
   const seedParam = urlParams.get('seed') || 'RESTRICTED-STACKS-VIG'; // controls signal placements only
   const runSelfTestsParam = urlParams.get('selftest') === '1';
-  const finalAnswer = (urlParams.get('answer')||'LIBRARIUM').toUpperCase();
+  // Final answer removed from client; validated server-side via /api/maze-check
   const SEED = hashStringToInt(String(seedParam));
   const rng0 = mulberry32(SEED);
 
@@ -274,9 +274,17 @@
    * Cipher placement  *
    ********************/
   const SIGNAL_COUNT = 12; // fixed number of signal rooms
-  const PLAINTEXT_INSTR = onlyAZ(`SAY ${finalAnswer}`).slice(0, SIGNAL_COUNT);
   const CIPHER_KEY = KEY_CARRIER; // carried by the card (key only; no auto-decode routes)
-  const CIPHERTEXT = vigenereEncrypt(PLAINTEXT_INSTR, CIPHER_KEY);
+  let CIPHERTEXT = [];
+  async function loadCipherLetters(){
+    try{
+      const r = await fetch('/api/maze-letters');
+      const data = await r.json();
+      if(data && data.letters && Array.isArray(data.letters)){
+        CIPHERTEXT = data.letters;
+      }
+    }catch(_){ CIPHERTEXT = []; }
+  }
 
   function chooseUniqueCells(count, banned) { 
     const chosen=new Set(), cells=[];
@@ -301,7 +309,8 @@
     if(signalCells.length>=SIGNAL_COUNT){ signalCells[signalCells.length-1] = {x:SECRET_ANNEX.x, y:SECRET_ANNEX.y}; }
     else { signalCells.push({x:SECRET_ANNEX.x, y:SECRET_ANNEX.y}); }
   }
-  const SIGNALS = new Map(signalCells.map((c,i)=>[keyOf(c), {index:i+1, letter:CIPHERTEXT[i]}]));
+  let SIGNALS = new Map();
+  function buildSignals(){ SIGNALS = new Map(signalCells.map((c,i)=>[keyOf(c), {index:i+1, letter:CIPHERTEXT[i]}])); }
   function signalHere(x,y){ return SIGNALS.get(`${x},${y}`) || null; }
 
   function valueToBits(v){ return [1,2,4,8,16].map(bit=> (v & bit)?1:0); }
@@ -732,8 +741,21 @@
   function showNotes(){ clearForLastOnly(); if(state.notes.length===0){ print('Your notebook is blank.'); return; } const sorted = [...state.notes].sort((a,b)=>a.index-b.index); const seq = sorted.map(n=>n.letter).join(''); print('Notes (ordered): ' + sorted.map(n=>`[${n.index}:${n.letter}]`).join(' ')); print('Ciphertext (from notes): ' + seq); print('Decrypt with the keyword on your card.'); }
   function clearNotes(){ clearForLastOnly(); state.notes=[]; print('You tear out the page. Notes cleared.'); }
 
-  function sayWord(raw){ clearForLastOnly(); if(!atVault(state.x,state.y)){ print('Your whisper is swallowed by the stacks.'); return; } const spoken = (raw||'').trim().toUpperCase(); if(!spoken){ print('Say what?'); return; } if(spoken===finalAnswer){ print('The door warms beneath your hand and swings inward. A codex on a lectern lies open to the answer you sought.'); state.inVault=true; } else { print('The vault remains cold. The word is not quite right.'); } 
-    }
+  async function sayWord(raw){
+    clearForLastOnly();
+    if(!atVault(state.x,state.y)){ print('Your whisper is swallowed by the stacks.'); return; }
+    const spoken = (raw||'').trim(); if(!spoken){ print('Say what?'); return; }
+    try{
+      const r = await fetch('/api/maze-check', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ word: spoken }) });
+      const data = await r.json();
+      if(data && data.ok){
+        print('The door warms beneath your hand and swings inward. A codex on a lectern lies open to the answer you sought.');
+        state.inVault = true;
+      } else {
+        print('The vault remains cold. The word is not quite right.');
+      }
+    }catch(_){ print('The vault shudders, then falls silent.'); }
+  }
 
 
 
@@ -861,8 +883,10 @@
   }
 
   // Boot (robust)
-  function boot(){
+  async function boot(){
     try{
+      await loadCipherLetters();
+      buildSignals();
       intro();
       if(runSelfTestsParam){ runSelfTests(); }
       const form = document.getElementById('cmdbar');
