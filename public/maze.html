@@ -606,7 +606,6 @@
   const state = {
     x: START.x, y: START.y, steps:0,
     hasCard:false, normalized:false,
-    notes:[], // items: {index, letter}
     inVault:false, hasSecretBook:false, secretOpen:false
   };
   function hereKey(){ return `${state.x},${state.y}` }
@@ -766,9 +765,7 @@
     }
   }
 
-  function noteHere(){ clearForLastOnly(); const sig = signalHere(state.x,state.y); const d = roomDescriptor(state.x,state.y,state.normalized); const letter = featuresToLetter(d.features); if(!sig){ print('You try to make a note, but this aisle holds no special letter.'); return; } const idx = sig.index; const existingIndex = state.notes.findIndex(n=>n.index===idx); if(existingIndex>=0){ state.notes[existingIndex].letter = letter; } else { state.notes.push({index:idx, letter}); } print(`Noted: position ${idx} → ${letter}.`); }
-  function showNotes(){ clearForLastOnly(); if(state.notes.length===0){ print('Your notebook is blank.'); return; } const sorted = [...state.notes].sort((a,b)=>a.index-b.index); const seq = sorted.map(n=>n.letter).join(''); print('Notes (ordered): ' + sorted.map(n=>`[${n.index}:${n.letter}]`).join(' ')); print('Ciphertext (from notes): ' + seq); print('Decrypt with the keyword on your card.'); }
-  function clearNotes(){ clearForLastOnly(); state.notes=[]; print('You tear out the page. Notes cleared.'); }
+// Notes feature removed — solvers will use pen & paper.
 
   async function sayWord(raw){
     clearForLastOnly();
@@ -814,7 +811,6 @@
     print('  normalize [on|off] — at the Scriptorium; hides decoy typography');
     print('  pull book — reveals a whimsical title; if it\'s a signal room, the title hides an index word');
     print('  put/insert/place book — at the gapped shelf, opens a hidden passage');
-    print('  note — record the encoded letter here (if any); notes — list; clear notes — reset');
     print('  say <WORD> — at the Vault, speak the final word');
     print('  maze — print an ASCII map (debug). Signals are marked as *.');
     print('  selftest — run internal checks');
@@ -842,9 +838,7 @@
     if(cmd==='present card') return presentCard();
     if(cmd.startsWith('normalize')){ return normalizeCmd(raw.slice(9).trim()); }
     if(cmd==='pull book' || cmd==='pull' || cmd==='browse' || cmd==='check shelf' || cmd==='inspect book' || cmd==='take book') return pullBook();
-    if(cmd==='note') return noteHere();
-    if(cmd==='notes') return showNotes();
-    if(cmd==='clear notes') return clearNotes();
+    
     if(cmd.startsWith('say ')) return sayWord(raw.slice(4));
     if(cmd==='put book' || cmd==='insert book' || cmd==='place book' || cmd==='use book' || cmd==='return book') return placeBook();
 
