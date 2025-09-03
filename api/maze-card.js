@@ -9,10 +9,7 @@ module.exports = async function (req, res) {
   }
   // Display strings only; logic-level secrets are not exposed here
   const card = {
-    issuer: 'Bibliotheca',      // human-facing issuer line
-    barcode: 'BIBLIOTHECA',     // printed code on the card
-    title: 'LIBRARY CARD',
-    note: 'Card may activate certain catalogue enchantments.'
+    barcode: 'BNRQORPZLAJE',     // printed code on the card
   };
   res.setHeader('cache-control', 'no-store');
   return res.status(200).json({ ok: true, card });

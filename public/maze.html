@@ -254,12 +254,10 @@
     try{
       const r = await fetch('/api/maze-card');
       const data = await r.json();
-      const c = (data && data.card) || { title:'LIBRARY CARD', issuer:'', barcode:'', note:'' };
+      const c = (data && data.card) || { title:'LIBRARY CARD', issuer:'', barcode:''};
       print(c.title || 'LIBRARY CARD');
-        print('  Patron: ______________');
-        if(c.issuer)  print('  Issued by: ' + c.issuer);
+        print('  Patron: You');
         if(c.barcode) print('  Barcode: ' + c.barcode);
-        if(c.note)    print('  Note: ' + c.note);
       }catch(e){
         print('Error: Failed to load card.'); console.error(e);
       }
@@ -267,8 +265,8 @@
     }
     if((/^(primer|chalkboard|slate|math|mathematics|board)$/).test(obj) && lastRoom && lastRoom.flags && lastRoom.flags.math){
       print('Primer on the Vigenère Cipher:');
-      print('  1) Ciphertext should be letters A–Z.');
-      print('  2) You will need a KEY to decrypt. You cannot hope to decrypt without a KEY');
+      print('  1) The ciphertext should be letters A–Z.');
+      print('  2) You will need a CODE to decrypt. You cannot hope to decrypt without a CODE');
       print('  3) Encrypt/decrypt by shifting each letter in the ciphertext by the keyword letter. Many online tools exist...');   
       
       return;
@@ -281,6 +279,18 @@
     
     print('It is mostly illegible.'); }
 
+  function sitHere(){
+    clearForLastOnly();
+    if(!(lastRoom && lastRoom.flags && lastRoom.flags.reading)){
+      print('There's nowhere comfortable to sit.');
+      return;
+    }
+    print('You settle into the comfy chair. A slim volume slides into your lap:');
+    print('  "A Treatise on Using Binary to Represent Letters"');
+    print('You read: "You can represent a letter using five binary bits. Weight each 1,2,4,8,16 and sum → A=1…Z=26."');
+  }
+
+
   
 
   function normalizeCmd(arg){ const a=(arg||'').trim().toLowerCase(); if(a==='on'){ state.normalized=true; } else if(a==='off'){ state.normalized=false; } else { state.normalized=!state.normalized; } clearForLastOnly(); print('Normalization ' + (state.normalized?'on.':'off.')); look(); }
@@ -289,7 +299,7 @@
     clearForLastOnly();
     // Disallow pulling in special rooms
     const f = (lastRoom && lastRoom.flags) || {};
-    const isSpecial = !!(f.lost || f.ref || f.math || f.vault || f.chute || f.unity || f.secretShelf || f.secretAnnex || f.secretBook);
+    const isSpecial = !!(f.lost || f.math || f.reading || f.vault || f.chute || f.unity || f.secretShelf || f.secretAnnex || f.secretBook);
     if(isSpecial){ print('You do not find any pullable books here.'); return; }
     // If we've already pulled a book in this room visit, reuse it
     if(visitTitle){
@@ -360,6 +370,7 @@
     print('  n/e/s/w — move');
     print('  look — re-describe this aisle');
     print('  pull book — grab a book from the library shelf');
+    print('  sit — in the reading room, study a treatise');
     print('  reset — reset the adventure');
   }
 
@@ -380,6 +391,7 @@
     if(cmd.startsWith('open ')) return openThing(raw.slice(5));
     if(cmd.startsWith('take ')) return takeThing(raw.slice(5));
     if(cmd.startsWith('read ')) return readThing(raw.slice(5));
+    if(cmd==='sit') return sitHere();
     
     
     if(cmd==='pull book' || cmd==='pull' || cmd==='browse' || cmd==='check shelf' || cmd==='inspect book' || cmd==='take book') return pullBook();

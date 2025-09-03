@@ -93,6 +93,7 @@ module.exports = async function (req, res) {
       (x===lostFound.x && y===lostFound.y) ||
       (x===maths.x && y===maths.y)       ||
       (x===vault.x && y===vault.y)       ||
+      (x===reading.x && y===reading.y)   ||
       (x===unity.x && y===unity.y)       ||
       (x===SECRET.x && y===SECRET.y)     ||
       (x===SECRET.nx && y===SECRET.ny)
