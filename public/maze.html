@@ -103,12 +103,10 @@
   function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   function pick(rng, arr){ return arr[Math.floor(rng()*arr.length)] }
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-  // Removed A2I/I2A; not used client-side
 
   /********************
    * Vigenère helpers  *
    ********************/
-  // Client-side Vigenère helpers removed; handled server-side
 
   /********************
    * Dimensions & Params *
@@ -117,7 +115,6 @@
   const urlParams = new URLSearchParams(location.search);
   const seedParam = urlParams.get('seed') || 'RESTRICTED-STACKS-VIG'; // controls signal placements only
   const runSelfTestsParam = urlParams.get('selftest') === '1';
-  // Final answer removed from client; validated server-side via /api/maze-check
   const SEED = hashStringToInt(String(seedParam));
   const rng0 = mulberry32(SEED);
 
@@ -299,15 +296,13 @@
     if(signalCells.length>=SIGNAL_COUNT){ signalCells[signalCells.length-1] = {x:SECRET_ANNEX.x, y:SECRET_ANNEX.y}; }
     else { signalCells.push({x:SECRET_ANNEX.x, y:SECRET_ANNEX.y}); }
   }
-  // No global signals client-side in server mode
   function signalHere(x,y){ return null; }
 
-  // Client-side feature mapping removed; handled on server
 
   /********************
-   * Title templates (whimsical, per-visit random)
+   * (legacy client title templates removed)
    ********************/
-  /* const TITLE_TEMPLATES=[
+  /*
     'The curious case of the {CARD_LOWER} ring',
     'Proceedings of the {ORD_TITLE} Annual Symposium',
     'Treatise on {CARD_TITLE} Shadows',
@@ -435,9 +430,7 @@
     'A Compendium of Faded Stamps'
   ]; */
 
-  // Per-visit cache: regenerated when you leave/enter a room
-  let visitTitle = null; // holds last computed title for current room until you move
-  // Title generation now handled server-side
+  let visitTitle = null; // per-visit cache of last title shown
 
   /********************
    * Room description *
@@ -614,8 +607,7 @@
       print('  1) Ciphertext should be letters A–Z.');
       print('  2) You will need a KEY to decrypt.');
       print('  3) Encrypt/decrypt by shifting each letter in the ciphertext by the keyword letter.');
-      // print('  4) Here, special aisles hide a letter using five toggles weighted 1,2,4,8,16 → A=1…Z=26.');
-      // print('  5) Pull a book in any aisle; if it belongs to the whisper, its title includes a spelled-out index (e.g., "Twelfth"). Collect letters in that order.');
+      
       return;
     }
     if((/^(plaque|sign|note|instructions)$/).test(obj) && atVault(state.x,state.y)){
@@ -655,7 +647,7 @@
     }
   }
 
-// Notes feature removed — solvers will use pen & paper.
+
 
   async function sayWord(raw){
     clearForLastOnly();
@@ -789,7 +781,6 @@
 
     // Exactly SIGNAL_COUNT signals present and ciphertext length matches
     ok(SIGNALS.size === SIGNAL_COUNT, 'exactly '+SIGNAL_COUNT+' signal rooms');
-    // ciphertext length check removed in server mode
 
     print('Self-tests:', 'muted'); results.forEach(r=>print('  '+r, 'muted'));
   }
