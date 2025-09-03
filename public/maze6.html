@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Restricted Stacks — Vigenère Build (Maze Default)</title>
+  <style>
+    :root{
+      --bg:#0c0f12;           /* deep library midnight */
+      --panel:#12161b;        /* terminal well */
+      --ink:#e6edf3;          /* readable text */
+      --muted:#9aa7b2;        /* secondary */
+      --accent:#caa46b;       /* brass plaque */
+      --link:#8fb0ff;         /* subtle blue */
+    }
+    html,body{height:100%;}
+    body{
+      margin:0; background:linear-gradient(180deg, #0c0f12 0%, #0e1116 60%, #0c0f12 100%);
+      color:var(--ink); font:16px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      display:flex; flex-direction:column; align-items:center; justify-content:stretch;
+    }
+    header{max-width:1020px; width:100%; padding:20px 16px 8px; box-sizing:border-box;}
+    h1{margin:0 0 4px; font-size:20px; font-weight:700; letter-spacing:0.5px;}
+    .subtitle{color:var(--muted); font-size:13px}
+
+    .terminal{ max-width:1020px; width:100%; flex:1; display:flex; flex-direction:column; box-sizing:border-box;
+      background:var(--panel); border:1px solid #1d232b; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.35);
+      overflow:hidden; margin:8px 16px 16px; }
+    #view{ padding:18px; overflow:auto; white-space:pre-wrap; word-break:break-word; flex:1; scroll-behavior:smooth; }
+    #view::-webkit-scrollbar{width:10px;height:10px}
+    #view::-webkit-scrollbar-thumb{background:#222b35;border-radius:10px}
+
+    .line{margin:0 0 4px;}
+    .line .prompt{color:#7bc275}
+    .line .muted{color:var(--muted)}
+    .line .accent{color:var(--accent)}
+    .exits{color:var(--link)}
+
+    form#cmdbar{display:flex; gap:10px; border-top:1px solid #1d232b; padding:12px 14px; align-items:center; background:rgba(255,255,255,0.02)}
+    #promptGlyph{color:#7bc275}
+    #cmd{ flex:1; background:#0e1318; color:var(--ink); border:1px solid #1b2129; border-radius:8px; padding:10px 12px;
+      outline:none; font:15px/1.2 ui-monospace, monospace; box-shadow:inset 0 0 0 1px rgba(0,0,0,.25); }
+    #cmd::placeholder{color:#61707f}
+
+    .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .btn{background:#0e1318; color:var(--ink); border:1px solid #1b2129; border-radius:8px; padding:8px 10px; cursor:pointer; font:13px ui-monospace, monospace}
+    .btn:hover{border-color:#293444}
+    .btn:active{transform:translateY(1px)}
+
+    .footer{max-width:1020px; width:100%; padding:0 16px 18px; color:var(--muted); font-size:12px; box-sizing:border-box}
+
+    @media (max-width:640px){ body{font-size:15px;} }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📚 The Restricted Stacks</h1>
+    <div class="subtitle">Text adventure in a maze of twisty passages (library edition). Differences hide a cipher. <em>Maze mode is now the default.</em> Pull a book in any aisle for a subtle index; the library card holds your Vigenère key.</div>
+  </header>
+
+  <div class="terminal" role="region" aria-label="Adventure terminal">
+    <div id="view" aria-live="polite" aria-atomic="false"></div>
+    <form id="cmdbar" autocomplete="off">
+      <span id="promptGlyph" aria-hidden="true">&gt;</span>
+      <input id="cmd" name="cmd" placeholder="Enter a command (e.g., n; e; look; pull book; read primer; maze)" autofocus />
+      <div class="toolbar">
+        <button type="button" class="btn" id="btnHelp" title="Help">help</button>
+        <button type="button" class="btn" id="btnLook" title="Look">look</button>
+        <button type="button" class="btn" id="btnSettings" aria-expanded="false" title="Settings">⚙︎</button>
+      </div>
+    </form>
+  </div>
+  <div class="footer">
+    Tip: Press <strong>Esc</strong> while text is animating to reveal the rest of the line. Use <code>?seed=HOGWARTS</code> to fix a layout (signal placement only). Use <code>?answer=LIBRARIUM</code> to set the final password. Add <code>?selftest=1</code> to run internal checks.</div>
+
+  <dialog id="settingsDialog">
+    <form method="dialog" style="min-width: min(640px, 90vw); background:#0e1318; color:var(--ink); border:1px solid #1b2129; border-radius:12px; padding:16px;">
+      <h3 style="margin:0 0 8px">Settings</h3>
+      <div style="display:grid; grid-template-columns: auto 1fr; gap:8px 12px; align-items:center; font:14px ui-monospace, monospace;">
+        <label for="speed">Typing speed (ms/char)</label>
+        <input id="speed" type="number" min="0" step="5" value="9" style="background:#0c1116;color:var(--ink);border:1px solid #1b2129;border-radius:8px;padding:6px 8px;">
+        <label>Instant text</label>
+        <input id="instantToggle" type="checkbox">
+        <label>High contrast</label>
+        <input id="contrastToggle" type="checkbox">
+        <label>Show debug</label>
+        <input id="debugToggle" type="checkbox">
+        <label>Last response only</label>
+        <input id="lastOnlyToggle" type="checkbox" checked>
+        <label>Maze mode (invertible, dead ends)</label>
+        <input id="biToggle" type="checkbox" checked>
+        <label>Reveal maze map on look (debug)</label>
+        <input id="revealMapToggle" type="checkbox">
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+        <button class="btn" value="cancel">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+  /********************
+   * Utility & PRNG   *
+   ********************/
+  function hashStringToInt(str){ let h = 2166136261 >>> 0; for (let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function pick(rng, arr){ return arr[Math.floor(rng()*arr.length)] }
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const A2I=(ch)=> ch.toUpperCase().charCodeAt(0)-64; const I2A=(n)=> String.fromCharCode(64+((n-1)%26+1));
+
+  /********************
+   * Vigenère helpers  *
+   ********************/
+  function onlyAZ(s){ return (s||'').toUpperCase().replace(/[^A-Z]/g,''); }
+  function vigenereEncrypt(plain, key){ plain=onlyAZ(plain); key=onlyAZ(key); let out=''; for(let i=0;i<plain.length;i++){ const p=A2I(plain[i]); const k=A2I(key[i%key.length]); const c=((p+k-1-1)%26)+1; out+=I2A(c); } return out; }
+
+  /********************
+   * Dimensions & Params *
+   ********************/
+  const WIDTH = 10, HEIGHT = 8; // expanded play-space (+2 cols, +2 rows) // widened horizontally for bigger play-space
+  const urlParams = new URLSearchParams(location.search);
+  const seedParam = urlParams.get('seed') || 'RESTRICTED-STACKS-VIG'; // controls signal placements only
+  const runSelfTestsParam = urlParams.get('selftest') === '1';
+  const finalAnswer = (urlParams.get('answer')||'LIBRARIUM').toUpperCase();
+  const SEED = hashStringToInt(String(seedParam));
+  const rng0 = mulberry32(SEED);
+
+  /********************
+   * Maze (fixed, deliberate with a few toroidal wraps) *
+   ********************/
+  const DX = {n:0,e:1,s:0,w:-1};
+  const DY = {n:-1,e:0,s:1,w:0};
+  const OPP = {n:'s', s:'n', e:'w', w:'e'};
+
+  function buildMaze(W,H,seed){
+    const dirs=['n','e','s','w'];
+    const grid={}; for(let y=0;y<H;y++){ for(let x=0;x<W;x++){ grid[`${x},${y}`]={}; } }
+    const r = mulberry32(seed);
+    const stack=[{x:Math.floor(r()*W), y:Math.floor(r()*H)}];
+    const seen=new Set([`${stack[0].x},${stack[0].y}`]);
+    while(stack.length){
+      const cur=stack[stack.length-1];
+      const nbrs=dirs.map(d=>({d, nx:cur.x+DX[d], ny:cur.y+DY[d]}))
+        .filter(n=> n.nx>=0 && n.nx<W && n.ny>=0 && n.ny<H && !seen.has(`${n.nx},${n.ny}`));
+      if(nbrs.length===0){ stack.pop(); continue; }
+      const pickN = nbrs[Math.floor(r()*nbrs.length)];
+      const a=`${cur.x},${cur.y}`, b=`${pickN.nx},${pickN.ny}`;
+      grid[a][pickN.d]=true; grid[b][OPP[pickN.d]]=true;
+      seen.add(b); stack.push({x:pickN.nx, y:pickN.ny});
+    }
+    // A few loops to reduce frustration and add routes
+    const extra=Math.floor(W*H*0.12);
+    for(let i=0;i<extra;i++){
+      const x=Math.floor(r()*W), y=Math.floor(r()*H); const d=dirs[Math.floor(r()*4)];
+      const nx=x+DX[d], ny=y+DY[d]; if(nx<0||ny<0||nx>=W||ny>=H) continue;
+      grid[`${x},${y}`][d]=true; grid[`${nx},${ny}`][OPP[d]]=true;
+    }
+    // Toroidal wraps: a few horizontal and vertical wrap corridors
+    const hWraps = Math.max(1, Math.floor(W*0.25));
+    for(let i=0;i<hWraps;i++){
+      const y=Math.floor(r()*H);
+      grid[`0,${y}`].w = true; grid[`${W-1},${y}`].e = true; // west<->east
+    }
+    const vWraps = Math.max(1, Math.floor(H*0.25));
+    for(let i=0;i<vWraps;i++){
+      const x=Math.floor(r()*W);
+      grid[`${x},0`].n = true; grid[`${x},${H-1}`].s = true; // north<->south
+    }
+    return grid;
+  }
+  const MAZE = buildMaze(WIDTH, HEIGHT, 0xC0FFEE); // fixed seed → one good maze by default
+
+  function exitsMaze(x,y){ const g=MAZE[`${x},${y}`]||{}; return Object.keys(g).filter(k=>g[k]); }
+  function neighborMaze(x,y,dir){
+    const g=MAZE[`${x},${y}`]||{}; if(g[dir]){
+      const nx=(x+DX[dir]+WIDTH)%WIDTH, ny=(y+DY[dir]+HEIGHT)%HEIGHT; // allow wrap on toroidal edges
+      return {x:nx, y:ny, blocked:false};
+    }
+    return {x,y,blocked:true};
+  }
+
+  // Distance helpers to place special rooms deliberately (respect wraps)
+  function bfsDistancesFrom(sx,sy){
+    const q=[[sx,sy]], dist={}; dist[`${sx},${sy}`]=0; let i=0;
+    while(i<q.length){ const [x,y]=q[i++]; const d=dist[`${x},${y}`];
+      for(const dir of exitsMaze(x,y)){
+        const nx=(x+DX[dir]+WIDTH)%WIDTH, ny=(y+DY[dir]+HEIGHT)%HEIGHT;
+        const k=`${nx},${ny}`; if(dist[k]==null){ dist[k]=d+1; q.push([nx,ny]); }
+      }
+    }
+    return dist;
+  }
+  function farthestCellFrom(sx,sy){ const dist=bfsDistancesFrom(sx,sy); let best={x:sx,y:sy,d:-1}; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const d=dist[`${x},${y}`]; if(d!=null && d>best.d){ best={x,y,d}; } } } return best; }
+  function cellsAtDistanceRange(sx,sy,min,max,excludeSet){ const dist=bfsDistancesFrom(sx,sy); const out=[]; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const k=`${x},${y}`; const d=dist[k]; if(d!=null && d>=min && d<=max && !excludeSet.has(k)) out.push({x,y}); } } return out; }
+
+  /********************
+   * Special locations (deliberate placement) *
+   ********************/
+  const keyOf=(o)=> `${o.x},${o.y}`;
+  const START = {x:0, y:0}; // fixed start for a stable experience
+  const FAR = farthestCellFrom(START.x, START.y); // ensure Scriptorium is far
+  const scriptor = {x:FAR.x, y:FAR.y};
+
+  function pickOne(list, used){ if(list.length===0) return null; const r = Math.floor(rng0()*list.length); let chosen=list[r]; let tries=0; while(used.has(keyOf(chosen)) && tries<list.length){ chosen=list[(r+tries)%list.length]; tries++; } return used.has(keyOf(chosen))?null:chosen; }
+
+  const used=new Set([keyOf(START), keyOf(scriptor)]);
+  const nearLF = cellsAtDistanceRange(START.x, START.y, 1, 2, used); // Lost & Found close by
+  const lostFound = pickOne(nearLF, used) || {x:1,y:0}; used.add(keyOf(lostFound));
+  const midMath = cellsAtDistanceRange(START.x, START.y, 2, 4, used); // Maths Alcove early-ish
+  const maths = pickOne(midMath, used) || {x:2,y:0}; used.add(keyOf(maths));
+  const midRef  = cellsAtDistanceRange(START.x, START.y, 3, 6, used); // Reference Desk mid
+  const refDesk = pickOne(midRef, used) || {x:3,y:0}; used.add(keyOf(refDesk));
+  // Vault: one of the most distant spots (not the scriptorium)
+  const distFromStart = bfsDistancesFrom(START.x, START.y);
+  let farList=[]; for(let y=0;y<HEIGHT;y++){ for(let x=0;x<WIDTH;x++){ const d=distFromStart[`${x},${y}`]; if(d!=null) farList.push({x,y,d}); } }
+  farList.sort((a,b)=>b.d-a.d);
+  const vault = farList.find(c=> keyOf(c)!==keyOf(scriptor) && !used.has(keyOf(c))) || {x:WIDTH-1,y:HEIGHT-1}; used.add(keyOf(vault));
+  const chuteCand = cellsAtDistanceRange(START.x, START.y, 2, 5, used);
+  const chute = pickOne(chuteCand, used) || {x:WIDTH-2, y:HEIGHT-2}; used.add(keyOf(chute));
+
+  const KEY_CARRIER = 'BIBLIOTHECA';
+  const LOST_KEY=keyOf(lostFound), REF_KEY=keyOf(refDesk), MATH_KEY=keyOf(maths), SCRIPTOR_KEY=keyOf(scriptor), VAULT_KEY=keyOf(vault), CHUTE_KEY=keyOf(chute), START_KEY=keyOf(START);
+
+  function atLost(x,y){return `${x},${y}`===LOST_KEY}
+  function atRef(x,y){return `${x},${y}`===REF_KEY}
+  function atMath(x,y){return `${x},${y}`===MATH_KEY}
+  function atScribe(x,y){return `${x},${y}`===SCRIPTOR_KEY}
+  function atVault(x,y){return `${x},${y}`===VAULT_KEY}
+  function atChute(x,y){return `${x},${y}`===CHUTE_KEY}
+  function atStart(x,y){return `${x},${y}`===START_KEY}
+
+  /********************
+   * Secret shelf + annex (hidden signal room)
+   ********************/
+  function findSecretShelf(){
+    const dirs=['n','e','s','w'];
+    const r = mulberry32((SEED ^ 0xB00B1E)>>>0);
+    const cands=[];
+    for(let y=0;y<HEIGHT;y++){
+      for(let x=0;x<WIDTH;x++){
+        const g = MAZE[`${x},${y}`]||{};
+        for(const d of dirs){
+          const nx = x+DX[d], ny = y+DY[d];
+          if(d==='w'&&x===0) continue; if(d==='e'&&x===WIDTH-1) continue; if(d==='n'&&y===0) continue; if(d==='s'&&y===HEIGHT-1) continue;
+          if(!g[d]){
+            const k2 = `${nx},${ny}`;
+            if(!used.has(k2)) cands.push({x,y,dir:d,nx,ny});
+          }
+        }
+      }
+    }
+    if(!cands.length){ return {x:1,y:1,dir:'e',nx:2,ny:1}; }
+    return cands[Math.floor(r()*cands.length)];
+  }
+  const SECRET = findSecretShelf();
+  const SECRET_SHELF = {x:SECRET.x, y:SECRET.y, dir:SECRET.dir};
+  const SECRET_ANNEX = {x:SECRET.nx, y:SECRET.ny};
+  const SECRET_SHELF_KEY = `${SECRET_SHELF.x},${SECRET_SHELF.y}`;
+  const SECRET_ANNEX_KEY = `${SECRET_ANNEX.x},${SECRET_ANNEX.y}`;
+
+  function pickBookSpot(){
+    const excl = new Set([...used, SECRET_SHELF_KEY, SECRET_ANNEX_KEY]);
+    const pool = cellsAtDistanceRange(START.x, START.y, 2, WIDTH+HEIGHT, excl);
+    return pickOne(pool,{ has:(k)=>excl.has(k), add:()=>{} }) || {x:1,y:2};
+  }
+  const SECRET_BOOK = pickBookSpot();
+  const SECRET_BOOK_KEY = `${SECRET_BOOK.x},${SECRET_BOOK.y}`;
+
+  function atSecretShelf(x,y){ return `${x},${y}`===SECRET_SHELF_KEY; }
+  function atSecretAnnex(x,y){ return `${x},${y}`===SECRET_ANNEX_KEY; }
+  function atSecretBook(x,y){ return `${x},${y}`===SECRET_BOOK_KEY; }
+
+  /********************
+   * Cipher placement  *
+   ********************/
+  const SIGNAL_COUNT = 12; // fixed number of signal rooms
+  const PLAINTEXT_INSTR = onlyAZ(`SAY ${finalAnswer}`).slice(0, SIGNAL_COUNT);
+  const CIPHER_KEY = KEY_CARRIER; // carried by the card (key only; no auto-decode routes)
+  const CIPHERTEXT = vigenereEncrypt(PLAINTEXT_INSTR, CIPHER_KEY);
+
+  function chooseUniqueCells(count, banned) { 
+    const chosen=new Set(), cells=[];
+    let attempts=0; 
+    const maxAttempts=10000; 
+    const isBanned=(k)=> banned && banned.has(k); 
+    while(cells.length<count && attempts<maxAttempts){ 
+      const x=Math.floor(rng0()*WIDTH), y=Math.floor(rng0()*HEIGHT);
+      const k=`${x},${y}`; 
+      if(!isBanned(k) && !chosen.has(k)){ 
+        chosen.add(k); cells.push({x,y}); 
+      } 
+      attempts++; 
+    } return cells; 
+  }
+
+  const bannedSignals = new Set([...used]);
+  let signalCells = chooseUniqueCells(SIGNAL_COUNT, bannedSignals);
+  // Ensure the hidden annex is a signal room
+  const _annexKey = `${SECRET_ANNEX.x},${SECRET_ANNEX.y}`;
+  if(!signalCells.some(c=> `${c.x},${c.y}`===_annexKey)){
+    if(signalCells.length>=SIGNAL_COUNT){ signalCells[signalCells.length-1] = {x:SECRET_ANNEX.x, y:SECRET_ANNEX.y}; }
+    else { signalCells.push({x:SECRET_ANNEX.x, y:SECRET_ANNEX.y}); }
+  }
+  const SIGNALS = new Map(signalCells.map((c,i)=>[keyOf(c), {index:i+1, letter:CIPHERTEXT[i]}]));
+  function signalHere(x,y){ return SIGNALS.get(`${x},${y}`) || null; }
+
+  function valueToBits(v){ return [1,2,4,8,16].map(bit=> (v & bit)?1:0); }
+  function featuresForLetter(letter){ const v=A2I(letter); const [b1,b2,b3,b4,b5]=valueToBits(v); return { ukColour: !!b1, ukCatalogue: !!b2, badPlural: !!b3, hyphenEndcap: !!b4, enDash: !!b5 }; }
+  function featuresToLetter({ukColour,ukCatalogue,badPlural,hyphenEndcap,enDash}){ const v=(ukColour?1:0)+(ukCatalogue?2:0)+(badPlural?4:0)+(hyphenEndcap?8:0)+(enDash?16:0); return v>=1&&v<=26? I2A(v) : '?'; }
+
+  /********************
+   * Title templates (whimsical, per-visit random)
+   ********************/
+  const TITLE_TEMPLATES=[
+    'The curious case of the {CARD_LOWER} ring',
+    'Proceedings of the {ORD_TITLE} Annual Symposium',
+    'Treatise on {CARD_TITLE} Shadows',
+    '{ORD_TITLE} Appendix to the Catalogue',
+    'Shelf Etiquette, Edition {ORD_TITLE}',
+    'On the {ORD_LOWER} shelf from the end',
+    'A Compendium of {CARD_LOWER} Misprints',
+    'Field Notes from Stack {CARD_TITLE}',
+    'Collected Marginalia, Book {CARD_TITLE}',
+    'The {ORD_TITLE} Problem',
+    'Manual of {CARD_TITLE} Bindings',
+    'The Librarian\'s {ORD_TITLE} Oath',
+    'Notes Toward a {ORD_TITLE} Index',
+    'A Guide to {CARD_TITLE} Dashes',
+    'The {CARD_TITLE} Librarian',
+    'Bestiary of {CARD_TITLE} Dust-Motes',
+    'A Glossary of {CARD_TITLE} Footfalls',
+    'The {ORD_TITLE} Annual Almanac',
+    'On Cataloguing the {CARD_TITLE}',
+    'An Essay Concerning {CARD_TITLE} Silence',
+    'Addenda to the {ORD_TITLE} Folio',
+    'The {ORD_TITLE} Chorale for Whispered Voices',
+    'A Praxis of {CARD_TITLE} Charms',
+    'Stack Protocols, Rev. {ORD_TITLE}',
+    'The {ORD_TITLE} Treatise on Lanterns',
+    'Guidebook to {CARD_TITLE} Secret Doors',
+    'Collected Errancies, Shelf {CARD_TITLE}',
+    'The Librarian\'s Pocket {ORD_TITLE} Almanac',
+    'Appendix {CARD_TITLE}: On Proper Shushing',
+    'Rituals for the {ORD_TITLE} Reshelving',
+    'The {ORD_TITLE} Concordance of End-Caps',
+    'A Manual for {CARD_TITLE} Book-Plate Removal',
+    'Theses on {CARD_TITLE} Stairs',
+    'The {ORD_TITLE} Chronicle of Dust',
+    'Songs for the {ORD_TITLE} Shift',
+    'On the Nature of {CARD_TITLE} Keys',
+    'The {ORD_TITLE} Theory of Quiet Footfalls',
+    'Catalogue of {CARD_TITLE} Lamps',
+    'The {ORD_TITLE} Riddle of the Stacks',
+    'Vade Mecum of {CARD_TITLE} Covers',
+    'A Compendium of {CARD_TITLE} Corridors',
+    'The {ORD_TITLE} Primer on Binding Charms',
+    'Notes on a {CARD_TITLE} Silence',
+    'The {ORD_TITLE} Gazetteer of Aisles',
+    '{ORD_TITLE} Observations on Whisper Pressure',
+    'Pocket Atlas of {CARD_TITLE} Endcaps',
+    'The {ORD_TITLE} Desk Manual',
+    'A Gloss of {CARD_TITLE} Misprints',
+    'The {ORD_TITLE} Guide to Wayfinding',
+    '{ORD_TITLE} Steps for Unjamming the Chute',
+    'On the Proper Storage of {CARD_TITLE} Runes',
+    'Dramatis Personae of the {ORD_TITLE} Shift',
+    'The {ORD_TITLE} Ledger of Borrowed Time',
+    'Handbook of {CARD_TITLE} Placards',
+    'A Concordance of {CARD_TITLE} Spines',
+    'The {ORD_TITLE} Compendium of Quiet',
+    'Monograph on {CARD_TITLE} Wrap Corridors',
+    'The {ORD_TITLE} Ethics of Shelving',
+    'Exercises for {CARD_TITLE} Whisperers',
+    'The {ORD_TITLE} Handbook of Stacked Mazes',
+    'Sir {CARD_TITLE} and the Catalogue Beast',
+    'The {ORD_TITLE} Inquiry into Lost & Found',
+    'Pocket Rituals for {CARD_TITLE} Patrons',
+    'The {ORD_TITLE} Manual of Reading Lights',
+    'A Novitiate\'s Guide to {CARD_TITLE} Indices',
+    'The {ORD_TITLE} Appendix on Folio Decay',
+    'Journeys through {CARD_TITLE} Passages',
+    'The {ORD_TITLE} Codex of Shaded Corners',
+    'On {CARD_TITLE} Door-Latches and Their Care',
+    'The {ORD_TITLE} Handbook of Whispered Maps',
+    'Miscellanies of {CARD_TITLE} Margins',
+    'The {ORD_TITLE} Logic of Aisle Numbers',
+    'Treatise on {CARD_TITLE} Dew',
+    'The {ORD_TITLE} Ritual of Closing Time',
+    'An Index of {CARD_TITLE} Gutter Shadows',
+    'The {ORD_TITLE} Compendium of Aisle Etiquette',
+    'Pocketbook of {CARD_TITLE} Lantern Oils',
+    'The {ORD_TITLE} Onomasticon of Stacks',
+    'Studies in {CARD_TITLE} Silence',
+    'The {ORD_TITLE} Omnibus of Errata',
+    'A Practicum in {CARD_TITLE} Wayfinding',
+    'The {ORD_TITLE} Book of Quiet Alarms'
+  ];
+  const FAUX_TEMPLATES=[
+    'On Dewy Motes',
+    'The Silence of Glue',
+    'A Treatise on Endcaps',
+    'Catalogue of Lost Footfalls',
+    'The Placard\'s Whisper',
+    'Margins & Marginalia',
+    'Lexicon of Lantern Gutterings',
+    'Bindings: A Field Survey',
+    'Spines & Whispers',
+    'Collected Errata, Vol. III',
+    'The Politeness of Bookends',
+    'On the Care of Paper Snakes',
+    'A Short History of Dust',
+    'Manual for Quiet Boots',
+    'Topologies of the Reading Nook',
+    'A Guide to Night Librarianship',
+    'The Indexer\'s Lullaby',
+    'An Almanac of Lamp Oils',
+    'The Secret Lives of Footnotes',
+    'Gutters: A Love Story',
+    'Treatise on Whisper Drafts',
+    'A Glossary of Hushed Tones',
+    'Errata of the Errata',
+    'Corridors: A User\'s Manual',
+    'Shelf-Knots and How to Untie Them',
+    'The Semiotics of Quiet',
+    'Placards: A Field Guide',
+    'On Misremembered Titles',
+    'The Anatomy of a Bookmark',
+    'An Essay on Shelf Goblins',
+    'Cart Wheels and Their Songs',
+    'The Practicum of Polite Coughs',
+    'An Atlas of Unhelpful Maps',
+    'Bindings of Unusual Texture',
+    'A Pocket Guide to Sighs',
+    'Twenty Uses for Old Catalog Cards',
+    'The Alchemy of Paste',
+    'A Manual for Careful Sneezes',
+    'The Door That Wasn\'t There',
+    'Quiet Bells for Loud Times',
+    'A Compendium of Faded Stamps'
+  ];
+  function toTitleCase(str){ return str.toLowerCase().split(/([ -])/).map(part=> (part===' '||part==='-')?part:part.charAt(0).toUpperCase()+part.slice(1)).join(''); }
+  function formatCase(w,mode){ if(mode==='lower') return w.toLowerCase(); if(mode==='title') return toTitleCase(w); return w; }
+  const WORDS=["ZERO","ONE","TWO","THREE","FOUR","FIVE","SIX","SEVEN","EIGHT","NINE","TEN","ELEVEN","TWELVE","THIRTEEN","FOURTEEN","FIFTEEN","SIXTEEN","SEVENTEEN","EIGHTEEN","NINETEEN","TWENTY","TWENTY-ONE","TWENTY-TWO","TWENTY-THREE","TWENTY-FOUR","TWENTY-FIVE","TWENTY-SIX"]; 
+  const ORD_WORDS=["ZEROTH","FIRST","SECOND","THIRD","FOURTH","FIFTH","SIXTH","SEVENTH","EIGHTH","NINTH","TENTH","ELEVENTH","TWELFTH","THIRTEENTH","FOURTEENTH","FIFTEENTH","SIXTEENTH","SEVENTEENTH","EIGHTEENTH","NINETEENTH","TWENTIETH","TWENTY-FIRST","TWENTY-SECOND","TWENTY-THIRD","TWENTY-FOURTH","TWENTY-FIFTH","TWENTY-SIXTH"]; 
+  function numWord(n,mode='upper'){ const w = WORDS[n] || String(n); return formatCase(w,mode); }
+  function ordWord(n,mode='upper'){ const w = ORD_WORDS[n] || String(n); return formatCase(w,mode); }
+
+  // Per-visit cache: regenerated when you leave/enter a room
+  let visitTitle = null; // holds last computed title for current room until you move
+  function makeSignalTitle(idx){
+    const modes=['lower','title'];
+    const template = TITLE_TEMPLATES[Math.floor(Math.random()*TITLE_TEMPLATES.length)];
+    const cardMode = modes[Math.floor(Math.random()*modes.length)];
+    const ordMode  = modes[Math.floor(Math.random()*modes.length)];
+    return template
+      .replaceAll('{CARD_LOWER}', numWord(idx, cardMode))
+      .replaceAll('{CARD_TITLE}', numWord(idx, cardMode))
+      .replaceAll('{CARD_UPPER}', numWord(idx, cardMode))
+      .replaceAll('{ORD_LOWER}', ordWord(idx, ordMode))
+      .replaceAll('{ORD_TITLE}', ordWord(idx, ordMode))
+      .replaceAll('{ORD_UPPER}', ordWord(idx, ordMode));
+  }
+
+  /********************
+   * Room description *
+   ********************/
+  function exitsFromTwisty(){ return ['n','e','s','w']; }
+
+  function roomDescriptor(x,y, normalized){
+    const localSeed = (x*2654435761 ^ y*1597334677 ^ SEED) >>> 0; const r = mulberry32(localSeed);
+
+    const sig = signalHere(x,y);
+    const forced = sig ? featuresForLetter(sig.letter) : null;
+
+    // Scoring quirks
+    const colour = (forced? forced.ukColour : (r()<0.5)) ? 'colour' : 'color';
+    const cat    = (forced? forced.ukCatalogue : (r()<0.5)) ? 'catalogue' : 'catalog';
+    const shelf  = (forced? forced.badPlural : (r()<0.2)) ? 'shelfs' : 'shelves';
+    const endcap = (forced? forced.hyphenEndcap : (r()<0.5)) ? 'end-cap' : 'endcap';
+    const dash   = (forced? forced.enDash : (r()<0.4)) ? '–' : '-';
+
+    // Decoys (toned down when normalized)
+    const pickOr = (a)=> normalized? a[0] : pick(r,a);
+    const light  = pickOr(['faint','wan','thin','flickering','flickring','guttering']);
+    const dust   = pickOr(['dust motes','dust‑motes','motes of dust']);
+    const hush   = pickOr(['please be quiet','quiet please','hush']);
+    const quotes = pickOr(['"Restricted Section"','“Restricted Section”','‘Restricted Section’']);
+    const cart   = pickOr(['book cart','book‑cart','bookcart']);
+    const smell  = pickOr(['glue','adhesive','paste']);
+    const aisles = pickOr(['aisles','stacks','passages']);
+    const space  = normalized? ' ' : (r()<0.5 ? ' ' : '  ');
+    const comma  = normalized? ',' : (r()<0.5 ? ',' : ';');
+
+    const lines = [];
+
+    // Unique rooms flavor
+    if (atLost(x,y)){
+      lines.push(`A narrow counter bristles with ${cart}s and a little sign: "Lost & Found".`);
+      lines.push('A shallow drawer is ajar.');
+    }
+    else if (atRef(x,y)){
+      lines.push('A high desk looms here. The librarian peers over spectacles.');
+      lines.push('You could <present card> or <ask librarian about ...>.');
+    }
+    else if (atMath(x,y)){
+      lines.push(`You enter a mathematics alcove. Chalk dust hangs in the ${colour}less light.`);
+      lines.push('Diagrams sprawl over a slate. You might <read primer>.');
+    }
+    else if (atScribe(x,y)){
+      lines.push('A scriptorium desk hums with a copying charm.');
+      lines.push('You can <normalize on> to quiet the typographical noise, or <normalize off>.');
+    }
+    else if (atVault(x,y)){
+      lines.push('An ironbound door dominates the west wall.');
+      lines.push('A brass plaque reads: "When you have decrypted the library\'s whisper, <say WORD>."');
+    }
+    else if (atChute(x,y)){
+      lines.push('A humming book‑return chute yawns to the south. A paper sign: "Mind the drop."');
+    }
+
+    // Baseline description with scoring features woven in
+    if(atSecretShelf(x,y) && !state.secretOpen){
+      const dirName={n:'north',e:'east',s:'south',w:'west'}[SECRET_SHELF.dir];
+      lines.push(`On the ${dirName} side, a shelf shows a conspicuous gap where a volume is missing.`);
+      lines.push('A faint draft slips through the join between shelf and wall.');
+      if(state.hasSecretBook){ lines.push('The book you carry looks like it would fit that gap exactly. (Try <put book>.)'); }
+    }
+    if(atSecretAnnex(x,y)){
+      lines.push('A narrow secret annex hides behind a movable shelf. Dust lies untouched.');
+    }
+    if(atSecretBook(x,y) && !state.hasSecretBook){
+      lines.push('A slim volume rests on a low shelf, its spine titled "The Secret Passage".');
+    }
+    lines.push(`You are in the library ${aisles} — twisty little corridors, all alike${comma}${space}lit by ${light} lamps.`);
+    lines.push(`The ${shelf} smell faintly of ${smell} and ${cat}. ${dust} drift in the ${colour}less light.`);
+    lines.push(`At the ${endcap}, a painted placard whispers ${quotes}${dash}${hush}.`);
+
+    if (normalized){ lines.push(`[normalized] features → ${colour}/${cat}/${shelf}/${endcap}/${dash}`); }
+
+    const exits = biToggle.checked ? exitsMaze(x,y) : exitsFromTwisty();
+    const exitNames = {n:'north', e:'east', s:'south', w:'west'};
+    const exitsLine = `Exits: ${exits.map(d=>exitNames[d]).join(', ') || '(none)'}.`;
+
+    return { lines, exitsLine, features: {ukColour:colour==='colour', ukCatalogue:cat==='catalogue', badPlural:shelf==='shelfs', hyphenEndcap:endcap==='end-cap', enDash:dash==='–'}, sig };
+  }
+
+  /********************
+   * Engine & I/O      *
+   ********************/
+  const view = document.getElementById('view');
+  const cmdInput = document.getElementById('cmd');
+  const btnHelp = document.getElementById('btnHelp');
+  const btnLook = document.getElementById('btnLook');
+  const btnSettings = document.getElementById('btnSettings');
+  const settingsDialog = document.getElementById('settingsDialog');
+  const speedInput = document.getElementById('speed');
+  const instantToggle = document.getElementById('instantToggle');
+  const contrastToggle = document.getElementById('contrastToggle');
+  const debugToggle = document.getElementById('debugToggle');
+  const lastOnlyToggle = document.getElementById('lastOnlyToggle');
+  const biToggle = document.getElementById('biToggle');
+  const revealMapToggle = document.getElementById('revealMapToggle');
+
+  let typing=false, skipCurrent=false, typeSpeed=Number(speedInput.value);
+  document.addEventListener('keydown', (e)=>{ if (e.key==='Escape' && typing){ skipCurrent=true; } });
+  speedInput.addEventListener('change', ()=>{ typeSpeed = Math.max(0, Number(speedInput.value)||0); });
+  btnSettings.addEventListener('click', ()=> settingsDialog.showModal());
+  btnHelp.addEventListener('click', ()=> issue('help'));
+  btnLook.addEventListener('click', ()=> issue('look'));
+  lastOnlyToggle.addEventListener('change', ()=>{ view.style.overflow = lastOnlyToggle.checked? 'hidden':'auto'; });
+  if (lastOnlyToggle.checked) { view.style.overflow = 'hidden'; }
+
+  const queue=[]; function print(text, cls){ queue.push({text,cls}); if(!typing) processQueue(); }
+  function processQueue(){ if(queue.length===0){ typing=false; return; } typing=true; const {text,cls}=queue.shift(); const div=document.createElement('div'); div.className='line'+(cls?' '+cls:''); view.appendChild(div); typewrite(div,text,()=>{ view.scrollTop=view.scrollHeight; processQueue(); }); }
+  function typewrite(el, text, done){ if (instantToggle.checked || typeSpeed===0){ el.textContent=text; done(); return; } skipCurrent=false; el.textContent=''; let i=0; const tick=()=>{ if(skipCurrent){ el.textContent=text; done(); return; } el.textContent += text[i++]; if(i<text.length){ setTimeout(tick, typeSpeed);} else { done(); } }; setTimeout(tick, typeSpeed); }
+  function echoCommand(cmd){ print('> '+cmd, 'prompt'); }
+  function clearForLastOnly(){ if(!lastOnlyToggle.checked) return; queue.length=0; typing=false; view.innerHTML=''; }
+
+  function issue(cmd, suppressEcho=false, done){
+    if(lastOnlyToggle.checked){ clearForLastOnly(); }
+    if(!suppressEcho) echoCommand(cmd);
+    parse(cmd);
+    if(typeof done==='function') done();
+  }
+
+  /********************
+   * Game State        *
+   ********************/
+  const state = {
+    x: START.x, y: START.y, steps:0,
+    hasCard:false, normalized:false,
+    notes:[], // items: {index, letter}
+    inVault:false, hasSecretBook:false, secretOpen:false
+  };
+  function hereKey(){ return `${state.x},${state.y}` }
+
+  /********************
+   * Map rendering (debug, with signal markers) *
+   ********************/
+  function asciiMazeLines(){
+    const lines=[];
+    const isSignal = (x,y)=> !!signalHere(x,y);
+    const baseChar=(x,y)=>{
+      if(atStart(x,y)) return 'S';
+      if(atScribe(x,y)) return 'T';
+      if(atLost(x,y)) return 'F';
+      if(atRef(x,y)) return 'R';
+      if(atMath(x,y)) return 'A';
+      if(atVault(x,y)) return 'V';
+      if(atChute(x,y)) return 'C';
+      return ' ';
+    };
+    for(let y=0;y<HEIGHT;y++){
+      // top borders (show wrap gaps on top row)
+      let top='+'; for(let x=0;x<WIDTH;x++){ const openN = (MAZE[`${x},${y}`]||{}).n; top += (openN? '   ' : '---') + '+'; } lines.push(top);
+      // middle row with left borders; mark signals
+      let mid=''; for(let x=0;x<WIDTH;x++){
+        const g=MAZE[`${x},${y}`]||{}; const openW = g.w; const bc = baseChar(x,y);
+        let ch = bc;
+        if(state.x===x && state.y===y){ ch='@'; }
+        else if(isSignal(x,y)){
+          ch='*';
+        }
+        mid += (openW? ' ' : '|') + ' ' + ch + ' ';
+      }
+      // right border: show wrap gap if the last cell has an east wrap
+      const openEedge = (MAZE[`${WIDTH-1},${y}`]||{}).e; mid += (openEedge? ' ' : '|');
+      lines.push(mid);
+    }
+    // bottom border (show wrap gaps on bottom row)
+    let bottom='+'; for(let x=0;x<WIDTH;x++){ const openSedge = (MAZE[`${x},${HEIGHT-1}`]||{}).s; bottom += (openSedge? '   ' : '---') + '+'; } lines.push(bottom);
+    lines.push('Legend: @ you, S start, T scriptorium, F lost&found, R reference, A mathematics, V vault, C chute, * signal. Border gaps indicate wrap corridors.');
+    return lines;
+  }
+  function printMaze(){ asciiMazeLines().forEach(s=>print(s)); }
+
+  /********************
+   * Core actions      *
+   ********************/
+  function look(){
+    const d = roomDescriptor(state.x, state.y, state.normalized);
+    d.lines.forEach(t=>print(t));
+    print(d.exitsLine, 'exits');
+    if(revealMapToggle.checked && biToggle.checked){ print(''); printMaze(); }
+    if (debugToggle.checked){ const sig = signalHere(state.x, state.y); const ex = biToggle.checked? exitsMaze(state.x,state.y).join(''):'nesw'; print(`[debug] coords=${state.x},${state.y} sig=${sig?sig.index+'('+sig.letter+')':'-'} exits=${ex}`, 'muted'); }
+  }
+
+  function move(dir){
+    if (state.inVault){ if (dir==='e'){ state.inVault=false; clearForLastOnly(); print('You step back into the stacks from the vault.'); visitTitle=null; look(); } else { clearForLastOnly(); print('Stone walls hem you in. Only east returns you to the stacks.'); } return; }
+
+    // Chute teleport for disorientation
+    if (atChute(state.x,state.y) && dir==='s'){
+      const rx=Math.floor(rng0()*WIDTH), ry=Math.floor(rng0()*HEIGHT); clearForLastOnly(); print('You drop into the return chute…'); state.x=rx; state.y=ry; state.steps++; visitTitle=null; look(); return; }
+
+    if (biToggle.checked){
+      const nb = neighborMaze(state.x, state.y, dir);
+      clearForLastOnly();
+      if(nb.blocked){ print('Towering shelves block your way.'); return; }
+      state.x=nb.x; state.y=nb.y; state.steps++; visitTitle=null; look(); return;
+    }
+
+    // Fallback: twisty (legacy) — not default
+    const di={n:0,e:1,s:2,w:3}[dir]; const localSeed=(state.x*73856093) ^ (state.y*19349663) ^ (di*83492791) ^ SEED; const r=mulberry32(localSeed); let dx=Math.floor(r()*3)-1, dy=Math.floor(r()*3)-1; if(dx===0&&dy===0) dy=-1; if (di===0 && r()<0.6) dy=-1; if (di===2 && r()<0.6) dy=1; if (di===1 && r()<0.6) dx=1; if (di===3 && r()<0.6) dx=-1;
+    state.x = Math.max(0, Math.min(WIDTH-1, state.x+dx)); state.y = Math.max(0, Math.min(HEIGHT-1, state.y+dy)); state.steps++; visitTitle=null; clearForLastOnly(); look();
+  }
+
+  function openThing(what){ clearForLastOnly(); if(!what){ print('Open what?'); return; } if(atLost(state.x,state.y) && /(drawer|lost|found|counter)/.test(what)){ print('You slide the shallow drawer open. Inside lies a scuffed library card.'); return; } print("It doesn't seem to open."); }
+  function takeThing(what){
+    clearForLastOnly();
+    if(!what){ print('Take what?'); return;}
+    if(atLost(state.x,state.y) && /(card|library card)/.test(what)){
+      if(state.hasCard){ print('You already pocketed the card.'); }
+      else { state.hasCard=true; print('Taken: a scuffed library card warm from your palm.'); }
+      return;
+    }
+    if(atSecretBook(state.x,state.y) && /(book|secret passage)/i.test(what)){
+      if(state.hasSecretBook){ print('You already have the slim volume.'); }
+      else { state.hasSecretBook=true; print('Taken: "The Secret Passage". The cover smells faintly of paste.'); }
+      return;
+    }
+    print("You can't take that.");
+    if(atLost(state.x,state.y) && /(card|library card)/.test(what)){ if(state.hasCard){ print('You already pocketed the card.'); } else { state.hasCard=true; print('Taken: a scuffed library card warm from your palm.'); } return;} print("You can't take that."); 
+  }
+  function readThing(obj){ clearForLastOnly(); obj=(obj||'').toLowerCase(); if(/^(card|library card)$/.test(obj)){ if(!state.hasCard){ print('You do not seem to have a card.'); return;} print('LIBRARY CARD'); print('  Patron: ______________'); print('  Issued by: Bibliotheca'); print('  Barcode: BIBLIOTHECA'); print('  Note: Card may activate certain catalogue enchantments.'); return; }
+    if((/^(primer|chalkboard|slate|math|mathematics|board)$/).test(obj) && atMath(state.x,state.y)){
+      print('Primer on the Vigenère Cipher:');
+      print('  1) Strip text to letters A–Z.');
+      print('  2) Your library card whispers the KEYWORD.');
+      print('  3) Encrypt/decrypt by shifting each letter by the keyword letter (wrap 26).');
+      print('  4) Here, special aisles hide a letter using five toggles weighted 1,2,4,8,16 → A=1…Z=26.');
+      print('  5) Pull a book in any aisle; if it belongs to the whisper, its title includes a spelled-out index (e.g., "Twelfth"). Collect letters in that order.');
+      return;
+    }
+    if((/^(plaque|sign|note|instructions)$/).test(obj) && atVault(state.x,state.y)){
+      print('The plaque reads:');
+      print('  "When you have deciphered the library\'s whisper, speak it here: say <WORD>."');
+      return;
+    }
+    if((/^(librarian|desk|reference|reference desk)$/).test(obj) && atRef(state.x,state.y)){
+      print('The librarian murmurs:');
+      print('  "Titles sometimes hide an **order**. Cards, a **key**."');
+      return;
+    }
+    print('It is mostly illegible.'); }
+
+  function presentCard(){ clearForLastOnly(); if(!atRef(state.x,state.y)){ print('You wave the card hopefully. Nothing happens.'); return; } if(!state.hasCard){ print('You have no card to present.'); return; } print('The librarian stamps your card and nods. "You will find that some titles are more helpful than others."'); }
+
+  function normalizeCmd(arg){ if(!atScribe(state.x,state.y)){ clearForLastOnly(); print("The scriptorium spell doesn't reach this far."); return; } const a=(arg||'').trim().toLowerCase(); if(a==='on'){ state.normalized=true; } else if(a==='off'){ state.normalized=false; } else { state.normalized=!state.normalized; } clearForLastOnly(); print('Normalization ' + (state.normalized?'on.':'off.')); look(); }
+
+  function pullBook(){
+    clearForLastOnly();
+    const sig = signalHere(state.x,state.y);
+    if(!visitTitle){
+      if(sig){
+        visitTitle = makeSignalTitle(sig.index);
+      } else {
+        visitTitle = FAUX_TEMPLATES[Math.floor(Math.random()*FAUX_TEMPLATES.length)];
+      }
+    }
+    if(sig){
+      print('You slide out a slim volume. Its gilt title reads:');
+      print(`  "${visitTitle}."`);
+      print('You replace it carefully.');
+    } else {
+      print('You pull a cracked volume from the shelf. Its title reads:');
+      print(`  "${visitTitle}."`);
+      print('You replace it carefully.');
+    }
+  }
+
+  function noteHere(){ clearForLastOnly(); const sig = signalHere(state.x,state.y); const d = roomDescriptor(state.x,state.y,state.normalized); const letter = featuresToLetter(d.features); if(!sig){ print('You try to make a note, but this aisle holds no special letter.'); return; } const idx = sig.index; const existingIndex = state.notes.findIndex(n=>n.index===idx); if(existingIndex>=0){ state.notes[existingIndex].letter = letter; } else { state.notes.push({index:idx, letter}); } print(`Noted: position ${idx} → ${letter}.`); }
+  function showNotes(){ clearForLastOnly(); if(state.notes.length===0){ print('Your notebook is blank.'); return; } const sorted = [...state.notes].sort((a,b)=>a.index-b.index); const seq = sorted.map(n=>n.letter).join(''); print('Notes (ordered): ' + sorted.map(n=>`[${n.index}:${n.letter}]`).join(' ')); print('Ciphertext (from notes): ' + seq); print('Decrypt with the keyword on your card.'); }
+  function clearNotes(){ clearForLastOnly(); state.notes=[]; print('You tear out the page. Notes cleared.'); }
+
+  function sayWord(raw){ clearForLastOnly(); if(!atVault(state.x,state.y)){ print('Your whisper is swallowed by the stacks.'); return; } const spoken = (raw||'').trim().toUpperCase(); if(!spoken){ print('Say what?'); return; } if(spoken===finalAnswer){ print('The door warms beneath your hand and swings inward. A codex on a lectern lies open to the answer you sought.'); state.inVault=true; } else { print('The vault remains cold. The word is not quite right.'); } 
+    }
+
+
+
+
+  function placeBook(){
+    clearForLastOnly();
+    if(!state.hasSecretBook){ print('You have nothing that seems to fit any gap.'); return; }
+    if(!atSecretShelf(state.x,state.y)){ print('There\'s no obvious place to put that here.'); return; }
+    if(state.secretOpen){ print('The shelf already stands ajar.'); return; }
+    const dir=SECRET_SHELF.dir; const a=`${SECRET_SHELF.x},${SECRET_SHELF.y}`; const b=`${SECRET_ANNEX.x},${SECRET_ANNEX.y}`;
+    if(!MAZE[a]) MAZE[a]={}; if(!MAZE[b]) MAZE[b]={};
+    MAZE[a][dir]=true; MAZE[b][OPP[dir]]=true;
+    state.secretOpen=true;
+    print('You slide "The Secret Passage" into the waiting gap. With a soft click, the shelving pivots open to the '+{n:'north',e:'east',s:'south',w:'west'}[dir]+'.');
+  } 
+
+
+
+  function help(){ clearForLastOnly();
+    print('Commands:');
+    print('  n/e/s/w — move (chain with ";" e.g., n;n;e;look)');
+    print('  look — re-describe this aisle');
+    print('  open <drawer> — at Lost & Found');
+    print('  take <card|book> — pick up the library card (keyword) or the slim volume "The Secret Passage"');
+    print('  read <card|primer|plaque|librarian> — lore & instructions');
+    print('  present card — at the Reference Desk (flavor hint only)');
+    print('  normalize [on|off] — at the Scriptorium; hides decoy typography');
+    print('  pull book — reveals a whimsical title; if it\'s a signal room, the title hides an index word');
+    print('  put/insert/place book — at the gapped shelf, opens a hidden passage');
+    print('  note — record the encoded letter here (if any); notes — list; clear notes — reset');
+    print('  say <WORD> — at the Vault, speak the final word');
+    print('  maze — print an ASCII map (debug). Signals are marked as *.');
+    print('  selftest — run internal checks');
+    print('  seed — show world seed (signal placement only); settings — open settings; map — declines politely; quit — clears the screen');
+  }
+
+  function parse(cmd){ cmd = (cmd||'').trim(); if(!cmd) return; const raw=cmd; cmd=cmd.toLowerCase();
+    if(cmd.includes(';')){ const parts=cmd.split(';').map(s=>s.trim()).filter(Boolean); let i=0; const runNext=()=>{ if(i<parts.length){ issue(parts[i++], true, runNext); } }; runNext(); return; }
+    if(['n','north'].includes(cmd)) return move('n');
+    if(['e','east'].includes(cmd)) return move('e');
+    if(['s','south'].includes(cmd)) return move('s');
+    if(['w','west'].includes(cmd)) return move('w');
+    if(['l','look','examine','x'].includes(cmd)) return look();
+    if(cmd==='help'||cmd==='?') return help();
+    if(cmd==='settings'){ settingsDialog.showModal(); return; }
+    if(cmd==='seed'){ clearForLastOnly(); print(`Seed: ${seedParam}`); return; }
+    if(cmd==='maze'){ clearForLastOnly(); if(!biToggle.checked){ print('Maze view only works in Maze mode. Toggle it on in settings.'); } else { printMaze(); } return; }
+    if(cmd==='selftest'){ clearForLastOnly(); runSelfTests(); return; }
+    if(cmd==='map'){ clearForLastOnly(); print('You try to sketch a plan, but you can\'t seem to draw a reliable map.'); return; }
+    if(cmd==='quit'||cmd==='restart'){ view.innerHTML=''; visitTitle=null; intro(); return; }
+
+    if(cmd.startsWith('open ')) return openThing(raw.slice(5));
+    if(cmd.startsWith('take ')) return takeThing(raw.slice(5));
+    if(cmd.startsWith('read ')) return readThing(raw.slice(5));
+    if(cmd==='present card') return presentCard();
+    if(cmd.startsWith('normalize')){ return normalizeCmd(raw.slice(9).trim()); }
+    if(cmd==='pull book' || cmd==='pull' || cmd==='browse' || cmd==='check shelf' || cmd==='inspect book' || cmd==='take book') return pullBook();
+    if(cmd==='note') return noteHere();
+    if(cmd==='notes') return showNotes();
+    if(cmd==='clear notes') return clearNotes();
+    if(cmd.startsWith('say ')) return sayWord(raw.slice(4));
+    if(cmd==='put book' || cmd==='insert book' || cmd==='place book' || cmd==='use book' || cmd==='return book') return placeBook();
+
+    if(cmd.startsWith('ask ')){
+      if(!atRef(state.x,state.y)){ clearForLastOnly(); print('No one answers.'); return; }
+      const about = raw.slice(4).trim();
+      if(/(cipher|vigenere|key|card|keyword|index|title|maze)/i.test(about)){ clearForLastOnly(); print('The librarian whispers: "The **issuer** names a key; the **title** names a place in line. Those who love maps may say ‘maze’."'); return; }
+      clearForLastOnly(); print('The librarian raises an eyebrow and waits.'); return;
+    }
+
+    clearForLastOnly();
+    print(`I don't understand "${cmd}".`);
+    print('Try: help');
+  }
+
+  function intro(){
+    clearForLastOnly();
+    print('Your lantern guttered as you slipped past the rope into the Restricted Stacks.');
+    print('A labyrinth of aisles stretches in every direction — twisty, almost identical.');
+    print('Some differences are subtle. Attentive readers will notice what the hurried eye misses.');
+    look();
+  }
+
+  /********************
+   * Self-tests (dev)  *
+   ********************/
+  function runSelfTests(){
+    const results=[]; const ok=(cond,msg)=>{ results.push((cond?'✅':'❌')+' '+msg); };
+    try { ok(typeof issue==='function', 'issue() is defined'); } catch(e){ ok(false, 'issue() throws'); }
+    try { issue('look', true); ok(true, 'can call issue("look")'); } catch(e){ ok(false, 'issue("look") failed: '+e); }
+    ok(WIDTH>=7, 'wider maze (WIDTH='+WIDTH+')');
+
+    // Invertibility (one step) in maze mode
+    if(biToggle.checked){
+      const exits = exitsMaze(state.x, state.y);
+      if(exits.length){
+        const dir=exits[0]; const sx=state.x, sy=state.y; move(dir); move(OPP[dir]); ok(state.x===sx && state.y===sy, 'maze step is invertible for one move');
+      } else { ok(true, 'start has no exits? (skipped)'); }
+    } else { ok(true, 'maze mode off — invertibility test skipped'); }
+
+    // At least one toroidal wrap exists and behaves as wrap
+    let yWrap=-1; for(let y=0;y<HEIGHT;y++){ if((MAZE[`0,${y}`]||{}).w || (MAZE[`${WIDTH-1},${y}`]||{}).e){ yWrap=y; break; } }
+    if(yWrap>=0){ const sx=0, sy=yWrap; state.x=sx; state.y=sy; const prevNotes=state.steps; move('w'); ok(state.x===WIDTH-1 && state.y===sy, 'horizontal wrap works (0,y) ←w→ (W-1,y)'); move('e'); ok(state.x===0 && state.y===sy, 'wrap-back east works'); }
+    else { ok(false, 'no horizontal wrap added'); }
+
+    // Signal markers appear on map
+    const mapLines = asciiMazeLines();
+    const gridOnly = mapLines.slice(0, mapLines.length-1).join('');
+    const markerCount = (gridOnly.match(/\*/g)||[]).length; // '*' markers only
+    ok(markerCount>0, 'signal markers present on map');
+
+    // No signal overlaps a special room
+    const overlap = [...SIGNALS.keys()].some(k => used.has(k));
+    ok(!overlap, 'no signal overlaps a special');
+
+    // Secret annex is a signal, and shelf starts blocked
+    ok(SIGNALS.has(SECRET_ANNEX_KEY), 'secret annex is a signal room');
+    ok(!(MAZE[SECRET_SHELF_KEY]||{})[SECRET_SHELF.dir], 'secret shelf initially blocked');
+
+    // Exactly SIGNAL_COUNT signals present and ciphertext length matches
+    ok(SIGNALS.size === SIGNAL_COUNT, 'exactly '+SIGNAL_COUNT+' signal rooms');
+    ok(CIPHERTEXT.length === SIGNAL_COUNT, 'ciphertext length = '+SIGNAL_COUNT);
+
+    print('Self-tests:', 'muted'); results.forEach(r=>print('  '+r, 'muted'));
+  }
+
+  // Boot (robust)
+  function boot(){
+    try{
+      intro();
+      if(runSelfTestsParam){ runSelfTests(); }
+      const form = document.getElementById('cmdbar');
+      if(form){
+        form.addEventListener('submit', (e)=>{ e.preventDefault(); const val=cmdInput.value; cmdInput.value=''; issue(val); });
+      }
+      const obs = new MutationObserver(()=>{ if(view){ view.scrollTop = view.scrollHeight; } });
+      if(view){ obs.observe(view, {childList:true}); }
+    }catch(e){
+      const fallback = document.getElementById('view') || document.body;
+      const div = document.createElement('div');
+      div.className='line muted';
+      div.textContent = 'Startup error: ' + (e && e.message ? e.message : e);
+      fallback.appendChild(div);
+      console.error(e);
+    }
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+  </script>
+</body>
+</html>

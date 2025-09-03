@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Library Clicker</title>
+  <style>
+    :root{
+      --bg:#0e0f13; /* very dark slate */
+      --panel:#151823;
+      --ink:#f5f7ff;
+      --muted:#b6bdd3;
+      --accent:#81e6d9;
+      --accent-2:#ffd166;
+      --danger:#ff6b6b;
+      --good:#8aff8a;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0; font:16px/1.4 system-ui, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Noto Color Emoji;
+      color:var(--ink); background:linear-gradient(180deg,#0b0c12 0%, var(--bg) 100%);
+    }
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:1rem;
+      padding:16px 20px; background:#0b0d14; position:sticky; top:0; z-index:10; box-shadow:0 2px 0 rgba(255,255,255,0.04) inset;
+    }
+    header h1{font-weight:800; letter-spacing:.5px; font-size:20px; margin:0}
+    .tag{font-size:12px; color:var(--muted);}
+
+    .wrap{display:grid; grid-template-columns: 1.3fr .9fr; gap:18px; padding:18px; max-width:1100px; margin:0 auto;}
+
+    .card{background:var(--panel); border:1px solid rgba(255,255,255,.06); border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.25);}
+    .card h2{margin:0; padding:12px 14px; font-size:14px; letter-spacing:.4px; color:var(--muted); border-bottom:1px solid rgba(255,255,255,.06)}
+    .card .body{padding:14px}
+
+    .stats{display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; margin-bottom:10px}
+    .stat{background:#0f1220; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:10px}
+    .stat .v{font-weight:800; font-size:20px}
+    .stat .k{color:var(--muted); font-size:12px}
+
+    .bookzone{display:grid; place-items:center; padding:20px 0 10px}
+    .book{cursor:pointer; width:220px; height:300px; border-radius:14px; border:1px solid rgba(255,255,255,.08); background:linear-gradient(145deg,#26324a,#1a2640); position:relative; display:grid; place-items:center; transition:transform .06s ease;
+      box-shadow:0 20px 50px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.05);
+    }
+    .book:active{transform:translateY(1px) scale(.995)}
+    .book::before{content:""; position:absolute; inset:0; border-radius:14px; box-shadow:inset 0 0 0 2px rgba(129,230,217,.15), inset 0 0 40px rgba(129,230,217,.06);}
+    .book .label{font-weight:700; letter-spacing:.4px; color:#d6e1ff}
+
+    .controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:8px}
+    .control{background:#0f1321; border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:8px 10px; color:var(--muted); font-size:12px}
+    .toggle{display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none}
+    .toggle input{appearance:none; width:36px; height:20px; background:#2a3248; border-radius:999px; position:relative; outline:none; border:1px solid rgba(255,255,255,.15)}
+    .toggle input:checked{background:#23403b}
+    .toggle input::after{content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:#c1c8de; transition:left .18s ease}
+    .toggle input:checked::after{left:20px; background:#8aff8a}
+
+    .shop-item{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px; border-top:1px solid rgba(255,255,255,.06)}
+    .shop-item:first-child{border-top:none}
+    .shop-item button{background:#1b2134; color:var(--ink); border:1px solid rgba(255,255,255,.12); padding:8px 10px; border-radius:10px; cursor:pointer}
+    .shop-item button:disabled{opacity:.45; cursor:not-allowed}
+
+    dialog{border:none; border-radius:14px; padding:0; background:#0e1220; color:var(--ink); width:min(520px, 92vw)}
+    dialog .dhd{padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.08); background:#0c101b}
+    dialog .dbd{padding:16px}
+    dialog .dfx{display:flex; justify-content:flex-end; gap:10px; padding:0 16px 16px}
+
+    /* Subtle clue layers */
+    #watermark{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; opacity:0; transition:opacity .2s ease}
+    #watermark span{font-weight:800; font-size:32px; letter-spacing:4px; text-transform:uppercase; filter:blur(.2px);}
+
+    /* White-on-white hidden text container */
+    #hidden-white{color:var(--bg); user-select:text}
+
+    /* Error banner when close to 1000 */
+    .near-thousand{outline:2px dashed rgba(255,255,255,.15)}
+
+    .muted{color:var(--muted)}
+    .accent{color:var(--accent)}
+
+    /* Tiny helper link (for code 604) */
+    .ghost-link{position:absolute; right:8px; bottom:8px; font-size:11px; opacity:.06}
+
+    /* Journal (debug) */
+    #journal{display:none}
+    .journal-visible #journal{display:block}
+
+    /* Responsive */
+    @media (max-width: 900px){
+      .wrap{grid-template-columns: 1fr}
+    }
+  
+    /* SVG book art + click thump */
+    .book svg{width:72%; height:auto; pointer-events:none}
+    .book.thump{animation:thump .09s linear}
+    @keyframes thump{0%{transform:translateY(0) scale(1)}50%{transform:translateY(1px) scale(.992)}100%{transform:translateY(0) scale(1)}}
+  
+    /* Pop-over +N bubbles */
+    .pop{position:absolute; left:50%; top:50%; pointer-events:none; font-weight:800; font-size:14px; opacity:0; animation:pop .8s ease-out; white-space:nowrap}
+    .pop.click{color:var(--good); text-shadow:0 2px 6px rgba(0,0,0,.3)}
+    .pop.auto{color:var(--accent)}
+    @keyframes pop{
+      0%{opacity:0; transform:translate(-50%,-30%) scale(.9)}
+      25%{opacity:1}
+      100%{opacity:0; transform:translate(-50%,-80%) scale(1)}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 aria-live="polite">Library Clicker <span class="tag">— return 1,000 books to end your shift</span></h1>
+    <div class="controls">
+<label class="toggle control"><input id="pauseAutos" type="checkbox"/> Pause autos</label> <button class="control" id="resetAll">Reset all progress</button> </div> </header> <main class="wrap"> <!-- Left: play area --> <section class="card" id="play"> <h2>Stacks</h2> <div class="body"> <div class="stats"> <div class="stat"><div class="v" id="count">0</div><div class="k">Books shelved (this shift)</div></div> <div class="stat"><div class="v" id="rate">0/sec</div><div class="k">Auto-shelving rate</div></div> <div class="stat"><div class="v" id="credits">0</div><div class="k">Library credits (persistent)</div></div> </div> <div class="bookzone"> <button id="book" class="book" aria-label="Return a book" title="Click to shelve" type="button"> <svg viewBox="0 0 240 320" role="img" aria-hidden="true"> <defs> <linearGradient id="cov" x1="0" y1="0" x2="1" y2="1"> <stop offset="0" stop-color="#3b82f6"/> <stop offset="1" stop-color="#1d4ed8"/> </linearGradient> </defs> <!-- cover --> <rect x="36" y="28" width="168" height="250" rx="14" fill="url(#cov)" /> <!-- spine --> <rect x="24" y="28" width="20" height="250" rx="6" fill="#1e293b"/> <!-- title band --> <rect x="44" y="40" width="148" height="14" rx="7" fill="rgba(255,255,255,0.15)"/> <!-- plate area --> <rect x="44" y="66" width="148" height="160" rx="10" fill="rgba(255,255,255,0.07)"/> <!-- footer band --> <rect x="44" y="232" width="148" height="28" rx="6" fill="rgba(0,0,0,0.15)"/> <!-- page shadow / base --> <path d="M204 278 L204 298 C204 306 196 312 188 310 L44 282" fill="#0b0e17"/> <!-- bookmark ribbon --> <path d="M92 88 L108 88 108 148 100 142 92 148 Z" fill="#e11d48"/> </svg> <div id="watermark"><span></span></div> <div class="label">Click to shelve</div> <a id="mapLink" class="ghost-link" href="#" aria-label="Stacks map" hidden>map</a> </button> </div> <div class="controls"> <div id="hidden-white" class="control" aria-hidden="true"></div> <div class="control" id="status"></div> </div> <details id="journal" class="card" style="margin-top:12px;"> <summary class="body" style="cursor:pointer">Clue journal (debug)</summary> <div class="body" id="journalBody"></div> </details> </div> </section>
+    <!-- Right: upgrades -->
+    <aside class="card" id="shop">
+      <h2>Upgrades</h2>
+      <div class="body" id="shopItems"></div>
+    </aside>
+  </main>
+
+  <dialog id="crash">
+    <div class="dhd">
+      <strong style="color:var(--danger)">SYSTEM CRASH</strong>
+    </div>
+    <div class="dbd">
+      <p>The circulation system has crashed right as you were finishing your shift.</p>
+      <p><strong>Error code: <span id="errCode">000</span></strong></p>
+      <p class="muted">Your upgrades and credits are safe. The shift counter will reset to zero.</p>
+    </div>
+    <div class="dfx">
+      <button id="restart" style="background:var(--accent); color:#0b0c12; border:none; font-weight:700; padding:10px 12px; border-radius:10px; cursor:pointer">Restart shift</button>
+    </div>
+  </dialog>
+
+  <script>
+  // -------------------- CONFIG --------------------
+  const SPECIAL_EVENTS = [
+    {code: 942, type: 'whiteText', text: 'Bodleian locale (6)'},
+    {code: 787, type: 'altText',   text: 'Library admonition (3)'},
+    {code: 451, type: 'title',     text: "Alexandria's land (5)"},
+    {code: 398, type: 'watermark', text: "Archivist's store (4)"},
+    {code: 808, type: 'ariaNote',  text: 'US legislative archive, briefly (3)'},
+    {code: 604, type: 'ghostLink', text: 'Biblio ID type (4)'},
+    {code: 531, type: 'statusTint',text: "Ancient copyists' room (11)"},
+    {code: 323, type: 'cursorTip', text: 'One checking you out? (9)'},
+    {code: 266, type: 'labelGlint',text: 'Stack sound (3)'},
+    {code: 21,  type: 'headerAfter',text: 'Place for rare books (5)'}
+  ];
+
+  const UPGRADE_DEFS = [
+    { id:'intern', name:'Page‑turner Intern', baseCost: 100, perSec: 1,  desc:'Shelves +1/sec' },
+    { id:'cart',   name:'Rolling Cart',       baseCost: 350, perSec: 4,  desc:'Shelves +4/sec' },
+    { id:'robot',  name:'Sorting Robot',      baseCost: 1200,perSec: 15, desc:'Shelves +15/sec' },
+    { id:'rfid',   name:'RFID Gate',          baseCost: 4200,perSec: 55, desc:'Shelves +55/sec' }
+  ];
+
+  const STORAGE_KEY = 'libraryClicker.v1';
+
+  // -------------------- STATE --------------------
+  let state = {
+    count: 0,
+    lifetime: 0,
+    credits: 0,
+    upgrades: {},
+    pauseAutos: false,
+    usedErrorCodes: [],
+    found: []
+  };
+
+  // Load state
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved){ try{ state = {...state, ...JSON.parse(saved)} }catch{} }
+  UPGRADE_DEFS.forEach(u=>{ if(!(u.id in state.upgrades)) state.upgrades[u.id]=0; });
+
+  // Debug journal flag
+  if(new URLSearchParams(location.search).get('debug')==='1'){
+    document.body.classList.add('journal-visible');
+  }
+
+  // -------------------- DOM --------------------
+  const elCount = document.getElementById('count');
+  const elRate = document.getElementById('rate');
+  const elCredits = document.getElementById('credits');
+  const elBook = document.getElementById('book');
+  const elStatus = document.getElementById('status');
+  const elWhite = document.getElementById('hidden-white');
+  // Lazy getters to avoid timing race with DOM
+  const getWatermark = () => document.getElementById('watermark');
+  const getWatermarkText = () => { const wm = getWatermark(); return wm ? wm.querySelector('span') : null; };
+  const elShop = document.getElementById('shopItems');
+  const elPause = document.getElementById('pauseAutos');
+  const elCrash = document.getElementById('crash');
+  const elErrCode = document.getElementById('errCode');
+  const elRestart = document.getElementById('restart');
+  const elJournalBody = document.getElementById('journalBody');
+  const elMap = document.getElementById('mapLink');
+  const elResetAll = document.getElementById('resetAll');
+
+  // -------------------- UTILS --------------------
+  function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function fmt(n){ return n.toLocaleString(); }
+  function totalRate(){ return UPGRADE_DEFS.reduce((a,u)=> a + (state.upgrades[u.id]||0)*u.perSec, 0); }
+  function nextCost(u){ const q = state.upgrades[u.id]||0; return Math.floor(u.baseCost * Math.pow(1.15, q)); }
+
+  function renderShop(){
+    elShop.innerHTML = '';
+    UPGRADE_DEFS.forEach(u=>{
+      const cost = nextCost(u);
+      const can = state.credits >= cost;
+      const row = document.createElement('div'); row.className='shop-item';
+      row.innerHTML = `
+        <div>
+          <div><strong>${u.name}</strong> <span class="muted">×${state.upgrades[u.id]||0}</span></div>
+          <div class="muted" style="font-size:12px">${u.desc}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px">
+          <div class="muted" style="font-size:12px">Cost: ${fmt(cost)}</div>
+          <button data-upg="${u.id}" ${can?'':'disabled'}>Buy</button>
+        </div>`;
+      const btn = row.querySelector('button');
+      btn.addEventListener('click', ()=>{
+        const c = nextCost(u);
+        if(state.credits < c){ tickRender(); return; }
+        state.credits -= c;
+        state.upgrades[u.id] = (state.upgrades[u.id]||0) + 1;
+        save();
+        tickRender();
+      });
+      elShop.appendChild(row);
+    });
+  }
+
+  function tickRender(){
+    if (elCount)   elCount.textContent   = fmt(state.count);
+    if (elRate)    elRate.textContent    = `${fmt(totalRate())} / sec`;
+    if (elCredits) elCredits.textContent = fmt(state.credits);
+
+    // Update shop enable/disable state as credits change
+    renderShop();
+
+    // subtle highlight when near 1000
+    if(state.count >= 980 && state.count < 1000){ elBook.classList.add('near-thousand'); }
+    else { elBook.classList.remove('near-thousand'); }
+  };
+
+  function addBooks(n, {source='auto'}={}){
+    function inc(m){
+      state.count += m; state.lifetime += m; state.credits += m;
+      checkSpecials(); save(); tickRender();
+    }
+
+    if(source==='auto'){
+      const cap = Math.max(0, 999 - state.count);
+      n = Math.min(n, cap);
+      if(n<=0) return; inc(n); return;
+    }
+
+    // Manual: any attempt at/after 999 triggers crash
+    if(state.count >= 999){ openCrash(); return; }
+    inc(n);
+  }
+
+  function openCrash(){
+    const unused = SPECIAL_EVENTS.map(e=>e.code).filter(c=>!state.usedErrorCodes.includes(c));
+    const code = (unused.length? unused[Math.floor(Math.random()*unused.length)] : SPECIAL_EVENTS[Math.floor(Math.random()*SPECIAL_EVENTS.length)].code);
+    state.usedErrorCodes.push(code);
+    if (elErrCode) elErrCode.textContent = code;
+    save();
+    if(typeof elCrash.showModal === 'function') elCrash.showModal(); else alert(`SYSTEM CRASH — Error code ${code}`);
+  }
+  function restartShift(){ state.count = 0; save(); tickRender(); closeCrash(); }
+  function closeCrash(){ if(elCrash.open) elCrash.close(); }
+
+  // -------------------- SPECIAL EVENTS --------------------
+  function noteFound(code, text){
+    if(!state.found.find(f=>f.code===code)){
+      state.found.push({code, text});
+      const item = document.createElement('div');
+      item.style.padding = '6px 0';
+      item.innerHTML = `<span class="muted">#${code}</span> — ${text}`;
+      elJournalBody.appendChild(item);
+      save();
+    }
+  }
+  function clearSubtleties(){
+    // wipe all transient hint surfaces (applies to EVERY special type)
+    if (elWhite) elWhite.textContent = '';
+    if (elBook){
+      elBook.removeAttribute('title');
+      elBook.setAttribute('aria-label','Return a book');
+      elBook.style.cursor = 'pointer'; // reset from cursorTip
+    }
+    { const wm = getWatermark(); if(wm) wm.style.opacity = 0; const wmt = getWatermarkText(); if(wmt) wmt.textContent = ''; }
+    document.title = 'Library Clicker';
+    if (elStatus){ elStatus.textContent=''; elStatus.removeAttribute('role'); elStatus.style.background = 'transparent'; }
+    if (elMap){ elMap.hidden = true; elMap.removeAttribute('title'); elMap.href = '#'; }
+    const hdr = document.querySelector('header'); if (hdr) hdr.dataset.after = '';
+    const lbl = document.querySelector('.label'); if (lbl) lbl.style.textShadow = 'none';
+  }
+  
+  function checkSpecials(){
+    clearSubtleties();
+    const s = SPECIAL_EVENTS.find(e=>e.code === state.count);
+    if(!s) return;
+    switch(s.type){
+      case 'whiteText':
+        if (elWhite) elWhite.textContent = s.text; noteFound(s.code, s.text); break;
+      case 'altText':
+        elBook.title = s.text; elBook.setAttribute('aria-label', s.text); noteFound(s.code, s.text); break;
+      case 'title':
+        document.title = `📚 ${s.text}`; noteFound(s.code, s.text); break;
+      case 'watermark':
+        { const wmt = getWatermarkText(); if(wmt) wmt.textContent = s.text; } { const wm = getWatermark(); if(wm) wm.style.opacity = .08; } noteFound(s.code, s.text); break;
+      case 'ariaNote':
+        if (elStatus){ elStatus.textContent = s.text; elStatus.setAttribute('role','status'); } noteFound(s.code, s.text); break;
+      case 'ghostLink':
+        if (elMap){ elMap.hidden = false; elMap.title = s.text; elMap.href = '#'; } noteFound(s.code, s.text); break;
+      case 'statusTint':
+        if (elStatus){ elStatus.textContent = s.text; elStatus.style.background = 'linear-gradient(90deg, rgba(255,255,255,.04), rgba(129,230,217,.06))'; } noteFound(s.code, s.text); break;
+      case 'cursorTip':
+        elBook.style.cursor = 'help'; elBook.title = s.text; noteFound(s.code, s.text); break;
+      case 'labelGlint':
+        { const lbl = document.querySelector('.label'); if (lbl) lbl.style.textShadow = '0 0 8px rgba(255,255,255,.08)'; }
+        if (elWhite) elWhite.textContent = s.text;
+        noteFound(s.code, s.text);
+        break;
+      case 'headerAfter':
+        document.querySelector('header').dataset.after = s.text; addHeaderAfterCSS(); noteFound(s.code, s.text); break;
+    }
+  }
+  function addHeaderAfterCSS(){
+    if(document.getElementById('after-style')) return;
+    const st = document.createElement('style'); st.id='after-style';
+    st.textContent = `header::after{content: attr(data-after); margin-left:8px; color: ${getComputedStyle(document.documentElement).getPropertyValue('--muted')}; font-size:12px}`;
+    document.head.appendChild(st);
+  }
+// -------------------- POP BUBBLES --------------------
+function spawnPop(text, variant='click'){
+  const s = document.createElement('span');
+  s.className = `pop ${variant}`;
+  s.textContent = text;
+  s.style.marginLeft = (Math.random()*34 - 17) + 'px';
+  s.style.marginTop  = (Math.random()*12 -  6) + 'px';
+  elBook.appendChild(s);
+  const cleanup = ()=> s.remove();
+  s.addEventListener('animationend', cleanup, {once:true});
+  setTimeout(cleanup, 1200);
+}
+
+  // -------------------- LOOP --------------------
+  let last = performance.now();
+  let autoBucket = 0;
+  let autoPopAcc = 0;
+  let lastAutoPop = 0;
+  const AUTO_POP_INTERVAL_MS = 300; // ~3 pops/sec
+  function loop(now){
+    const dt = (now - last) / 1000; last = now;
+
+    if(!state.pauseAutos){
+      autoBucket += totalRate() * dt;
+      const toAdd = Math.floor(autoBucket);
+      if(toAdd>0){
+        autoBucket -= toAdd;
+        addBooks(toAdd, {source:'auto'});
+        autoPopAcc += toAdd;
+      }
+    }
+
+    // Throttled auto bubble
+    const t = performance.now();
+    if (autoPopAcc > 0 && (t - lastAutoPop) >= AUTO_POP_INTERVAL_MS){
+      spawnPop('+'+autoPopAcc, 'auto');
+      autoPopAcc = 0;
+      lastAutoPop = t;
+    }
+
+    // Re-evaluate specials EVERY frame so clues vanish unless count === code
+    checkSpecials();
+
+    requestAnimationFrame(loop);
+  };
+  // Events
+  if (elBook) elBook.addEventListener('click', ()=>{
+    // ensure manual click from 999 -> crash
+    if (state.count >= 999) { openCrash(); return; }
+    elBook.classList.add('thump');
+    setTimeout(()=>elBook.classList.remove('thump'), 90);
+    addBooks(1, {source:'click'});
+    spawnPop('+1','click');
+  });
+  if (elRestart) elRestart.addEventListener('click', restartShift);
+  if (elPause)   elPause.addEventListener('change', ()=>{ state.pauseAutos = elPause.checked; save(); });
+  if (elResetAll) elResetAll.addEventListener('click', ()=>{
+    if (confirm('Reset all progress? This will erase upgrades, credits, and shift counts.')){
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  });
+  window.addEventListener('keydown', (e)=>{ if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='j'){ document.body.classList.toggle('journal-visible'); }});
+
+  // -------------------- INIT --------------------
+  function initUI(){
+  renderShop();
+  tickRender();
+  checkSpecials();
+  requestAnimationFrame(loop);
+}
+if (document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initUI);
+} else {
+  initUI();
+}
+  </script>
+</body>
+</html>
