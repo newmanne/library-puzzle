@@ -123,12 +123,17 @@ module.exports = async function (req, res) {
         const pos = anchors[j];
         const pre = tokens.slice(cursor, pos).join(" ");
         if(cursor!==0) buf = appendSpaceIfNeeded(buf);
-        buf += pre;
-        buf = appendSpaceIfNeeded(buf);
+        if(pre) buf += pre;
 
+        // Insert special word; if at true sentence start, capitalize and avoid leading space
+        const atSentenceStart = (buf.length===0 && !pre);
+        if(!atSentenceStart) buf = appendSpaceIfNeeded(buf);
         const [L,R] = pairsSlice[pairIdx];
         const b = chosenBits[pairIdx];
-        buf += (b===0 ? L : R);
+        let ins = (b===0 ? L : R);
+        if(atSentenceStart) ins = cap(ins);
+        buf += ins;
+
         cursor = pos; pairIdx++;
       }
       // tail of sentence
