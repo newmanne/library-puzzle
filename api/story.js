@@ -7,7 +7,8 @@ module.exports = async function (req, res) {
 
   // --- Bits & masks ---
   const MESSAGE = "CYCLE"; // server-side secret answer, used only to emit story bits
-  function messageToBits(msg){ const bits=[]; for(const ch of msg.toUpperCase()){ if(ch<'A'||ch>'Z') continue; let v=ch.charCodeAt(0)-65; for(let i=4;i>=0;i--) bits.push((v>>i)&1); } return bits; }
+  // 1-based encoding: A=1 … Z=26
+  function messageToBits(msg){ const bits=[]; for(const ch of msg.toUpperCase()){ if(ch<'A'||ch>'Z') continue; let v=(ch.charCodeAt(0)-64); for(let i=4;i>=0;i--) bits.push((v>>i)&1); } return bits; }
   const MESSAGE_BITS = messageToBits(MESSAGE);
   function keystreamBits(seed, startIndex, count){
     const r = mulberry32((((seed>>>0) ^ 0x9E3779B9) + ((startIndex>>>0)*0x85EBCA6B))>>>0);
@@ -54,11 +55,11 @@ module.exports = async function (req, res) {
 
   // --- Synonym pairs (25 total; left=plain 0, right=learned 1) ---
   const PAIRS = [
-    ["maze","labyrinth"], ["mirror","speculum"], ["shadow","umbra"], ["light","lumen"], ["sound","sonority"],
-    ["list","enumeration"], ["change","alteration"], ["split","bifurcation"], ["secret","esoteric"], ["source","provenance"],
+    ["maze","labyrinth"], ["sleep","somnolence"], ["shadow","umbra"], ["light","lumen"], ["sound","sonority"],
+    ["list","enumeration"], ["change","alteration"], ["split","bifurcation"], ["obscure","esoteric"], ["source","provenance"],
     ["image","simulacrum"], ["thread","filament"], ["network","lattice"], ["letter","grapheme"], ["beginning","commencement"],
-    ["answer","rejoinder"], ["hidden","occult"], ["word","lexeme"], ["smell","olfaction"], ["opening","aperture"],
-    ["closing","occlusion"], ["room","chamber"], ["record","chronicle"], ["pattern","motif"], ["name","appellation"],
+    ["answer","rejoinder"], ["hidden","occult"], ["word","lexeme"], ["smell","olfaction"], ["teacher","pedagogue"],
+    ["taste","gustation"], ["lie","prevarication"], ["record","chronicle"], ["pattern","motif"], ["name","appellation"],
   ];
 
   // --- Sentence generator (deterministic) ---
@@ -168,7 +169,8 @@ module.exports = async function (req, res) {
     // First paragraph epigraph with the plain/learned rule
     const prefix = (p===0 ? `<em>The vulgar word is naught; the learned word is unity.</em> ` : "");
     html += `<p>${prefix}${para}</p>\n`;
-    html += `<div class="colophon">${intToRoman(maskVal)}</div>\n`;
+    // Display mask as 1-based Roman (1..32) for the puzzle convention
+    html += `<div class=\"colophon\">${intToRoman(maskVal + 1)}</div>\n`;
 
     offset += 5;
   }
