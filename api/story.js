@@ -112,9 +112,9 @@ module.exports = async function (req, res) {
       const s = sentence(rSent);
       const tokens = s.split(" ");
       const k = Math.min(schedule[i], pairsSlice.length - pairIdx);
-      // Choose k unique insertion points anywhere in the sentence (including start/end)
+      // Choose k unique insertion points anywhere in the sentence (start allowed, end excluded)
       const rIns = r32(3000 + i);
-      const positions = Array.from({length: tokens.length + 1}, (_,idx)=> idx);
+      const positions = Array.from({length: Math.max(1, tokens.length) }, (_,idx)=> idx); // 0..tokens.length-1
       // Fisher–Yates shuffle using deterministic rIns
       for(let m=positions.length-1; m>0; m--){ const j = Math.floor(rIns()* (m+1)); const tmp=positions[m]; positions[m]=positions[j]; positions[j]=tmp; }
       const anchors = positions.slice(0, k).sort((a,b)=> a-b);
@@ -142,8 +142,10 @@ module.exports = async function (req, res) {
       buf += post + " ";
       out += buf;
     }
-    // Ensure no stray ".," sequences ever appear
-    return out.trim().replace(/\.\s*,/g, '. ');
+    // Cleanup: fix any stray ".," and ensure sentence starts after punctuation are capitalized
+    out = out.trim().replace(/\.\s*,/g, '. ');
+    out = out.replace(/(^|[.!?]\s+)([a-z])/g, (_,lead,ch)=> lead + ch.toUpperCase());
+    return out;
   }
 
   // --- Build whole story ---
