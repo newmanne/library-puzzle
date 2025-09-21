@@ -169,8 +169,7 @@ module.exports = async function (req, res) {
     // First paragraph epigraph with the plain/learned rule
     const prefix = (p===0 ? `<em>The vulgar word is naught; the learned word is unity.</em> ` : "");
     html += `<p>${prefix}${para}</p>\n`;
-    // Display mask as 1-based Roman (1..32) for the puzzle convention
-    html += `<div class=\"colophon\">${intToRoman(maskVal + 1)}</div>\n`;
+    html += `<div class=\"colophon\">${intToRoman(maskVal)}</div>\n`;
 
     offset += 5;
   }
