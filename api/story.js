@@ -101,13 +101,11 @@ module.exports = async function (req, res) {
         const pre = tokens.slice(cursor, pos).join(" ");
         if(cursor!==0) buf = appendSpaceIfNeeded(buf);
         buf += pre;
-        if(rComma()<0.15) buf = appendPunctIfSafe(buf, ",");
         buf = appendSpaceIfNeeded(buf);
 
         const [L,R] = pairsSlice[pairIdx];
         const b = chosenBits[pairIdx];
         buf += (b===0 ? L : R);
-        if(rComma()<0.15) buf = appendPunctIfSafe(buf, ",");
         cursor = pos; pairIdx++;
       }
       // tail of sentence
@@ -116,7 +114,8 @@ module.exports = async function (req, res) {
       buf += post + " ";
       out += buf;
     }
-    return out.trim();
+    // Ensure no stray ".," sequences ever appear
+    return out.trim().replace(/\.\s*,/g, '. ');
   }
 
   // --- Build whole story ---
