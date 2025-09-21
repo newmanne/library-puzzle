@@ -134,6 +134,12 @@ module.exports = async function (req, res) {
         if(atSentenceStart) ins = cap(ins);
         buf += ins;
 
+        // If we inserted at the very start, downcase the original first token
+        // so we don't end up with "Word Token ..." where Token was capitalized by sentence()
+        if(atSentenceStart && pos < tokens.length){
+          tokens[pos] = tokens[pos].replace(/^([A-Z])/, (m)=> m.toLowerCase());
+        }
+
         cursor = pos; pairIdx++;
       }
       // tail of sentence
