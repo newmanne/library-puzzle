@@ -65,12 +65,31 @@ module.exports = async function (req, res) {
   const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
   function pick(r, arr){ return arr[Math.floor(r()*arr.length)] }
   function sentence(r){
-    // Short, single-clause sentence with limited modifiers
+    // Short clause, with occasional simple adornments
     const subj = (r()<0.3 ? pick(r, ADJ)+" " : "") + pick(r,NOUN);
     const obj  = (r()<0.3 ? pick(r, ADJ)+" " : "") + pick(r,NOUN);
     const v = pick(r,VERB);
-    const maybeAdv = r()<0.2 ? " "+pick(r,ADV) : "";
-    return `${cap(subj)} ${v}${maybeAdv} the ${obj}.`;
+    const maybeAdv = r()<0.25 ? " "+pick(r,ADV) : "";
+
+    // Optional light embellishments (no heavy subordination)
+    const PREP = ["in","near","under","between","along","inside","beside","within","beyond"];
+    let base = `${cap(subj)} ${v}${maybeAdv} the ${obj}`;
+
+    if(r()<0.2){
+      // Add a very short coordinating clause
+      const subj2 = (r()<0.25 ? pick(r, ADJ)+" " : "") + pick(r,NOUN);
+      const v2 = pick(r,VERB);
+      const obj2 = (r()<0.25 ? pick(r, ADJ)+" " : "") + pick(r,NOUN);
+      const conj = (r()<0.5 ? " and " : " but ");
+      base += `${conj}${subj2} ${v2} the ${obj2}`;
+    } else if(r()<0.35){
+      // Add a short prepositional tail
+      const prep = pick(r, PREP);
+      const tail = (r()<0.35 ? pick(r, ADJ)+" " : "") + pick(r,NOUN);
+      base += ` ${prep} the ${tail}`;
+    }
+
+    return base + '.';
   }
 
   // --- Punctuation safety (extra strict) ---
@@ -93,8 +112,12 @@ module.exports = async function (req, res) {
       const s = sentence(rSent);
       const tokens = s.split(" ");
       const k = Math.min(schedule[i], pairsSlice.length - pairIdx);
-      const lo=2, hi=Math.max(lo+1, tokens.length-4), span=(hi-lo+1);
-      const anchors = Array.from({length:k}, (_,j)=> lo + Math.floor(((j+1)*span)/(k+1)) - 1);
+      // Choose k unique insertion points anywhere in the sentence (including start/end)
+      const rIns = r32(3000 + i);
+      const positions = Array.from({length: tokens.length + 1}, (_,idx)=> idx);
+      // Fisher–Yates shuffle using deterministic rIns
+      for(let m=positions.length-1; m>0; m--){ const j = Math.floor(rIns()* (m+1)); const tmp=positions[m]; positions[m]=positions[j]; positions[j]=tmp; }
+      const anchors = positions.slice(0, k).sort((a,b)=> a-b);
       let cursor = 0, buf = "";
       for(let j=0;j<anchors.length;j++){
         const pos = anchors[j];
