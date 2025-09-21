@@ -1,6 +1,8 @@
 // api/story.js (CommonJS export)
 module.exports = async function (req, res) {
   const seed = parseInt((req.query && req.query.seed ? req.query.seed : '0'), 10) >>> 0;
+  const debug = String((req.query && req.query.debug) || '0') === '1';
+  const onebased = String((req.query && req.query.onebased) || '0') === '1';
 
   // --- PRNG (mulberry32) ---
   function mulberry32(a){ return function(){ let t = a += 0x6D2B79F5; t = Math.imul(t ^ (t>>>15), t | 1); t ^= t + Math.imul(t ^ (t>>>7), t | 61); return ((t ^ (t>>>14)) >>> 0) / 4294967296; } }
@@ -164,11 +166,22 @@ module.exports = async function (req, res) {
 
     const para = renderParagraph(p, pairsSlice, chosenBits, seed);
     const maskVal = bitsToInt(maskSlice);
+    const visibleVal = bitsToInt(chosenBits);
+    const baseVal0 = bitsToInt(baseSlice);
+    const baseVal1 = baseVal0 + 1;
+    const maskShow = onebased ? (maskVal + 1) : maskVal;
+    const letter = String.fromCharCode(65 + (baseVal0 % 26));
 
     // First paragraph epigraph with the plain/learned rule
     const prefix = (p===0 ? `<em>The vulgar word is naught; the learned word is unity.</em> ` : "");
     html += `<p>${prefix}${para}</p>\n`;
-    html += `<div class="colophon">${intToRoman(maskVal)}</div>\n`;
+    if(debug){
+      html += `<div class="colophon" style="opacity:.7">`+
+              `[debug p${p+1}] visible=${visibleVal} mask=${maskVal}`+
+              ` base0=${baseVal0} base1=${baseVal1} letter=${letter}`+
+              `</div>\n`;
+    }
+    html += `<div class="colophon">${intToRoman(maskShow)}</div>\n`;
 
     offset += 5;
   }
