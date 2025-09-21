@@ -2,7 +2,6 @@
 // Returns a whimsical title; if the room is a signal room, the title encodes the index word
 
 const COMMON = require('./maze-common');
-module.exports.config = { runtime: 'nodejs18.x' };
 
 module.exports = async function (req, res) {
   try{
@@ -195,3 +194,4 @@ module.exports = async function (req, res) {
     return res.status(500).json({ ok:false, error:'server_error' });
   }
 }
+

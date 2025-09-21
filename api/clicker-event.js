@@ -1,18 +1,17 @@
 // api/clicker-event.js — server-side source of clicker specials
 // CommonJS export for Vercel runtime
 
+
+LSHAB
+
 module.exports = async function (req, res) {
   const EVENTS = [
-    { code: 942, type: 'whiteText',  text: 'Bodleian locale (6)' },
+    { code: 942, type: 'whiteText',  text: 'One checking you out? (9)' },
     { code: 787, type: 'altText',    text: 'Library admonition (3)' },
-    { code: 451, type: 'title',      text: "Alexandria's land (5)" },
-    { code: 398, type: 'watermark',  text: "Archivist's store (4)" },
-    { code: 808, type: 'ariaNote',   text: 'US legislative archive, briefly (3)' },
-    { code: 604, type: 'ghostLink',  text: 'Biblio ID type (4)' },
-    { code: 531, type: 'statusTint', text: "Ancient copyists' room (11)" },
-    { code: 323, type: 'cursorTip',  text: 'One checking you out? (9)' },
-    { code: 266, type: 'labelGlint', text: 'Stack sound (3)' },
-    { code: 21,  type: 'headerAfter',text: 'Place for rare books (5)' },
+    { code: 451, type: 'title',      text: 'A book reservation (4)' },
+    { code: 398, type: 'watermark',  text: "Egypt's great book collection (9)" },
+    { code: 604, type: 'ghostLink',  text: 'It wiggles around and munches through novels, probably (8)' },
+    { code: 57,  type: 'headerAfter',text: '' },
   ];
 
   const method = (req.method || 'GET').toUpperCase();

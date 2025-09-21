@@ -3,7 +3,6 @@
 // CommonJS export for Vercel runtime
 
 const COMMON = require('./maze-common');
-module.exports.config = { runtime: 'nodejs18.x' };
 
 module.exports = async function (req, res) {
   try{

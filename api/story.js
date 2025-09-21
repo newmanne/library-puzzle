@@ -6,7 +6,7 @@ module.exports = async function (req, res) {
   function mulberry32(a){ return function(){ let t = a += 0x6D2B79F5; t = Math.imul(t ^ (t>>>15), t | 1); t ^= t + Math.imul(t ^ (t>>>7), t | 61); return ((t ^ (t>>>14)) >>> 0) / 4294967296; } }
 
   // --- Bits & masks ---
-  const MESSAGE = "ALEPH"; // server-side secret answer, used only to emit story bits
+  const MESSAGE = "CYCLE"; // server-side secret answer, used only to emit story bits
   function messageToBits(msg){ const bits=[]; for(const ch of msg.toUpperCase()){ if(ch<'A'||ch>'Z') continue; let v=ch.charCodeAt(0)-65; for(let i=4;i>=0;i--) bits.push((v>>i)&1); } return bits; }
   const MESSAGE_BITS = messageToBits(MESSAGE);
   function keystreamBits(seed, startIndex, count){
@@ -65,15 +65,12 @@ module.exports = async function (req, res) {
   const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
   function pick(r, arr){ return arr[Math.floor(r()*arr.length)] }
   function sentence(r){
-    const clauses = 1 + Math.floor(r()*3);
-    let s=""; for(let c=0;c<clauses;c++){
-      const subj = r()<0.5 ? pick(r, ADJ)+" "+pick(r,NOUN) : pick(r,NOUN);
-      const obj  = r()<0.5 ? pick(r, ADJ)+" "+pick(r,NOUN) : pick(r,NOUN);
-      const v = pick(r,VERB); const maybeAdv = r()<0.4 ? " "+pick(r,ADV) : "";
-      const frag = `${cap(subj)} ${v}${maybeAdv} the ${obj}`;
-      s += (c===0? "" : ", "+pick(r,CONJ)+", ") + frag + ".";
-    }
-    return s;
+    // Short, single-clause sentence with limited modifiers
+    const subj = (r()<0.3 ? pick(r, ADJ)+" " : "") + pick(r,NOUN);
+    const obj  = (r()<0.3 ? pick(r, ADJ)+" " : "") + pick(r,NOUN);
+    const v = pick(r,VERB);
+    const maybeAdv = r()<0.2 ? " "+pick(r,ADV) : "";
+    return `${cap(subj)} ${v}${maybeAdv} the ${obj}.`;
   }
 
   // --- Punctuation safety (extra strict) ---
@@ -82,7 +79,7 @@ module.exports = async function (req, res) {
   function appendSpaceIfNeeded(str){ return /\s$/.test(str) ? str : (str + " "); }
 
   // --- Scheduling: 5 paragraphs, 5 pairs each ---
-  const SCHEDULES = [ [0,1,1,1,2], [1,1,1,1,1], [1,1,1,1,1], [1,1,1,1,1], [1,1,1,1,1] ];
+  const SCHEDULES = [ [1,1,1,1,1], [1,1,1,1,1], [1,1,1,1,1], [1,1,1,1,1], [1,1,1,1,1] ];
 
   // --- Paragraph render ---
   function renderParagraph(pIndex, pairsSlice, chosenBits, seed){
@@ -104,13 +101,13 @@ module.exports = async function (req, res) {
         const pre = tokens.slice(cursor, pos).join(" ");
         if(cursor!==0) buf = appendSpaceIfNeeded(buf);
         buf += pre;
-        if(rComma()<0.45) buf = appendPunctIfSafe(buf, ",");
+        if(rComma()<0.15) buf = appendPunctIfSafe(buf, ",");
         buf = appendSpaceIfNeeded(buf);
 
         const [L,R] = pairsSlice[pairIdx];
         const b = chosenBits[pairIdx];
         buf += (b===0 ? L : R);
-        if(rComma()<0.45) buf = appendPunctIfSafe(buf, ",");
+        if(rComma()<0.15) buf = appendPunctIfSafe(buf, ",");
         cursor = pos; pairIdx++;
       }
       // tail of sentence
