@@ -7,5 +7,8 @@
   { "src": "/clicker.html","dest": "/public/clicker.html" },
 
   { "src": "/maze",       "dest": "/public/maze.html" },
-  { "src": "/maze.html",  "dest": "/public/maze.html" }
+  { "src": "/maze.html",  "dest": "/public/maze.html" },
+
+  { "src": "/hinge",      "dest": "/public/hinge.html" },
+  { "src": "/hinge.html", "dest": "/public/hinge.html" }
 ] }

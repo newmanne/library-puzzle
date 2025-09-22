@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hinge — Puzzle Hunt Prototype</title>
+<style>
+  :root {
+    --bg: #0f172a;        /* slate-900 */
+    --card: #ffffff;
+    --ink: #0b1020;
+    --muted: #6b7280;
+    --accent: #0ea5e9;
+    --line: #e5e7eb;
+    --pill: #f4f5f7;
+    --like: #ef4444;
+    --nope: #6b7280;
+  }
+  html, body { margin:0; padding:0; background:var(--bg); color:#fff; font:16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, Noto Color Emoji, "Apple Color Emoji", Emoji; }
+  .app { min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding:24px 12px; }
+  .screen { width:min(720px, 92vw); }
+  .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .card {
+    background:var(--card); color:var(--ink);
+    border:1px solid var(--line); border-radius:16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    overflow:hidden;
+  }
+  .card .hdr { display:flex; align-items:center; gap:10px; padding:16px 16px 8px; }
+  .pill { background:var(--pill); border-radius:999px; padding:6px 10px; display:inline-flex; align-items:center; gap:6px; }
+  /* Hinge-style prompts */
+  .prompts { display:grid; gap:10px; }
+  .prompt { background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 12px; }
+  .prompt .q { font-size:12px; letter-spacing:.02em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+  .prompt .a { font-size:15px; }
+  .avatar { width:48px; height:48px; border-radius:50%; background:var(--pill); display:grid; place-items:center; font-size:26px; }
+  .meta { color:var(--muted); font-size:14px; }
+  .photos { display:flex; gap:8px; padding:8px 16px 0; }
+  .tile { background:var(--pill); border:1px solid var(--line); width:92px; height:92px; border-radius:12px; display:grid; place-items:center; font-size:30px; position:relative; }
+  .tile small { position:absolute; right:6px; bottom:6px; color:#374151; font-size:10px; opacity:.75; }
+  /* Photo + skeleton */
+  .photo-wrap { position:relative; height:220px; background:#e5e7eb; overflow:hidden; border-top-left-radius:16px; border-top-right-radius:16px; }
+  .photo { width:100%; height:100%; object-fit:cover; object-position:center top; display:block; }
+  .photo-wrap.contain .photo { object-fit:contain; background:#e5e7eb; }
+  .photo-wrap.skeleton .photo { visibility:hidden; }
+  .photo-wrap.skeleton::after {
+    content:''; position:absolute; inset:0; transform:translateX(-100%);
+    background:linear-gradient(90deg, rgba(229,231,235,0) 0%, rgba(229,231,235,0) 20%, rgba(255,255,255,0.7) 50%, rgba(229,231,235,0) 80%, rgba(229,231,235,0) 100%);
+    animation: shimmer 1.2s infinite;
+  }
+  @keyframes shimmer { 100% { transform:translateX(100%);} }
+  .body { padding:8px 16px 16px; }
+  .section { font-weight:700; margin-top:8px; margin-bottom:6px; }
+  .muted { color:var(--muted); }
+  .hr { height:1px; background:var(--line); margin:8px 0; }
+  .ctr { text-align:center; }
+  .actions { display:flex; gap:12px; padding:12px 0 4px; justify-content:center; }
+  button, .btn {
+    border:1px solid var(--line); background:#fff; color:var(--ink);
+    padding:10px 14px; border-radius:12px; font-weight:600; cursor:pointer;
+    transition:.15s transform ease, .15s box-shadow ease, .15s background ease;
+  }
+  button:hover { transform:translateY(-1px); box-shadow:0 8px 18px rgba(0,0,0,.1); }
+  .btn-like { background:#fff; border-color:#fecaca; color:var(--like); }
+  .btn-nope { background:#fff; color:#374151; }
+  .btn-ghost { background:#0ea5e9; border-color:#0ea5e9; color:white; }
+  .toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  /* toolbar elements */
+  /* progress removed */
+  .pill { color: var(--ink); }
+  .note { background:#0b1220; border:1px dashed #334155; color:#cbd5e1; padding:10px 12px; border-radius:10px; }
+  .bad { color:#fca5a5; }
+  .good { color:#86efac; }
+  .kbd { font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; background:#f3f4f6; padding:1px 6px; border-radius:6px; border:1px solid #e5e7eb; }
+  /* modal */
+  .modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); padding:20px; }
+  .modal.show { display:flex; }
+  .dialog { background:#ffffff; color:var(--ink); border-radius:16px; max-width:520px; width:min(520px,92vw); border:1px solid var(--line); box-shadow:0 20px 40px rgba(0,0,0,.35); }
+  .dialog .head { padding:14px 16px; border-bottom:1px solid var(--line); font-weight:700; }
+  .dialog .content { padding:14px 16px; display:grid; gap:10px; }
+  .dialog .foot { padding:14px 16px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px; }
+  input[type=text] { width:100%; padding:12px 12px; border-radius:10px; border:1px solid #e5e7eb; font-size:16px; }
+  .small { font-size:12px; }
+  .linkish { color:#93c5fd; text-decoration:underline; cursor:pointer; }
+  .hidden { display:none !important; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="screen" id="screen-select">
+    <div class="card">
+      <div class="hdr">
+        <div class="avatar">🧠</div>
+        <div>
+          <div style="font-weight:800;font-size:18px">Pick Your Vibe</div>
+          <div class="meta">Who are you?</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="row" id="starter-row"></div>
+        <div class="hr"></div>
+        <div class="note small">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen hidden" id="screen-play">
+    <div class="toolbar">
+      <div class="pill">You as: <span id="persona-pill"></span></div>
+      <button id="btn-reset" class="btn">Reset</button>
+    </div>
+    <div id="deck"></div>
+    <div class="ctr muted small" id="devhint">Toggle answers: press <span class="kbd">?</span></div>
+  </div>
+
+  <div class="screen hidden" id="screen-outcome">
+    <div class="card" id="outcome-card">
+      <div class="hdr">
+        <div class="avatar">📋</div>
+        <div>
+          <div style="font-weight:800;font-size:18px">Summary</div>
+          <div class="meta">How your swipes stacked up.</div>
+        </div>
+      </div>
+      <div class="body">
+        <div id="outcome-html"></div>
+        <div class="actions">
+          <button class="btn" id="btn-again">Try again?</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Right-swipe -> message modal -->
+<div class="modal" id="modal">
+  <div class="dialog">
+    <div class="head">Send a message</div>
+    <div class="content">
+      <input type="text" id="msg" placeholder="Type your opener…" />
+    </div>
+    <div class="foot">
+      <button class="btn btn-nope" id="btn-cancel">Cancel</button>
+      <button class="btn btn-like" id="btn-send">Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/*** DATA ***************************************************************/
+
+// 3 YOU personas: each wants a specific subset of the 10 via a tag.
+const PERSONAS = [
+  {
+    id: 'penguin',
+    name: 'Avery', age: 29, role: 'Editor', loc: 'Mount Pleasant',
+    avatar: '🐧',
+    photo: 'img/hinge/persona-penguin.png',
+    blurb: "I really, really love penguins 🐧",
+    prompts: [
+      { q: 'My love language is', a: 'Perfectly aligned orange spines.' },
+      { q: 'We’ll get along if', a: 'You can spot a Penguin from ten paces.' },
+      { q: 'Unusual skill', a: 'Dating a book by its cover stock.' },
+    ],
+    targetTag: 'penguin',
+    unlock: {
+      name: 'Ivy', avatar: '📘', role: 'Reprint nerd', loc: 'Kits',
+      photo: 'img/hinge/unlock-penguin.png',
+      puzzle: "Three book spines show only <i>years</i>: 1813, 1818, 1925. Take the <b>publishers</b>’ mascots—what bird remains?",
+      answer: "PENGUIN",
+      prize: "DATE PART: <b>WHERE</b> — <span class='pill'>Kits Pool bleachers</span>"
+    }
+  },
+  {
+    id: 'ghost',
+    name: 'Mo', age: 31, role: 'Archivist', loc: 'Grandview',
+    avatar: '👻',
+    photo: 'img/hinge/persona-ghost.png',
+    blurb: "Into ghosts 👻",
+    prompts: [
+      { q: 'A fact that surprises people', a: 'I cry at acknowledgments and probate filings.' },
+      { q: 'I go crazy for', a: 'Posthumous publications handled with care.' },
+      { q: 'Green flag', a: 'You know who Max Brod is.' },
+    ],
+    targetTag: 'posthumous',
+    unlock: {
+      name: 'Casper', avatar: '📜', role: 'Estate lawyer', loc: 'Downtown',
+      photo: 'img/hinge/unlock-ghost.png',
+      puzzle: "A shelf label reads: <b>AFTERLIFE EDITIONS</b>. The books’ initials encipher with a shift of +13 and spell the imprint name back to you. What single word do you reply?",
+      answer: "AFTERLIFE",
+      prize: "DATE PART: <b>WHEN</b> — <span class='pill'>Thursday 7:00pm</span>"
+    }
+  },
+  {
+    id: 'xlat',
+    name: 'Ling', age: 30, role: 'Subtitler', loc: 'Strathcona',
+    avatar: '🌍',
+    photo: 'img/hinge/persona-xlat.png',
+    blurb: "Talk to me in many languages 🌍",
+    prompts: [
+      { q: 'I’m known for', a: 'Arguing with translators in the margins.' },
+      { q: 'A life goal of mine', a: 'Read every book twice—in two languages.' },
+      { q: 'Quickest way to my heart', a: 'Spotting false friends.' },
+    ],
+    targetTag: 'translated',
+    unlock: {
+      name: 'Sasha', avatar: '🗺️', role: 'Rights manager', loc: 'West End',
+      photo: 'img/hinge/unlock-xlat.png',
+      puzzle: "I say <i>Schuld</i>, you say <i>trial</i>. I say <i>étranger</i>, you say…? Reply with the <b>English</b> title I’m thinking of.",
+      answer: "THE STRANGER",
+      prize: "DATE PART: <b>MEET</b> — <span class='pill'>By the Inukshuk, English Bay</span>"
+    }
+  },
+];
+
+// 10 puzzle profiles → each yields a book title; tagged for personas.
+const POOL = [
+  {
+    id:'p1', name:'Sam', age:28, role:'Marine biologist', loc:'Vancouver', avatar:'🍣',
+    photo:'img/hinge/p1.png',
+    photos:['🍣','🐟','🍱'],
+    prompts: [
+      { q: 'Tiny wordsearch', a: `Find: KELP, EEL, RAY, COD, TERN, SEA. The leftover letters anagram to my opener.
+        <div class="kbd" style="display:block;white-space:pre;line-height:1.2em;">
+K E L P T S
+E E L A D I
+R A Y T V V
+C O D E R E
+T E R N L S
+S E A O N E
+        </div>` },
+      { q: 'Currently reading', a: 'Moby‑Dick (because… whales).'},
+      { q: 'Fun fact', a: 'I collect tidepool field guides.' }
+    ],
+    
+    answer:"LET'S DIVE",
+    tags:['penguin'] // English, not posthumous.
+  },
+  {
+    id:'p2', name:'Leo', age:33, role:'Night shooter', loc:'West End', avatar:'🌉',
+    photo:'img/hinge/p2.png',
+    photos:['🌉','🦁','🦁'],
+    prompts: [
+      { q: 'Emoji status', a: `🌙 🐘 ✉️ 🍵 · 🍎 🍵 · 🐬 ☂️ ☀️ 🔑 <span class="small muted">(take first letter of each emoji’s common English name)</span>` },
+      { q: 'Blue hour ritual', a: 'Shoot, stroll, then bookstore. Last pick: The Trial.' },
+      { q: 'I’m convinced', a: 'Night coffee tastes better.' }
+    ],
+    
+    answer:'MEET AT DUSK',
+    tags:['posthumous','translated','penguin']
+  },
+  {
+    id:'p3', name:'Elle', age:29, role:'UX researcher', loc:'Downtown', avatar:'⌨️',
+    photo:'img/hinge/p3.png',
+    photos:['⌨️','♞','🧩'],
+    prompts: [
+      { q: 'Keyboard game', a: `On QWERTY, move like a chess knight from <b>N</b> to <b>I</b> to <b>C</b> to <b>E</b>, then straight rook moves to <b>M</b>→<b>O</b>→<b>V</b>→<b>E</b>. What does that spell?` },
+      { q: 'Most used emoji', a: '⌨️' },
+      { q: 'Currently reading', a: 'The Castle (for the UX of bureaucracy).' }
+    ],
+    
+    answer:'NICE MOVE',
+    tags:['penguin','translated','posthumous'] // appears in Kafka sets via “The Castle”
+  },
+  {
+    id:'p4', name:'Marie', age:31, role:'Editor', loc:'Coal Harbour', avatar:'🔤',
+    photo:'img/hinge/p4.png',
+    photos:['🔤','📚','🌲'],
+    prompts: [
+      { q: 'Editor’s checklist', a: `Read the first letters down this checklist:<ul>
+      <li><b>T</b>itle case on headings</li>
+      <li><b>U</b>se Oxford commas</li>
+      <li><b>R</b>un spellcheck</li>
+      <li><b>N</b>ote widows/orphans</li>
+      <li><b>T</b>rack changes on</li>
+      <li><b>H</b>yphenation consistent</li>
+      <li><b>E</b>n dashes for ranges</li>
+      <li><b>P</b>roof page numbers</li>
+      <li><b>A</b>nnotate queries</li>
+      <li><b>G</b>ather corrections</li>
+      <li><b>E</b>xport final PDF</li>
+    </ul>` },
+      { q: 'I’m a 10 if', a: 'You dog-ear with care.' },
+      { q: 'Bookshelf', a: 'Pride and Prejudice (multiple editions).'}
+    ],
+    
+    answer:'TURN THE PAGE',
+    tags:['penguin']
+  },
+  {
+    id:'p5', name:'Gavin', age:30, role:'Transit ops', loc:'Fairview', avatar:'📱',
+    photo:'img/hinge/p5.png',
+    photos:['⭐','⭐','🔢'],
+    prompts: [
+      { q: 'My simple pleasures', a: `Decode on T9: <span class="kbd">263333</span> <span class="kbd">7666</span>` },
+      { q: 'Love language', a: 'Accurate bus ETAs.' },
+      { q: 'Commute read', a: 'The Odyssey (annotated).'}
+    ],
+    
+    answer:'COFFEE SOON',
+    tags:['penguin','translated']
+  },
+  {
+    id:'p6', name:'Cora', age:27, role:'Chef', loc:'North Shore', avatar:'🍳',
+    photo:'img/hinge/p6.png',
+    photos:['🍳','🥘','🧂'],
+    prompts: [
+      { q: 'Chef tip', a: `Tonight’s test‑kitchen bowl — extract the numbers in order, then map A1Z26 to get my opener.
+      <ul>
+        <li>Mince <b>3</b> cloves garlic into a bowl.</li>
+        <li>Whisk in <b>15</b> ml olive oil with lemon.</li>
+        <li>Let it sit <b>15</b> minutes to mellow.</li>
+        <li>Season with <b>11</b> g sea salt.</li>
+        <li>Fold in <b>23</b> g toasted walnuts.</li>
+        <li>Add <b>9</b> cherry tomatoes, halved.</li>
+        <li>Stir in <b>20</b> g tahini.</li>
+        <li>Tear <b>8</b> basil leaves.</li>
+        <li>Finish with <b>13</b> g mint, chopped.</li>
+        <li>Rest <b>5</b> minutes; serve.</li>
+      </ul>` },
+      { q: 'Cookbook crush', a: 'Salt Fat Acid Heat.' },
+      { q: 'Green flag', a: 'You bring lemons without being asked.' }
+    ],
+    
+    answer:'COOK WITH ME',
+    tags:['penguin','translated']
+  },
+  {
+    id:'p7', name:'Skipper', age:34, role:'Ferry fan', loc:'—', avatar:'⛵',
+    photo:'img/hinge/p7.png',
+    photos:['🅰️','🅱️','🧩'],
+    prompts: [
+      { q: 'Maritime signal', a: `Morse to decode: <span class="kbd">-- . . - / -... -.-- / - .... . / -.. --- -.-. -.- ...</span>` },
+      { q: 'Perfect Sunday', a: 'Ferries, fries, and a paperback.' },
+      { q: 'Shelf pick', a: 'A Confederacy of Dunces (laugh-out-loud ferry read).'}
+    ],
+    
+    answer:'MEET BY THE DOCKS',
+    tags:['posthumous']
+  },
+  {
+    id:'p8', name:'Wren', age:28, role:'Arborist', loc:'East Side', avatar:'🌳',
+    photo:'img/hinge/p8.png',
+    photos:['➡️','⬅️','🔡'],
+    prompts: [
+      { q: 'My simple pleasures', a: `Taxus, Vitis, Arbutus, Acer, Cupressus, Pseudotsuga, Tsuga, Betula, Alnus, Picea, Quercus, …` },
+      { q: 'Typeshelf', a: 'Frankenstein (loves a good reprint saga).'},
+      { q: 'Together we could', a: 'Go for a stroll and see what comes next.' }
+    ],
+    
+    answer:'WRITE ME',
+    tags:['penguin']
+  },
+  {
+    id:'p9', name:'Robin', age:32, role:'Analyst', loc:'Financial District', avatar:'📈',
+    photo:'img/hinge/p9.png',
+    photos:['📈','📰','💼'],
+    prompts: [
+      { q: 'Ticker tease', a: `Target, General Electric, FedEx, Walmart, Exxon Mobil, Adobe, Alphabet, Tesla, AT&amp;T, Nike, Uber.` },
+      { q: 'Desk read', a: 'The Intelligent Investor.' },
+      { q: 'Hot take', a: 'Buy and hold beats day‑trading.' }
+    ],
+    
+    answer:'TEXT ME LATER',
+    tags:['penguin','translated']
+  },
+  {
+    id:'p10', name:'Kat', age:30, role:'Barista', loc:'Mount Pleasant', avatar:'☕',
+    photo:'img/hinge/p10.png',
+    photos:['📖','👀','🕯️'],
+    prompts: [
+      { q: 'Menu acrostic', a: `Mocha, Earl Grey, Espresso, Tea — Flat white, Oolong, Ristretto — Cortado, Oat latte, Filter, Flat — Ethiopia. First letters, in order.` },
+      { q: 'We’ll get along if', a: 'You like late‑night pages and early cappuccinos.' },
+      { q: 'Currently reading', a: 'The Castle (by candlelight).'}
+    ],
+    
+    answer:'MEET FOR COFFEE',
+    tags:['posthumous','translated','penguin']
+  },
+];
+
+// Utility for easy, consistent matching (strip non-letters/numbers, upcase)
+const normalize = s => (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+
+/*** STATE **************************************************************/
+const state = {
+  persona: null,
+  order: [],          // randomized order of the 10
+  idx: 0,             // index in order
+  ledger: [],         // per-profile decisions
+  devAnswers: false,  // toggle with '?'
+  selectIdx: 0,       // starter carousel index
+};
+
+/*** RENDER HELPERS *****************************************************/
+
+const $ = sel => document.querySelector(sel);
+function el(tag, attrs={}, ...kids){
+  const n = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)) {
+    if (k==='class') n.className=v;
+    else if (k==='html') n.innerHTML=v;
+    else if (k.startsWith('on') && typeof v === 'function') n.addEventListener(k.substring(2), v);
+    else n.setAttribute(k,v);
+  }
+  for (const k of kids) n.append(k);
+  return n;
+}
+
+function renderStarterCard(p){
+  const c = el('div',{class:'card', style:'flex:1 1 220px; min-width:220px;'});
+  c.append(
+    el('div',{class:'hdr'},
+      el('div',{class:'avatar'}, p.avatar),
+      el('div',{},
+        el('div',{html:`<b>${p.name}, ${p.age}</b>`}),
+        el('div',{class:'meta', html:`${p.role} • ${p.loc}`})
+      )
+    ),
+    // hero photo (image if present, else SVG placeholder) — contain fit for full view
+    renderPhoto(p.photo, `${p.name}'s photo`, svgPlaceholder(p.name, p.avatar), 'contain'),
+    el('div',{class:'body'},
+      (p.prompts && p.prompts.length)
+        ? el('div',{class:'prompts'},
+            ...p.prompts.map(pa => el('div',{class:'prompt'},
+              el('div',{class:'q'}, pa.q),
+              el('div',{class:'a', html: pa.a})
+            ))
+          )
+        : el('div',{class:'prompts'},
+            el('div',{class:'prompt'},
+              el('div',{class:'q'}, 'About me'),
+              el('div',{class:'a', html:p.blurb})
+            )
+          ),
+      
+      el('div',{class:'actions'},
+        el('button',{class:'btn btn-ghost', onclick:()=>choosePersona(p.id)},'Be this person')
+      )
+    )
+  );
+  return c;
+}
+
+function renderProfileCard(p, showAnswer=false){
+  const card = el('div',{class:'card'});
+  const fav = (p.tags||[]).join(' • ');
+  card.append(
+    el('div',{class:'hdr'},
+      el('div',{class:'avatar'}, p.avatar),
+      el('div',{},
+        el('div',{html:`<b>${p.name}, ${p.age}</b>`}),
+        el('div',{class:'meta', html:`${p.role} • ${p.loc}`})
+      )
+    ),
+    renderPhoto(p.photo, `${p.name}'s photo`, svgPlaceholder(p.name, p.avatar), 'contain'),
+    el('div',{class:'body'},
+      (p.prompts && p.prompts.length)
+        ? el('div',{class:'prompts'},
+            ...p.prompts.map(pa => el('div',{class:'prompt'},
+              el('div',{class:'q'}, pa.q),
+              el('div',{class:'a', html: pa.a})
+            ))
+          )
+        : el('div',{})
+    ),
+    el('div',{class:'body'},
+      el('div',{class:'actions'},
+        el('button',{class:'btn btn-nope', onclick:()=>swipe(p,false)},'Swipe Left'),
+        el('button',{class:'btn btn-like', onclick:()=>openMessage(p)},'Swipe Right')
+      )
+    )
+  );
+  return card;
+}
+
+function renderUnlockCard(persona){
+  const u = persona.unlock;
+  const card = el('div',{class:'card'});
+  card.append(
+    el('div',{class:'hdr'},
+      el('div',{class:'avatar'}, u.avatar),
+      el('div',{},
+        el('div',{html:`<b>${u.name}</b>`}),
+        el('div',{class:'meta', html:`${u.role} • ${u.loc}`})
+      ),
+      el('div',{style:'margin-left:auto;'}, el('span',{class:'pill'}, 'Final suitor'))
+    ),
+    renderPhoto(u.photo, `${u.name}'s photo`, svgPlaceholder(u.name, u.avatar), 'contain'),
+    el('div',{class:'body'},
+      (u.prompts && u.prompts.length)
+        ? el('div',{class:'prompts'},
+            ...u.prompts.map(pa => el('div',{class:'prompt'},
+              el('div',{class:'q'}, pa.q),
+              el('div',{class:'a', html: pa.a})
+            ))
+          )
+        : el('div',{})
+    ),
+    el('div',{class:'body'},
+      el('div',{class:'actions'},
+        el('button',{class:'btn btn-like', onclick:()=>openFinalMessage(persona)},'Send Message')
+      )
+    )
+  );
+  return card;
+}
+
+/*** FLOW ***************************************************************/
+
+function init(){
+  // starters
+  state.selectIdx = 0;
+  renderStarterCarousel();
+  // hotkeys
+  window.addEventListener('keydown', (e)=>{
+    if (e.key === '?') {
+      state.devAnswers = !state.devAnswers;
+      $('#devhint').innerHTML = state.devAnswers ? 'Answers visible (press <span class="kbd">?</span> to hide)' : 'Toggle answers: press <span class="kbd">?</span>';
+      rerenderDeck();
+    }
+  });
+  // modal buttons
+  $('#btn-cancel').onclick = closeModal;
+  // unify send handling so FINAL messages don't fall through to regular send
+  $('#btn-send').addEventListener('click', async (e)=>{
+    const pid = $('#modal').dataset.pid || '';
+    if (pid.startsWith('FINAL:')){
+      const persona = state.persona;
+      const msg = $('#msg').value || '';
+      let ok = false;
+      try {
+        const r = await fetch('/api/hinge-check', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ pid, msg }) });
+        const j = await r.json();
+        ok = !!(j && j.ok && j.correct);
+      } catch {}
+      closeModal();
+      if (ok){
+        const deck = $('#deck');
+        deck.innerHTML = '';
+        deck.append(
+          el('div',{class:'card'},
+            el('div',{class:'hdr'},
+              el('div',{class:'avatar'}, '💌'),
+              el('div',{}, el('div',{html:`<b>You matched with ${persona.unlock.name}!</b>`}),
+                           el('div',{class:'meta', html:`They sent a message…`})
+              )
+            ),
+            el('div',{class:'body'},
+              el('div',{class:'note good', html:`${persona.unlock.prize}`}),
+              el('div',{class:'hr'}),
+              el('div',{class:'muted small'},'Collect all three date parts across the three YOU profiles.')
+            ),
+            el('div',{class:'body'},
+              el('div',{class:'actions'},
+                el('button',{class:'btn', onclick:()=>show('screen-select')},'Pick another YOU')
+              )
+            )
+          )
+        );
+      } else {
+        // final failed → outcome “no match”
+        $('#outcome-html').innerHTML = `
+          <div class="note bad"><b>Close, but no.</b> Your final message didn’t land. You’ll need to retry this YOU.</div>
+        `;
+        show('screen-outcome');
+      }
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      return;
+    }
+    // regular profile message
+    await sendMessage();
+  });
+  $('#btn-reset').onclick = resetAll;
+  $('#btn-again').onclick = ()=>{ show('screen-select'); };
+  $('#btn-retry').onclick = ()=>{ choosePersona(state.persona.id); };
+  show('screen-select');
+}
+function renderStarterCarousel(){
+  const row = $('#starter-row');
+  row.innerHTML='';
+  const idx = ((state.selectIdx % PERSONAS.length) + PERSONAS.length) % PERSONAS.length;
+  const p = PERSONAS[idx];
+  row.append(
+    el('div',{class:'row', style:'align-items:stretch; width:100%;'},
+      el('button',{class:'btn', onclick:()=>{ state.selectIdx--; renderStarterCarousel(); }},'‹'),
+      el('div',{style:'flex:1 1 auto; min-width:0;'}, renderStarterCard(p)),
+      el('button',{class:'btn', onclick:()=>{ state.selectIdx++; renderStarterCarousel(); }},'›')
+    )
+  );
+}
+function show(id){
+  for (const s of document.querySelectorAll('.screen')) s.classList.add('hidden');
+  $('#'+id).classList.remove('hidden');
+  if (id==='screen-select') renderStarterCarousel();
+}
+function choosePersona(id){
+  state.persona = PERSONAS.find(p=>p.id===id);
+  state.order = shuffle([...POOL.map(p=>p.id)]);
+  state.idx = 0;
+  state.ledger = [];
+  $('#persona-pill').textContent = `${state.persona.name} ${state.persona.avatar}`;
+  show('screen-play');
+  rerenderDeck();
+}
+function rerenderDeck(){
+  const deck = $('#deck');
+  deck.innerHTML = '';
+  if (state.idx < state.order.length){
+    const p = POOL.find(q=>q.id===state.order[state.idx]);
+    deck.append(renderProfileCard(p, state.devAnswers));
+  } else {
+    // Evaluate correctness
+    evaluate();
+  }
+  // progress removed
+}
+function swipe(profile, right){
+  if (!right){
+    state.ledger.push({id:profile.id, right:false, msg:null, ok:false});
+    state.idx++;
+    rerenderDeck();
+  } else {
+    openMessage(profile);
+  }
+}
+function openMessage(profile){
+  $('#modal').classList.add('show');
+  $('#msg').value='';
+  $('#msg').focus();
+  $('#modal').dataset.pid = profile.id;
+}
+function closeModal(){ $('#modal').classList.remove('show'); }
+
+async function sendMessage(){
+  const pid = $('#modal').dataset.pid;
+  const profile = POOL.find(p=>p.id===pid);
+  const msg = $('#msg').value || '';
+  let ok = false;
+  try {
+    const r = await fetch('/api/hinge-check', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ pid, msg }) });
+    const j = await r.json();
+    ok = !!(j && j.ok && j.correct);
+  } catch {}
+  state.ledger.push({id:pid, right:true, msg, ok});
+  closeModal();
+  state.idx++;
+  rerenderDeck();
+}
+
+// Unlock final suitor flow
+function evaluate(){
+  const persona = state.persona;
+  const wantTag = persona.targetTag;
+  // Build expected set and actual hits
+  const must = POOL.filter(p => (p.tags||[]).includes(wantTag)).map(p=>p.id);
+  const didRight = state.ledger.filter(x=>x.right && x.ok).map(x=>x.id);
+  const didWrongRights = state.ledger.filter(x=>x.right && !x.ok).map(x=>x.id);
+  const extraRights = didRight.filter(id => !must.includes(id));
+  const missed = must.filter(id => !didRight.includes(id));
+  const anyWrong = didWrongRights.length>0 || extraRights.length>0 || missed.length>0;
+  if (anyWrong){
+    const bullet = arr => arr.map(id=>{
+      const p = POOL.find(q=>q.id===id);
+      return `<li>${p.name}</li>`;
+    }).join('');
+    $('#outcome-html').innerHTML = `
+      <div class="note bad"><b>No match unlocked.</b> You ran out of profiles.</div>
+      <div class="hr"></div>
+      <div class="row">
+        <div style="flex:1 1 240px; min-width:240px;">
+          <div class="section">You missed (should have matched):</div>
+          <ul>${bullet(missed) || '<li><i>None</i></li>'}</ul>
+        </div>
+        <div style="flex:1 1 240px; min-width:240px;">
+          <div class="section">You matched but shouldn’t have:</div>
+          <ul>${bullet(extraRights) || '<li><i>None</i></li>'}</ul>
+          <div class="section">Right-swipes with wrong messages:</div>
+          <ul>${bullet(didWrongRights) || '<li><i>None</i></li>'}</ul>
+        </div>
+      </div>
+    `;
+    show('screen-outcome');
+  } else {
+    // success → show persona-specific 11th
+    const deck = $('#deck');
+    deck.innerHTML='';
+    deck.append(renderUnlockCard(persona));
+  }
+}
+function openFinalMessage(persona){
+  const u = persona.unlock;
+  $('#modal').classList.add('show');
+  $('#msg').value='';
+  $('#msg').focus();
+  $('#modal').dataset.pid = 'FINAL:'+persona.id;
+}
+function sendFinal(msg){
+  // unused: we reuse sendMessage logic branch by pid prefix
+}
+// progress removed
+function resetAll(){
+  state.persona = null; state.order=[]; state.idx=0; state.ledger=[];
+  show('screen-select');
+}
+
+/*** UTILS **************************************************************/
+function shuffle(a){
+  for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+// Simple hash for color seeding and SVG/photo helpers
+function hash(s){ let h=0; for (let i=0;i<s.length;i++) h=((h<<5)-h + s.charCodeAt(i))|0; return Math.abs(h); }
+function svgPlaceholder(label, emoji){
+  const palettes = [
+    ['#fde68a','#f59e0b'], // amber
+    ['#a7f3d0','#10b981'], // emerald
+    ['#bfdbfe','#3b82f6'], // blue
+    ['#fecaca','#ef4444'], // red
+    ['#ddd6fe','#8b5cf6'], // violet
+    ['#fbcfe8','#ec4899'], // pink
+  ];
+  const [c1,c2] = palettes[hash(label)%palettes.length];
+  const w=900, h=600;
+  const title = (label||'').split(' ')[0];
+  const initial = title.slice(0,1).toUpperCase();
+  const svg = `
+  <svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'>
+    <defs>
+      <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+        <stop offset='0%' stop-color='${c1}'/>
+        <stop offset='100%' stop-color='${c2}'/>
+      </linearGradient>
+      <filter id='grain'>
+        <feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/>
+        <feColorMatrix type='saturate' values='0'/>
+        <feComponentTransfer>
+          <feFuncA type='table' tableValues='0 0.15'/>
+        </feComponentTransfer>
+      </filter>
+    </defs>
+    <rect width='100%' height='100%' fill='url(#g)'/>
+    <rect width='100%' height='100%' filter='url(#grain)' opacity='0.07'/>
+    <g text-anchor='middle' dominant-baseline='middle'>
+      <text x='50%' y='44%' font-size='200' fill='rgba(255,255,255,0.9)'>${emoji||initial}</text>
+      <text x='50%' y='72%' font-size='64' fill='rgba(255,255,255,0.9)' font-family='system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial'>${title}</text>
+    </g>
+  </svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+function renderPhoto(primarySrc, alt, placeholderSrc, fit){
+  const wrap = el('div',{class:'photo-wrap skeleton' + (fit==='contain' ? ' contain' : '')});
+  const img = el('img',{class:'photo', alt:alt||'', loading:'lazy'});
+  img.src = primarySrc || placeholderSrc;
+  img.addEventListener('load', ()=>{ wrap.classList.remove('skeleton'); });
+  img.addEventListener('error', ()=>{
+    if (img.src !== placeholderSrc) {
+      img.src = placeholderSrc;
+    }
+    wrap.classList.remove('skeleton');
+  });
+  wrap.append(img);
+  return wrap;
+}
+// Init after DOM is ready to ensure starter selection shows first
+(function(){
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

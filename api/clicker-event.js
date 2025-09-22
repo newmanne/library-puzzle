@@ -5,13 +5,24 @@
 LSHAB
 
 module.exports = async function (req, res) {
+  // Error codes correspond to Dewey Decimal classes.
+  // Clues are intentionally generic; with Dewey context they resolve to a single, specific word.
   const EVENTS = [
-    { code: 942, type: 'whiteText',  text: 'One checking you out? (9)' },
-    { code: 787, type: 'altText',    text: 'Library admonition (3)' },
-    { code: 451, type: 'title',      text: 'A book reservation (4)' },
-    { code: 398, type: 'watermark',  text: "Egypt's great book collection (9)" },
-    { code: 604, type: 'ghostLink',  text: 'It wiggles around and munches through novels, probably (8)' },
-    { code: 57,  type: 'headerAfter',text: '' },
+    // Early classes (replacing library/islam/phonology entries)
+    { code: 133, type: 'ariaNote',   text: 'The Cards' },          // 133 Divination → Tarot
+
+    { code: 423, type: 'alttext',      text: 'The Standard, named for a University' },     // 423 English dictionaries → OED
+
+    // Sciences
+    { code: 520, type: 'title',      text: 'The Fifth' },          // Astronomy → Jupiter
+
+    // Language & history
+    { code: 937, type: 'ghostLink',      text: 'The Language' },       // Ancient Rome → Latin
+
+    // Countries (limit to one capital and one currency)
+    { code: 952, type: 'headerAfter',    text: 'The Currency' },       // Japan → Yen
+
+    { code: 993, type: 'watermark',  text: 'The Capital' },        // New Zealand → Wellington
   ];
 
   const method = (req.method || 'GET').toUpperCase();
@@ -43,4 +54,3 @@ module.exports = async function (req, res) {
   res.setHeader('cache-control', 'no-store');
   return res.status(200).json({ ok: true, codes: EVENTS.map(e => e.code) });
 }
-
