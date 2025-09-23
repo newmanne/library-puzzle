@@ -107,7 +107,7 @@
 </head>
 <body>
   <header>
-    <h1 aria-live="polite">Library Clicker <span class="tag">— return 1,000 books to end your shift</span></h1>
+    <h1 aria-live="polite">Library Clicker <span class="tag"></span></h1>
     <div class="controls">
 <label id="pauseWrap" class="toggle control"><input id="pauseAutos" type="checkbox"/> Pause autos</label> <button class="control" id="resetAll">Reset all progress</button> <button class="control" id="skipNextCode" style="display:none">Skip to next code - 1</button> </div> </header> <main class="wrap"> <!-- Left: play area --> <section class="card" id="play"> <h2>Stacks</h2> <div class="body"> <div class="stats"> <div class="stat"><div class="v" id="count">0</div><div class="k">Books shelved (this shift)</div></div> <div class="stat"><div class="v" id="rate">0/sec</div><div class="k">Auto-shelving rate</div></div> <div class="stat" id="creditsStat"><div class="v" id="credits">0</div><div class="k">Library credits (persistent)</div></div> </div> <div class="bookzone"> <button id="book" class="book" aria-label="Return a book" title="Click to shelve" type="button"> <svg viewBox="0 0 240 320" role="img" aria-hidden="true"> <defs> <linearGradient id="cov" x1="0" y1="0" x2="1" y2="1"> <stop offset="0" stop-color="#3b82f6"/> <stop offset="1" stop-color="#1d4ed8"/> </linearGradient> </defs> <!-- cover --> <rect x="36" y="28" width="168" height="250" rx="14" fill="url(#cov)" /> <!-- spine --> <rect x="24" y="28" width="20" height="250" rx="6" fill="#1e293b"/> <!-- title band --> <rect x="44" y="40" width="148" height="14" rx="7" fill="rgba(255,255,255,0.15)"/> <!-- plate area --> <rect x="44" y="66" width="148" height="160" rx="10" fill="rgba(255,255,255,0.07)"/> <!-- footer band --> <rect x="44" y="232" width="148" height="28" rx="6" fill="rgba(0,0,0,0.15)"/> <!-- page shadow / base --> <path d="M204 278 L204 298 C204 306 196 312 188 310 L44 282" fill="#0b0e17"/> <!-- bookmark ribbon --> <path d="M92 88 L108 88 108 148 100 142 92 148 Z" fill="#e11d48"/> </svg> <div id="watermark"><span></span></div> <div class="label">Click to shelve</div> <a id="mapLink" class="ghost-link" href="#" aria-label="Stacks map" hidden>map</a> </button> </div> <div class="controls"> <div id="hidden-white" class="control" aria-hidden="true"></div> <div class="control" id="status"></div> </div> <details id="journal" class="card" style="margin-top:12px;"> <summary class="body" style="cursor:pointer">Clue journal (debug)</summary> <div class="body" id="journalBody"></div> </details> </div> </section>
     <!-- Right: upgrades -->
@@ -427,12 +427,16 @@ function spawnPop(text, variant='click'){
 
   // -------------------- INIT --------------------
   async function fetchEventCodes(){
+    const fallback = [133,343,398,423,520,737,937,952,993];
     try{
       const r = await fetch('/api/clicker-event');
       const data = await r.json();
-      if(data && data.ok && Array.isArray(data.codes)) return data.codes.slice().sort((a,b)=>a-b);
+      if(data && data.ok && Array.isArray(data.codes)){
+        const arr = data.codes.slice().sort((a,b)=>a-b);
+        return arr.length ? arr : fallback;
+      }
     }catch(_){ /* ignore */ }
-    return [];
+    return fallback;
   }
   function updatePhaseUI(){
     const unlocked = !!state.seenCrash;
@@ -449,11 +453,15 @@ function spawnPop(text, variant='click'){
   // Enable debug skip if requested
   if (urlParams.get('debug')==='1' && elSkipNext){
     elSkipNext.style.display = '';
-    const codes = await fetchEventCodes();
-    elSkipNext.addEventListener('click', ()=>{
+    elSkipNext.addEventListener('click', async ()=>{
+      const codes = await fetchEventCodes();
+      if(!codes.length){
+        alert('Could not load event codes. Is the API running?');
+        return;
+      }
       const future = codes.filter(c => c > state.count);
       if(!future.length){
-        alert('No later event codes this shift. Restart to test earlier ones.');
+        alert('No later event codes from here. Try restarting the shift.');
         return;
       }
       const next = future[0];
