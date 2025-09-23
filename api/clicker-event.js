@@ -4,13 +4,12 @@
 module.exports = async function (req, res) {
   // Error codes correspond to Dewey Decimal classes.
   // Clues are intentionally generic; with Dewey context they resolve to a single, specific word.
-  // Keep this list short (5–10) and stable.
   const EVENTS = [
     { code: 133, type: 'ariaNote',   text: 'The Cards (5)' },          // 133 Divination → Tarot
     { code: 221, type: 'alttext',      text: 'The First (7)' },     // 221 Old Testament → Genesis
     { code: 520, type: 'title',      text: 'The Fifth (7)' },          // Astronomy → Jupiter
     { code: 937, type: 'ghostLink',      text: 'The Language (5)' },       // Ancient Rome → Latin
-    { code: 993, type: 'watermark',  text: 'The Capital' },        // New Zealand → Wellington
+    { code: 993, type: 'watermark',  text: 'The Capital (10)' },        // New Zealand → Wellington
   ];
 
 
