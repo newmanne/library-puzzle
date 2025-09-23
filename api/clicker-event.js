@@ -8,19 +8,13 @@ module.exports = async function (req, res) {
   // Error codes correspond to Dewey Decimal classes.
   // Clues are intentionally generic; with Dewey context they resolve to a single, specific word.
   const EVENTS = [
-    // Early classes (replacing library/islam/phonology entries)
-    { code: 133, type: 'ariaNote',   text: 'The Cards' },          // 133 Divination → Tarot
+    { code: 133, type: 'ariaNote',   text: 'The Cards (5)' },          // 133 Divination → Tarot
 
-    { code: 423, type: 'alttext',      text: 'The Standard, named for a University' },     // 423 English dictionaries → OED
+    { code: 221, type: 'alttext',      text: 'The First (7)' },     // 221 Old Testament → Genesis
 
-    // Sciences
-    { code: 520, type: 'title',      text: 'The Fifth' },          // Astronomy → Jupiter
+    { code: 520, type: 'title',      text: 'The Fifth (7)' },          // Astronomy → Jupiter
 
-    // Language & history
-    { code: 937, type: 'ghostLink',      text: 'The Language' },       // Ancient Rome → Latin
-
-    // Countries (limit to one capital and one currency)
-    { code: 952, type: 'headerAfter',    text: 'The Currency' },       // Japan → Yen
+    { code: 937, type: 'ghostLink',      text: 'The Language (5)' },       // Ancient Rome → Latin
 
     { code: 993, type: 'watermark',  text: 'The Capital' },        // New Zealand → Wellington
   ];

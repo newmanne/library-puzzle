@@ -162,7 +162,7 @@
 <script>
 /*** DATA ***************************************************************/
 
-// TODO: Too many penguin books
+// TODO: Too many penguin books. (Use https://www.penguin.co.uk/penguin-classics/classics-list)
 
 // 3 YOU personas: each wants a specific subset of the 10 via a tag.
 const PERSONAS = [
@@ -240,7 +240,7 @@ const POOL = [
     id:'p1', name:'Sam', age:28, role:'Marine biologist', loc:'Vancouver', avatar:'🍣',
     photo:'img/hinge/p1.png',
     photos:['🌊','🐟','🪸'],
-    prompts: [ // TODO: The word search sucks. Far too easy
+    prompts: [ // TODO: The word search sucks and the puzzle might be broken 
       { q: 'Sometimes my life feels like', a: `
         <div class="kbd" style="display:block;white-space:pre;line-height:1.2em;">
 K E L P T S W
@@ -260,7 +260,7 @@ S E A O N E X
     photo:'img/hinge/p2.png',
     photos:['🌃','📷','🌉'],
     prompts: [
-      { q: 'Emoji status', a: `🌙 🐘 ✉️ 🍵 · 🍎 🍵 · 🐬 ☂️ ☀️ 🔑` },
+      { q: 'Emoji status', a: `🌙 🐘 ✉️ 🍵 · 🍎 🚆 · 🐬 ☂️ ☀️ 🔑` },
       { q: 'Blue hour ritual', a: 'Shoot, stroll, then bookstore. Last pick: The Trial.' },
       { q: 'I’m convinced', a: 'Night coffee tastes better.' }
     ],
@@ -280,7 +280,7 @@ S E A O N E X
           <div class="sq dim">·</div><div class="sq">O</div><div class="sq dim">·</div><div class="sq dim">·</div><div class="sq dim">·</div>
         </div>
       ` },
-      { q: `Let's debate this topic`, a: `Let me hear your best opener` },
+      { q: `Let's debate this topic`, a: `What is the best opener?` },
       { q: 'Currently reading', a: 'Invisible Cities (for the UX of imagination).' }
     ],
     tags:['penguin','translated']
@@ -291,16 +291,16 @@ S E A O N E X
     photos:['🖨️','🎨','📚'],
     prompts: [
       { q: 'Work', a: 'CMY Industries — brand palette indexing: C=1, M=2, Y=3, G=4, P=5, Grey=6.' },
-      { q: 'House style', a: `
-        <span class="hl c">Title</span>
+      { q: 'A few of my favourite words', a: `
+        <span class="hl c">title</span>
         <span class="hl m">audit</span>
         <span class="hl y">correct</span>
         <span class="hl g">kern</span>
-        <span class="hl c">Topline</span>
+        <span class="hl c">topline</span>
         <span class="hl m">chisel</span>
         <span class="hl k">stroke</span>
         <span class="hl p">sharp</span>
-        <span class="hl c">Author</span>
+        <span class="hl c">author</span>
         <span class="hl g">program</span>
         <span class="hl y">scene</span>
       ` },
@@ -372,7 +372,7 @@ The crown-wearing burger chain motto & The Great One` },
     photo:'img/hinge/p9.png',
     photos:['📈','📰','💼'],
     prompts: [
-      { q: 'Ticker tease', a: `Terex, Tencent Music Entertainment, Loews, Aterian <span class="small muted">(write their stock tickers in order; read as a phrase)</span>` },
+      { q: 'Ticker tease', a: `Terex, Tencent Music Entertainment, Loews, Aterian` },
       { q: 'Desk read', a: 'The Three-Body Problem.' },
       { q: 'Hot take', a: 'Buy and hold beats day‑trading.' }
     ],
@@ -383,7 +383,8 @@ The crown-wearing burger chain motto & The Great One` },
     photo:'img/hinge/p10.png',
     photos:['☕','📚','✨'],
     prompts: [
-      { q: `What are you ordering?`, a: `Mocha, Earl Grey, Espresso, Tea — Flat white, Oolong, Ristretto — Cortado, Oat latte, Filter, Flat — Ethiopia?` },
+      { q: `I bet I can guess your order`, a: `Mocha, Earl Grey, Espresso, Tea? Flat white, Oolong, Ristretto? Cortado, Oat latte, Filter, Frappé, Egg coffee
+?` },
       { q: 'We’ll get along if', a: 'You like late‑night pages and early cappuccinos.' },
       { q: 'Currently reading', a: 'The Master and Margarita (after hours).'}
     ],
