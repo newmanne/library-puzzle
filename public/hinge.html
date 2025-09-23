@@ -162,6 +162,8 @@
 <script>
 /*** DATA ***************************************************************/
 
+// TODO: Too many penguin books
+
 // 3 YOU personas: each wants a specific subset of the 10 via a tag.
 const PERSONAS = [
   {
@@ -193,7 +195,7 @@ const PERSONAS = [
     photo: 'img/hinge/persona-ghost.png',
     blurb: "Into ghosts 👻",
     prompts: [
-      { q: 'A fact about me that surprises people', a: 'I believe in ghosts.' },
+      { q: 'A fact about me that surprises people', a: 'I believe the dead can still impact the world.' },
       { q: 'I go crazy for', a: 'Ectoplast.' },
       { q: 'Green flag', a: 'You live in a haunted house.' },
     ],
@@ -217,7 +219,7 @@ const PERSONAS = [
     prompts: [
       { q: 'I’m known for', a: 'Arguing with translators in the margins.' },
       { q: 'A life goal of mine', a: 'Read every book twice—in two languages.' },
-      { q: 'Quickest way to my heart', a: 'A sexy accent.' },
+      { q: 'Quickest way to my heart', a: 'A sexy foreign accent.' },
     ],
     targetTag: 'translated',
     unlock: {
@@ -237,16 +239,16 @@ const POOL = [
   {
     id:'p1', name:'Sam', age:28, role:'Marine biologist', loc:'Vancouver', avatar:'🍣',
     photo:'img/hinge/p1.png',
-    photos:['🍣','🐟','🍱'],
-    prompts: [
-      { q: 'Tiny wordsearch', a: `
+    photos:['🌊','🐟','🪸'],
+    prompts: [ // TODO: The word search sucks. Far too easy
+      { q: 'Sometimes my life feels like', a: `
         <div class="kbd" style="display:block;white-space:pre;line-height:1.2em;">
-K E L P T S
-E E L A D I
-R A Y T V V
-C O D E R E
-T E R N L S
-S E A O N E
+K E L P T S W
+E E L A D I A
+R A Y T V V V
+C O D E R E E
+T E R N L S S
+S E A O N E X
         </div>` },
       { q: 'Currently reading', a: 'Moby‑Dick (because… whales).'},
       { q: 'Fun fact', a: 'In my day to day I collect kelp, eel, ray, cod, tern, and just generally the sea. And sometimes more fun leftovers are in the mix!' }
@@ -256,7 +258,7 @@ S E A O N E
   {
     id:'p2', name:'Leo', age:33, role:'Night shooter', loc:'West End', avatar:'🌉',
     photo:'img/hinge/p2.png',
-    photos:['🌉','🦁','🦁'],
+    photos:['🌃','📷','🌉'],
     prompts: [
       { q: 'Emoji status', a: `🌙 🐘 ✉️ 🍵 · 🍎 🍵 · 🐬 ☂️ ☀️ 🔑` },
       { q: 'Blue hour ritual', a: 'Shoot, stroll, then bookstore. Last pick: The Trial.' },
@@ -267,7 +269,7 @@ S E A O N E
   {
     id:'p3', name:'Elle', age:29, role:'UX researcher', loc:'Downtown', avatar:'⌨️',
     photo:'img/hinge/p3.png',
-    photos:['⌨️','♞','🧩'],
+    photos:['♞','⌨️','🧩'],
     prompts: [
       { q: `You'll impress me if you can`, a: `Decode this
         <div class="mini-board">
@@ -279,14 +281,14 @@ S E A O N E
         </div>
       ` },
       { q: `Let's debate this topic`, a: `Let me hear your best opener` },
-      { q: 'Currently reading', a: 'The Castle (for the UX of bureaucracy).' }
+      { q: 'Currently reading', a: 'Invisible Cities (for the UX of imagination).' }
     ],
-    tags:['penguin','translated','posthumous'] // TODO: ENough kafka
+    tags:['penguin','translated']
   },
   {
     id:'p4', name:'Marie', age:31, role:'Editor', loc:'Coal Harbour', avatar:'🔤',
     photo:'img/hinge/p4.png',
-    photos:['🔤','📚','🌲'],
+    photos:['🖨️','🎨','📚'],
     prompts: [
       { q: 'Work', a: 'CMY Industries — brand palette indexing: C=1, M=2, Y=3, G=4, P=5, Grey=6.' },
       { q: 'House style', a: `
@@ -307,15 +309,15 @@ S E A O N E
     tags:['penguin']
   },
   {
-    id:'p5', name:'Gavin', age:30, role:'Transit ops', loc:'Fairview', avatar:'📱',
+    id:'p5', name:'Gavin', age:30, role:'Transit ops', loc:'Fairview', avatar:'📱', // TODO: Themeing
     photo:'img/hinge/p5.png',
-    photos:['⭐','⭐','🔢'],
+    photos:['🚌','🕒','📱'],
     prompts: [
-      { q: 'My simple pleasures', a: `Decode on T9: <span class="kbd">263333</span> <span class="kbd">7666</span>` },
-      { q: 'Love language', a: 'Accurate bus ETAs.' },
-      { q: 'Commute read', a: 'The Odyssey (annotated).'} // TODO: That's kind of posthumous no?
+      { q: `We'll get along if`, a: `You remember the golden era of T9` },
+      { q: 'Love language', a: 'Accurate bus ETAs. <span class="kbd">263333</span> <span class="kbd">7666</span>' },
+      { q: 'Commute read', a: 'The Little Prince (pocket edition).'}
     ],
-    tags:['penguin','translated']
+    tags:['penguin','translated', 'posthumous']
   },
   {
     id:'p6', name:'Cora', age:27, role:'Chef', loc:'North Shore', avatar:'🍳',
@@ -335,7 +337,7 @@ S E A O N E
         <li>Finish with 13 g mint, chopped.</li>
         <li>Rest 5 minutes; serve.</li>
       </ul>` },
-      { q: 'Cookbook crush', a: 'Salt Fat Acid Heat.' },
+      { q: 'Cookbook crush', a: 'Kitchen (Banana Yoshimoto).' },
       { q: 'Green flag', a: 'You bring lemons without being asked.' }
     ],
     tags:['penguin','translated'] // TODO: Was this even translated?
@@ -343,27 +345,25 @@ S E A O N E
   {
     id:'p7', name:'Skipper', age:34, role:'Ferry fan', loc:'—', avatar:'⛵',
     photo:'img/hinge/p7.png',
-    photos:['🅰️','🅱️','🧩'],
+    photos:['⛴️','🌊','🍟'],
     prompts: [
-      { q: 'Dating me is like', a: `Combining 
-The Colonel’s buckets & the Gombe researcher
-The crown-wearing burger chain motto & The Great One”
+      { q: 'Dating me is like this element', a: `The Colonel’s buckets & the Gombe researcher
+Canadian mac-and-cheese mottos & a prairie contralto
 Rice-cereal onomatopoeia & a Spurs coach
-Canadian mac-and-cheese & a prairie contralto
-      ` },
-      { q: 'Perfect Sunday', a: 'Ferries, fries, and a paperback. Currently reading A Confederacy of Dunces (laugh-out-loud ferry read).' },
-      { q: 'Agree or Disagree', a: 'The bread is the best part of a sandswhich'}
+The crown-wearing burger chain motto & The Great One` },
+      { q: 'Are you also weird like me?', a: 'When a sandwich has an odd number of slices of meat, I think the top half tastes better. But when it has an even number of slices, I prefer the bottom.'},
+      { q: 'Perfect Sunday', a: 'Ferries, fries, and a paperback. Currently reading A Confederacy of Dunces (laugh-out-loud ferry read).' }
     ],
     tags:['posthumous']
   },
   {
     id:'p8', name:'Wren', age:28, role:'Arborist', loc:'East Side', avatar:'🌳',
     photo:'img/hinge/p8.png',
-    photos:['➡️','⬅️','🔡'],
+    photos:['🌳','🍂','🪵'],
     prompts: [
       { q: 'My simple pleasures', a: `Observing Taxus, Vitis, Arbutus, Acer, Cupressus, Pseudotsuga, Tsuga, Betula, Alnus, Picea, Quercus, …` },
+      { q: 'Together we could', a: 'Go for a stroll and see what comes next.' },
       { q: 'Typeshelf', a: 'Frankenstein (loves a good reprint saga).'},
-      { q: 'Together we could', a: 'Go for a stroll and see what comes next.' }
     ],
     tags:['penguin']
   },
@@ -373,7 +373,7 @@ Canadian mac-and-cheese & a prairie contralto
     photos:['📈','📰','💼'],
     prompts: [
       { q: 'Ticker tease', a: `Terex, Tencent Music Entertainment, Loews, Aterian <span class="small muted">(write their stock tickers in order; read as a phrase)</span>` },
-      { q: 'Desk read', a: 'The Intelligent Investor.' },
+      { q: 'Desk read', a: 'The Three-Body Problem.' },
       { q: 'Hot take', a: 'Buy and hold beats day‑trading.' }
     ],
     tags:['penguin','translated'] // TODO: This isn't translated...
@@ -381,11 +381,11 @@ Canadian mac-and-cheese & a prairie contralto
   {
     id:'p10', name:'Kat', age:30, role:'Barista', loc:'Mount Pleasant', avatar:'☕',
     photo:'img/hinge/p10.png',
-    photos:['📖','👀','🕯️'],
+    photos:['☕','📚','✨'],
     prompts: [
       { q: `What are you ordering?`, a: `Mocha, Earl Grey, Espresso, Tea — Flat white, Oolong, Ristretto — Cortado, Oat latte, Filter, Flat — Ethiopia?` },
       { q: 'We’ll get along if', a: 'You like late‑night pages and early cappuccinos.' },
-      { q: 'Currently reading', a: 'The Castle (by candlelight).'} // TODO: We're doubling up on this one.
+      { q: 'Currently reading', a: 'The Master and Margarita (after hours).'}
     ],
     tags:['posthumous','translated','penguin']
   },
