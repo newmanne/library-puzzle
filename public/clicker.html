@@ -179,8 +179,13 @@
   UPGRADE_DEFS.forEach(u=>{ if(!(u.id in state.upgrades)) state.upgrades[u.id]=0; });
 
   // Debug journal flag
-  if(new URLSearchParams(location.search).get('debug')==='1'){
+  const urlParams = new URLSearchParams(location.search);
+  if(urlParams.get('debug')==='1'){
     document.body.classList.add('journal-visible');
+  }
+  // Dev helper: skip first-crash gating to unlock shop/credits immediately
+  if(urlParams.get('unlock')==='1' || urlParams.get('skipCrash')==='1'){
+    state.seenCrash = true;
   }
 
   // -------------------- DOM --------------------
