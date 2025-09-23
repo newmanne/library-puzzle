@@ -33,6 +33,14 @@
   .prompt { background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 12px; }
   .prompt .q { font-size:12px; letter-spacing:.02em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
   .prompt .a { font-size:15px; }
+  /* CMY highlight indexing */
+  .hl { padding:0 4px; border-radius:4px; font-weight:600; }
+  .hl.c { background:#a5f3fc; color:#0e7490; }
+  .hl.m { background:#fbcfe8; color:#9d174d; }
+  .hl.y { background:#fde68a; color:#92400e; }
+  .hl.g { background:#bbf7d0; color:#065f46; }
+  .hl.p { background:#ddd6fe; color:#5b21b6; }
+  .hl.k { background:#e5e7eb; color:#374151; }
   /* tiny chess board */
   .mini-board { display:grid; grid-template-columns: repeat(5, 28px); gap:4px; margin-top:6px; }
   .mini-board .sq { width:28px; height:28px; border:1px solid var(--line); border-radius:6px; display:grid; place-items:center; font-weight:700; font-size:14px; background:#f8fafc; color:#111827; position:relative; }
@@ -163,7 +171,7 @@ const PERSONAS = [
     photo: 'img/hinge/persona-penguin.png',
     blurb: "I really, really love penguins 🐧",
     prompts: [
-      { q: 'My love language is', a: 'Perfectly aligned orange spines.' },
+      { q: 'My love language is', a: 'Mogran Freeman impressions.' },
       { q: 'We’ll get along if', a: 'You let me call you emporer and king.' },
       { q: 'Unusual skill', a: 'Looking great in a tux.' },
     ],
@@ -241,7 +249,7 @@ T E R N L S
 S E A O N E
         </div>` },
       { q: 'Currently reading', a: 'Moby‑Dick (because… whales).'},
-      { q: 'Fun fact', a: 'In my day to day I collect kelp, eel, ray, cod, tern, and sea(?). And sometimes more fun leftovers are in the mix!' }
+      { q: 'Fun fact', a: 'In my day to day I collect kelp, eel, ray, cod, tern, and just generally the sea. And sometimes more fun leftovers are in the mix!' }
     ],
     tags:['penguin'] 
   },
@@ -270,17 +278,17 @@ S E A O N E
           <div class="sq dim">·</div><div class="sq">O</div><div class="sq dim">·</div><div class="sq dim">·</div><div class="sq dim">·</div>
         </div>
       ` },
-      { q: 'Most used emoji', a: '♞' },
+      { q: `Let's debate this topic`, a: `Let me hear your best opener` },
       { q: 'Currently reading', a: 'The Castle (for the UX of bureaucracy).' }
     ],
-    tags:['penguin','translated','posthumous'] // appears in Kafka sets via “The Castle”
+    tags:['penguin','translated','posthumous'] // TODO: ENough kafka
   },
   {
     id:'p4', name:'Marie', age:31, role:'Editor', loc:'Coal Harbour', avatar:'🔤',
     photo:'img/hinge/p4.png',
     photos:['🔤','📚','🌲'],
     prompts: [
-      { q: 'Work', a: 'CMY Industries' },
+      { q: 'Work', a: 'CMY Industries — brand palette indexing: C=1, M=2, Y=3, G=4, P=5, Grey=6.' },
       { q: 'House style', a: `
         <span class="hl c">Title</span>
         <span class="hl m">audit</span>
@@ -294,7 +302,7 @@ S E A O N E
         <span class="hl g">program</span>
         <span class="hl y">scene</span>
       ` },
-      { q: 'Bookshelf', a: 'Pride and Prejudice (multiple editions).'}
+      { q: 'Bookshelf', a: 'Pride and Prejudice'}
     ],
     tags:['penguin']
   },
@@ -305,7 +313,7 @@ S E A O N E
     prompts: [
       { q: 'My simple pleasures', a: `Decode on T9: <span class="kbd">263333</span> <span class="kbd">7666</span>` },
       { q: 'Love language', a: 'Accurate bus ETAs.' },
-      { q: 'Commute read', a: 'The Odyssey (annotated).'}
+      { q: 'Commute read', a: 'The Odyssey (annotated).'} // TODO: That's kind of posthumous no?
     ],
     tags:['penguin','translated']
   },
@@ -316,21 +324,21 @@ S E A O N E
     prompts: [
       { q: 'Chef tip', a: `Tonight’s test‑kitchen bowl.
       <ul>
-        <li>Mince <b>3</b> cloves garlic into a bowl.</li>
-        <li>Whisk in <b>15</b> ml olive oil with lemon.</li>
-        <li>Let it sit <b>15</b> minutes to mellow.</li>
-        <li>Season with <b>11</b> g sea salt.</li>
-        <li>Fold in <b>23</b> g toasted walnuts.</li>
-        <li>Add <b>9</b> cherry tomatoes, halved.</li>
-        <li>Stir in <b>20</b> g tahini.</li>
-        <li>Tear <b>8</b> basil leaves.</li>
-        <li>Finish with <b>13</b> g mint, chopped.</li>
-        <li>Rest <b>5</b> minutes; serve.</li>
+        <li>Mince 3 cloves garlic into a bowl.</li>
+        <li>Whisk in 15 ml olive oil with lemon.</li>
+        <li>Let it sit 15 minutes to mellow.</li>
+        <li>Season with 11 g sea salt.</li>
+        <li>Fold in 23 g toasted walnuts.</li>
+        <li>Add 9 cherry tomatoes, halved.</li>
+        <li>Stir in 20 g tahini.</li>
+        <li>Tear 8 basil leaves.</li>
+        <li>Finish with 13 g mint, chopped.</li>
+        <li>Rest 5 minutes; serve.</li>
       </ul>` },
       { q: 'Cookbook crush', a: 'Salt Fat Acid Heat.' },
       { q: 'Green flag', a: 'You bring lemons without being asked.' }
     ],
-    tags:['penguin','translated']
+    tags:['penguin','translated'] // TODO: Was this even translated?
   },
   {
     id:'p7', name:'Skipper', age:34, role:'Ferry fan', loc:'—', avatar:'⛵',
@@ -353,7 +361,7 @@ Canadian mac-and-cheese & a prairie contralto
     photo:'img/hinge/p8.png',
     photos:['➡️','⬅️','🔡'],
     prompts: [
-      { q: 'My simple pleasures', a: `Taxus, Vitis, Arbutus, Acer, Cupressus, Pseudotsuga, Tsuga, Betula, Alnus, Picea, Quercus, …` },
+      { q: 'My simple pleasures', a: `Observing Taxus, Vitis, Arbutus, Acer, Cupressus, Pseudotsuga, Tsuga, Betula, Alnus, Picea, Quercus, …` },
       { q: 'Typeshelf', a: 'Frankenstein (loves a good reprint saga).'},
       { q: 'Together we could', a: 'Go for a stroll and see what comes next.' }
     ],
@@ -364,11 +372,11 @@ Canadian mac-and-cheese & a prairie contralto
     photo:'img/hinge/p9.png',
     photos:['📈','📰','💼'],
     prompts: [
-      { q: 'Ticker tease', a: `Target, General Electric, FedEx, Walmart, Exxon Mobil, Adobe, Alphabet, Tesla, AT&amp;T, Nike, Uber.` },
+      { q: 'Ticker tease', a: `Terex, Tencent Music Entertainment, Loews, Aterian <span class="small muted">(write their stock tickers in order; read as a phrase)</span>` },
       { q: 'Desk read', a: 'The Intelligent Investor.' },
       { q: 'Hot take', a: 'Buy and hold beats day‑trading.' }
     ],
-    tags:['penguin','translated']
+    tags:['penguin','translated'] // TODO: This isn't translated...
   },
   {
     id:'p10', name:'Kat', age:30, role:'Barista', loc:'Mount Pleasant', avatar:'☕',
@@ -377,7 +385,7 @@ Canadian mac-and-cheese & a prairie contralto
     prompts: [
       { q: `What are you ordering?`, a: `Mocha, Earl Grey, Espresso, Tea — Flat white, Oolong, Ristretto — Cortado, Oat latte, Filter, Flat — Ethiopia?` },
       { q: 'We’ll get along if', a: 'You like late‑night pages and early cappuccinos.' },
-      { q: 'Currently reading', a: 'The Castle (by candlelight).'}
+      { q: 'Currently reading', a: 'The Castle (by candlelight).'} // TODO: We're doubling up on this one.
     ],
     tags:['posthumous','translated','penguin']
   },
