@@ -84,8 +84,8 @@
     /* Tiny helper link (for code 604) */
     .ghost-link{position:absolute; right:8px; bottom:8px; font-size:11px; opacity:.06}
 
-    /* Spine title (subtle vertical clue on book spine) */
-    .spine-title{ position:absolute; left:8px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:var(--muted); opacity:.8; letter-spacing:.2px; pointer-events:none; }
+    /* Black text hint appended to Stacks header */
+    .black-hint{ color:#000; margin-left:8px; font-size:12px; letter-spacing:.2px; }
 
     /* Responsive */
     @media (max-width: 900px){
@@ -163,9 +163,9 @@
 
   const UPGRADE_DEFS = [
     { id:'intern', name:'Page‑turner Intern', baseCost: 100, perSec: 1,  desc:'+1/sec' },
-    { id:'cart',   name:'Rolling Cart',       baseCost: 200, perSec: 8,  desc:'+8/sec' },
-    { id:'robot',  name:'Sorting Robot',      baseCost: 300, perSec: 15, desc:'+15/sec' },
-    { id:'rfid',   name:'RFID Gate',          baseCost: 500, perSec: 25, desc:'+40/sec' }
+    { id:'cart',   name:'Rolling Cart',       baseCost: 200, perSec: 5,  desc:'+5/sec' },
+    { id:'robot',  name:'Sorting Robot',      baseCost: 300, perSec: 8, desc:'+8/sec' },
+    { id:'rfid',   name:'RFID Gate',          baseCost: 500, perSec: 15, desc:'+15/sec' }
   ];
 
   const STORAGE_KEY = 'libraryClicker.v1';
@@ -324,8 +324,8 @@
       const h = document.querySelector('#play h2');
       if (h) h.textContent = 'Stacks';
     }
-    // Remove any shelf labels
-    { document.querySelectorAll('.spine-title').forEach(n=>n.remove()); }
+    // Remove any black-text header hints
+    { document.querySelectorAll('.black-hint').forEach(n=>n.remove()); }
     const hdr = document.querySelector('header'); if (hdr) hdr.dataset.after = '';
     const lbl = document.querySelector('.label'); if (lbl) lbl.style.textShadow = 'none';
   }
@@ -358,12 +358,15 @@
         }
         
         break;
-      case 'spineTitle':
-        if (elBook){
-          const t = document.createElement('span');
-          t.className = 'spine-title';
-          t.textContent = s.text;
-          elBook.appendChild(t);
+      case 'blackText':
+        {
+          const h = document.querySelector('#play h2');
+          if (h){
+            const t = document.createElement('span');
+            t.className = 'black-hint';
+            t.textContent = ' ' + s.text;
+            h.appendChild(t);
+          }
         }
         break;
       case 'bookBadge':

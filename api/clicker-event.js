@@ -6,7 +6,7 @@ module.exports = async function (req, res) {
   // Clues are intentionally generic; with Dewey context they resolve to a single, specific word.
   const EVENTS = [
     // Earlier code for CA
-    { code: 32, type: 'spineTitle',   text: 'The Longest-Running (10) [9][10]' },          // 32 Encylopedia → Brittanica
+    { code: 32, type: 'blackText',   text: 'The Longest-Running (10) [9][10]' },          // 32 Encylopedia → Brittanica
     { code: 133, type: 'ariaNote',   text: 'The Cards (5) [1][5]' },          // 133 Divination → Tarot
     { code: 221, type: 'bookBadge',      text: 'The Third (9) [1]' },     // 221 Old Testament → Leviticus
     { code: 520, type: 'headerAfter',      text: 'The Fifth (7) [6]' },          // Astronomy → Jupiter

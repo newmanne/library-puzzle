@@ -92,7 +92,7 @@
   .dialog .head { padding:14px 16px; border-bottom:1px solid var(--line); font-weight:700; }
   .dialog .content { padding:14px 16px; display:grid; gap:10px; }
   .dialog .foot { padding:14px 16px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px; }
-  input[type=text] { width:100%; padding:12px 12px; border-radius:10px; border:1px solid #e5e7eb; font-size:16px; }
+  input[type=text] { width:100%; box-sizing:border-box; padding:12px 12px; border-radius:10px; border:1px solid #e5e7eb; font-size:16px; }
   /* subtle success state when message is correct */
   .input-ok { background:#ecfdf5 !important; border-color:#86efac !important; box-shadow:0 0 0 4px rgba(16,185,129,.15) inset; }
   .small { font-size:12px; }
@@ -332,7 +332,7 @@ S E A O N E X
       { q: 'Chef tip', a: `Tonight’s test‑kitchen bowl.
       <ul>
         <li>Mince 3 cloves garlic into a bowl.</li>
-        <li>Whisk in 15 ml olive oil with lemon.</li>
+        <li>Whisk in 15 mL olive oil with lemon.</li>
         <li>Let it sit 15 minutes to mellow.</li>
         <li>Season with 11 g sea salt.</li>
         <li>Fold in 23 g toasted walnuts.</li>
@@ -352,9 +352,9 @@ S E A O N E X
     photo:'img/hinge/p7.png',
     photos:['⛴️','🌊','🍟'],
     prompts: [
-      { q: 'Me in my element', a: `The Colonel’s buckets & the Gombe researcher
-Canadian mac-and-cheese mottos & a prairie contralto
-Rice-cereal onomatopoeia & a Spurs coach
+      { q: 'Me in my element', a: `The Colonel’s buckets & the Gombe researcher <br/>
+Canadian mac-and-cheese mottos & a prairie contralto <br/>
+Rice-cereal onomatopoeia & a Spurs coach <br/>
 The crown-wearing burger chain motto & The Great One` },
       { q: 'Are you also weird like me?', a: 'When a sandwich has an odd number of slices of meat, I think the top half tastes better. But when it has an even number of slices, I prefer the bottom.'},
       { q: 'Perfect Sunday', a: 'Ferries, fries, and a paperback. Currently reading A Confederacy of Dunces (laugh-out-loud ferry read).' }
@@ -366,7 +366,7 @@ The crown-wearing burger chain motto & The Great One` },
     photo:'img/hinge/p8.png',
     photos:['🌳','🍂','🪵'],
     prompts: [
-      { q: 'My simple pleasures', a: `Observing Taxus, Vitis, Arbutus, Acer, Cupressus, Pseudotsuga, Tsuga, Betula, Alnus, Picea, Quercus, …` },
+      { q: 'These are a few of my favourite things', a: `Taxus, Vitis, Arbutus, Acer, Cupressus, Pseudotsuga, Tsuga, Betula, Alnus, Picea, Quercus, …` },
       { q: 'Together we could', a: 'Go for a stroll and see what comes next.' },
       { q: 'Typeshelf', a: 'Frankenstein (loves a good reprint saga).'},
     ],
@@ -400,7 +400,7 @@ The crown-wearing burger chain motto & The Great One` },
     photos:['📣','💃','💋'],
     prompts: [
       { q: `We'll get along if`, a: `You also have a dirty mind 😉. Can you guess the hottest place I've done the deed? 🔥` },
-      { q: 'My ideal first date', a: `First, you work that jaw up and down till I'm satisfied (9) [1][2]
+      { q: 'My ideal first date', a: `First, you work that jaw up and down (9) [1][2]
 Then, I dress up like a sailor and we navigate some new positions (7) [6][7]
 Lastly, you tease me with punishment codes (5) [5][2]` },
       { q: 'Favorite book', a: 'Hard Times.' }
