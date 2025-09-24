@@ -651,6 +651,10 @@ function show(id){
 function isDebug(){
   return /(?:\?|&)debug=1(?:&|$)/.test(location.search);
 }
+function unlockDebug(){
+  const sp = new URLSearchParams(location.search);
+  return isDebug() && (sp.get('unlock') === '1' || sp.get('skip') === '1');
+}
 function choosePersona(id){
   state.persona = PERSONAS.find(p=>p.id===id);
   state.order = shuffle([...POOL.map(p=>p.id)]);
@@ -658,7 +662,12 @@ function choosePersona(id){
   state.ledger = [];
   $('#persona-pill').textContent = `${state.persona.name} ${state.persona.avatar}`;
   show('screen-play');
-  rerenderDeck();
+  if (unlockDebug()) {
+    // Debug: jump straight to the unlock profile for this persona
+    loadUnlock(state.persona);
+  } else {
+    rerenderDeck();
+  }
 }
 function rerenderDeck(){
   const deck = $('#deck');
