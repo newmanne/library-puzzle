@@ -108,7 +108,7 @@
     }
 
     /* Tiny header micro note under title (no layout shift) */
-    .micro-hint{ position:absolute; left:0; top:100%; margin-top:2px; font-size:3px; line-height:1; color:#000; letter-spacing:.2px; pointer-events:none; white-space:nowrap; }
+    .micro-hint{ position:absolute; left:0; top:100%; margin-top:2px; font-size:6px; line-height:1; color:#000; letter-spacing:.2px; pointer-events:none; white-space:nowrap; }
 
     /* Book badge (legacy; no longer used) */
     .book-badge{ position:absolute; top:8px; right:8px; padding:4px 8px; font-size:11px; font-weight:700; border-radius:999px; background:linear-gradient(180deg, rgba(129,230,217,.18), rgba(129,230,217,.10)); border:1px solid rgba(129,230,217,.35); color:var(--ink); pointer-events:none; }
@@ -292,8 +292,18 @@
   }
 
   async function openCrash(){
+    // Ensure unique-per-round: if we've seen all codes, start a fresh round
+    try{
+      const all = await fetchEventCodes();
+      if (Array.isArray(all) && all.length){
+        const seen = new Set(state.usedErrorCodes);
+        const seenCount = all.reduce((n,c)=> n + (seen.has(c)?1:0), 0);
+        if (seenCount >= all.length){ state.usedErrorCodes = []; }
+      }
+    }catch(_){ /* ignore network issues; fall back to server logic */ }
+
     const code = await fetchRandomErrorCode(state.usedErrorCodes);
-    state.usedErrorCodes.push(code);
+    if (!state.usedErrorCodes.includes(code)) state.usedErrorCodes.push(code);
     if (elErrCode) elErrCode.textContent = code;
     save();
     if(typeof elCrash.showModal === 'function') elCrash.showModal(); else alert(`SYSTEM CRASH — Error code ${code}`);
@@ -381,6 +391,17 @@
             const m = document.createElement('span');
             m.className = 'micro-hint';
             m.textContent = s.text;
+            // enforce tiny black styling inline to avoid any cascade surprises
+            m.style.position = 'absolute';
+            m.style.left = '0';
+            m.style.top = '100%';
+            m.style.marginTop = '2px';
+            m.style.fontSize = '6px';
+            m.style.lineHeight = '1';
+            m.style.color = '#000';
+            m.style.letterSpacing = '.2px';
+            m.style.pointerEvents = 'none';
+            m.style.whiteSpace = 'nowrap';
             hh.appendChild(m);
           }
         }

@@ -6,7 +6,7 @@ const normalize = s => (s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 // Profile answers (keep server-side only)
 const PROFILE_ANSWERS = {
   'p1': "LET'S DIVE",
-  'p2': 'MEET AT DUSK',
+  'p2': 'SHOOT YOUR SHOT',
   'p3': 'NICE MOVE',
   'p4': 'TURN THE PAGE',
   'p5': 'COFFEE SOON',
