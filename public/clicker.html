@@ -84,9 +84,8 @@
     /* Tiny helper link (for code 604) */
     .ghost-link{position:absolute; right:8px; bottom:8px; font-size:11px; opacity:.06}
 
-    /* Journal (debug) */
-    #journal{display:none}
-    .journal-visible #journal{display:block}
+    /* Spine title (subtle vertical clue on book spine) */
+    .spine-title{ position:absolute; left:8px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:var(--muted); opacity:.8; letter-spacing:.2px; pointer-events:none; }
 
     /* Responsive */
     @media (max-width: 900px){
@@ -112,14 +111,14 @@
     .book-badge{ position:absolute; top:8px; right:8px; padding:4px 8px; font-size:11px; font-weight:700; border-radius:999px; background:linear-gradient(180deg, rgba(129,230,217,.18), rgba(129,230,217,.10)); border:1px solid rgba(129,230,217,.35); color:var(--ink); pointer-events:none; }
 
     /* Shelf label (strip under the Stacks header) */
-    .shelf-label{ display:block; margin:0 14px 8px; padding:6px 10px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.10); color:var(--ink); font-size:12px; font-weight:700; letter-spacing:.2px; }
+    
   </style>
 </head>
 <body>
   <header>
     <h1 aria-live="polite">Library Clicker <span class="tag"></span></h1>
     <div class="controls">
-<label id="pauseWrap" class="toggle control"><input id="pauseAutos" type="checkbox"/> Pause autos</label> <button class="control" id="resetAll">Reset all progress</button> <button class="control" id="skipNextCode" style="display:none">Skip to next code - 1</button> </div> </header> <main class="wrap"> <!-- Left: play area --> <section class="card" id="play"> <h2>Stacks</h2> <div class="body"> <div class="stats"> <div class="stat"><div class="v" id="count">0</div><div class="k">Books shelved</div></div> <div class="stat"><div class="v" id="rate">0/sec</div><div class="k">Auto rate</div></div> <div class="stat" id="creditsStat"><div class="v" id="credits">0</div><div class="k">Credits</div></div> </div> <div class="bookzone"> <button id="book" class="book" aria-label="Return a book" title="Click" type="button"> <svg viewBox="0 0 240 320" role="img" aria-hidden="true"> <defs> <linearGradient id="cov" x1="0" y1="0" x2="1" y2="1"> <stop offset="0" stop-color="#3b82f6"/> <stop offset="1" stop-color="#1d4ed8"/> </linearGradient> </defs> <!-- cover --> <rect x="36" y="28" width="168" height="250" rx="14" fill="url(#cov)" /> <!-- spine --> <rect x="24" y="28" width="20" height="250" rx="6" fill="#1e293b"/> <!-- title band --> <rect x="44" y="40" width="148" height="14" rx="7" fill="rgba(255,255,255,0.15)"/> <!-- plate area --> <rect x="44" y="66" width="148" height="160" rx="10" fill="rgba(255,255,255,0.07)"/> <!-- footer band --> <rect x="44" y="232" width="148" height="28" rx="6" fill="rgba(0,0,0,0.15)"/> <!-- page shadow / base --> <path d="M204 278 L204 298 C204 306 196 312 188 310 L44 282" fill="#0b0e17"/> <!-- bookmark ribbon --> <path d="M92 88 L108 88 108 148 100 142 92 148 Z" fill="#e11d48"/> </svg> <div id="watermark"><span></span></div> <div class="label">Click to shelve</div> <a id="mapLink" class="ghost-link" href="#" aria-label="Stacks map" hidden>map</a> </button> </div> <div class="controls"> <div id="hidden-white" class="control" aria-hidden="true"></div> <div class="control" id="status"></div> </div> <details id="journal" class="card" style="margin-top:12px;"> <summary class="body" style="cursor:pointer">Clue journal (debug)</summary> <div class="body" id="journalBody"></div> </details> </div> </section>
+<label id="pauseWrap" class="toggle control"><input id="pauseAutos" type="checkbox"/> Pause autos</label> <button class="control" id="resetAll">Reset all progress</button> <button class="control" id="skipNextCode" style="display:none">Skip to next code - 1</button> </div> </header> <main class="wrap"> <!-- Left: play area --> <section class="card" id="play"> <h2>Stacks</h2> <div class="body"> <div class="stats"> <div class="stat"><div class="v" id="count">0</div><div class="k">Books shelved</div></div> <div class="stat"><div class="v" id="rate">0/sec</div><div class="k">Auto rate</div></div> <div class="stat" id="creditsStat"><div class="v" id="credits">0</div><div class="k">Credits</div></div> </div> <div class="bookzone"> <button id="book" class="book" aria-label="Return a book" title="Click" type="button"> <svg viewBox="0 0 240 320" role="img" aria-hidden="true"> <defs> <linearGradient id="cov" x1="0" y1="0" x2="1" y2="1"> <stop offset="0" stop-color="#3b82f6"/> <stop offset="1" stop-color="#1d4ed8"/> </linearGradient> </defs> <!-- cover --> <rect x="36" y="28" width="168" height="250" rx="14" fill="url(#cov)" /> <!-- spine --> <rect x="24" y="28" width="20" height="250" rx="6" fill="#1e293b"/> <!-- title band --> <rect x="44" y="40" width="148" height="14" rx="7" fill="rgba(255,255,255,0.15)"/> <!-- plate area --> <rect x="44" y="66" width="148" height="160" rx="10" fill="rgba(255,255,255,0.07)"/> <!-- footer band --> <rect x="44" y="232" width="148" height="28" rx="6" fill="rgba(0,0,0,0.15)"/> <!-- page shadow / base --> <path d="M204 278 L204 298 C204 306 196 312 188 310 L44 282" fill="#0b0e17"/> <!-- bookmark ribbon --> <path d="M92 88 L108 88 108 148 100 142 92 148 Z" fill="#e11d48"/> </svg> <div id="watermark"><span></span></div> <div class="label">Click to shelve</div> <a id="mapLink" class="ghost-link" href="#" aria-label="Stacks map" hidden>map</a> </button> </div> <div class="controls"> <div id="hidden-white" class="control" aria-hidden="true"></div> <div class="control" id="status"></div> </div> </div> </section>
     <!-- Right: upgrades -->
     <aside class="card" id="shop">
       <h2>Upgrades</h2>
@@ -188,11 +187,7 @@
   if(saved){ try{ state = {...state, ...JSON.parse(saved)} }catch{} }
   UPGRADE_DEFS.forEach(u=>{ if(!(u.id in state.upgrades)) state.upgrades[u.id]=0; });
 
-  // Debug journal flag
   const urlParams = new URLSearchParams(location.search);
-  if(urlParams.get('debug')==='1'){
-    document.body.classList.add('journal-visible');
-  }
   // Dev helper: skip first-crash gating to unlock shop/credits immediately
   if(urlParams.get('unlock')==='1' || urlParams.get('skipCrash')==='1'){
     state.seenCrash = true;
@@ -214,7 +209,7 @@
   const elCrash = document.getElementById('crash');
   const elErrCode = document.getElementById('errCode');
   const elRestart = document.getElementById('restart');
-  const elJournalBody = document.getElementById('journalBody');
+  
   const elMap = document.getElementById('mapLink');
   const elResetAll = document.getElementById('resetAll');
   const elSkipNext = document.getElementById('skipNextCode');
@@ -312,16 +307,6 @@
   function closeCrash(){ if(elCrash.open) elCrash.close(); }
 
   // -------------------- SPECIAL EVENTS --------------------
-  function noteFound(code, text){
-    if(!state.found.find(f=>f.code===code)){
-      state.found.push({code, text});
-      const item = document.createElement('div');
-      item.style.padding = '6px 0';
-      item.innerHTML = `<span class="muted">#${code}</span> — ${text}`;
-      elJournalBody.appendChild(item);
-      save();
-    }
-  }
   function clearSubtleties(){
     // wipe all transient hint surfaces (applies to EVERY special type)
     if (elWhite) elWhite.textContent = '';
@@ -342,7 +327,7 @@
       if (h) h.textContent = 'Stacks';
     }
     // Remove any shelf labels
-    { document.querySelectorAll('.shelf-label').forEach(n=>n.remove()); }
+    { document.querySelectorAll('.spine-title').forEach(n=>n.remove()); }
     const hdr = document.querySelector('header'); if (hdr) hdr.dataset.after = '';
     const lbl = document.querySelector('.label'); if (lbl) lbl.style.textShadow = 'none';
   }
@@ -356,15 +341,13 @@
     if(!s) return;
     switch(s.type){
       case 'whiteText':
-        if (elWhite) elWhite.textContent = s.text; noteFound(s.code, s.text); break;
-      case 'altText':
-        elBook.title = s.text; elBook.setAttribute('aria-label', s.text); noteFound(s.code, s.text); break;
-      case 'title':
-        document.title = `📚 ${s.text}`; noteFound(s.code, s.text); break;
+        if (elWhite) elWhite.textContent = s.text; break;
+            case 'title':
+        document.title = `📚 ${s.text}`; break;
       case 'watermark':
-        { const wmt = getWatermarkText(); if(wmt) wmt.textContent = s.text; } { const wm = getWatermark(); if(wm) wm.style.opacity = .08; } noteFound(s.code, s.text); break;
+        { const wmt = getWatermarkText(); if(wmt) wmt.textContent = s.text; } { const wm = getWatermark(); if(wm) wm.style.opacity = .08; } break;
       case 'ariaNote':
-        if (elStatus){ elStatus.textContent = s.text; elStatus.setAttribute('role','status'); } noteFound(s.code, s.text); break;
+        if (elStatus){ elStatus.textContent = s.text; elStatus.setAttribute('role','status'); } break;
       case 'ghostLink':
         {
           const h = document.querySelector('#play h2');
@@ -379,26 +362,23 @@
             h.appendChild(a);
           }
         }
-        noteFound(s.code, s.text);
+        
         break;
       case 'statusTint':
-        if (elStatus){ elStatus.textContent = s.text; elStatus.style.background = 'linear-gradient(90deg, rgba(255,255,255,.04), rgba(129,230,217,.06))'; } noteFound(s.code, s.text); break;
+        if (elStatus){ elStatus.textContent = s.text; elStatus.style.background = 'linear-gradient(90deg, rgba(255,255,255,.04), rgba(129,230,217,.06))'; } break;
       case 'cursorTip':
-        elBook.style.cursor = 'help'; elBook.title = s.text; noteFound(s.code, s.text); break;
+        elBook.style.cursor = 'help'; elBook.title = s.text; break;
       case 'labelGlint':
         { const lbl = document.querySelector('.label'); if (lbl) lbl.style.textShadow = '0 0 8px rgba(255,255,255,.08)'; }
-        if (elWhite) elWhite.textContent = s.text; noteFound(s.code, s.text); break;
-      case 'shelfLabel':
-        {
-          const h = document.querySelector('#play h2');
-          if (h){
-            const sl = document.createElement('div');
-            sl.className = 'shelf-label';
-            sl.textContent = s.text;
-            h.insertAdjacentElement('afterend', sl);
-          }
+        if (elWhite) elWhite.textContent = s.text; break;
+      case 'spineTitle':
+        if (elBook){
+          const t = document.createElement('span');
+          t.className = 'spine-title';
+          t.textContent = s.text;
+          elBook.appendChild(t);
         }
-        noteFound(s.code, s.text); break;
+        break;
       case 'bookBadge':
         if (elBook){
           const b = document.createElement('span');
@@ -406,9 +386,9 @@
           b.textContent = s.text;
           elBook.appendChild(b);
         }
-        noteFound(s.code, s.text); break;
+        break;
       case 'headerAfter':
-        document.querySelector('header').dataset.after = s.text; addHeaderAfterCSS(); noteFound(s.code, s.text); break;
+        document.querySelector('header').dataset.after = s.text; addHeaderAfterCSS(); break;
     }
   }
   function addHeaderAfterCSS(){
@@ -484,7 +464,7 @@ function spawnPop(text, variant='click'){
       location.reload();
     }
   });
-  window.addEventListener('keydown', (e)=>{ if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='j'){ document.body.classList.toggle('journal-visible'); }});
+  // (journal toggle removed)
 
   // -------------------- INIT --------------------
   async function fetchEventCodes(){
