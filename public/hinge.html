@@ -93,6 +93,8 @@
   .dialog .content { padding:14px 16px; display:grid; gap:10px; }
   .dialog .foot { padding:14px 16px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px; }
   input[type=text] { width:100%; padding:12px 12px; border-radius:10px; border:1px solid #e5e7eb; font-size:16px; }
+  /* subtle success state when message is correct */
+  .input-ok { background:#ecfdf5 !important; border-color:#86efac !important; box-shadow:0 0 0 4px rgba(16,185,129,.15) inset; }
   .small { font-size:12px; }
   .linkish { color:#93c5fd; text-decoration:underline; cursor:pointer; }
   .hidden { display:none !important; }
@@ -179,13 +181,14 @@ const PERSONAS = [
     ],
     targetTag: 'penguin',
     unlock: {
-      name: 'Ivy', avatar: '📘', role: 'Reprint nerd', loc: 'Kits',
+      name: 'Ivy', avatar: '📘', role: 'Vancouver Acquarium', loc: 'Kits',
       photo: 'img/hinge/unlock-penguin.png',
       prompts: [
-        { q: 'Shelfie', a: 'Orange spines, perfect rows.' },
-        { q: 'Note', a: 'Your opener hit exactly my niche.' }
+        { q: 'Fun fact', a: 'Contrary to many popular holiday cartoons, you’ll never see penguins and polar bears together in the wild.' },
+        { q: 'Fun fact', a: `(Yes, same prompt twice, sue me). The black and white “tuxedo” look donned by most penguin species is a clever camouflage called countershading.` },
+        { q: `I'll bet you can't guess`, a: 'My favourite animal.' },
       ],
-      prize: "DATE PART: <b>WHERE</b> — <span class='pill'>Kits Pool bleachers</span>"
+      prize: "Let's go for a date at Kits Beach!"
     }
   },
   {
@@ -207,7 +210,7 @@ const PERSONAS = [
         { q: 'Case file', a: 'Probate signed, acknowledgments read.' },
         { q: 'Note', a: 'You chose the right word.' }
       ],
-      prize: "DATE PART: <b>WHEN</b> — <span class='pill'>Thursday 7:00pm</span>"
+      prize: "How is your August 15th looking?"
     }
   },
   {
@@ -229,7 +232,7 @@ const PERSONAS = [
         { q: 'Rights sheet', a: 'Original language cleared.' },
         { q: 'Note', a: 'You nailed the title I had in mind.' }
       ],
-      prize: "DATE PART: <b>MEET</b> — <span class='pill'>By the Inukshuk, English Bay</span>"
+      prize: "Are you free in 1931?"
     }
   },
 ];
@@ -243,8 +246,8 @@ const POOL = [
     prompts: [ // TODO: The word search sucks and the puzzle might be broken 
       { q: 'Sometimes my life feels like', a: `
         <div class="kbd" style="display:block;white-space:pre;line-height:1.2em;">
-K E L P T S W
-E E L A D I A
+K E L P T S Z
+E E L A D I Q
 R A Y T V V V
 C O D E R E E
 T E R N L S S
@@ -271,7 +274,7 @@ S E A O N E X
     photo:'img/hinge/p3.png',
     photos:['♞','⌨️','🧩'],
     prompts: [
-      { q: `You'll impress me if you can`, a: `Decode this
+      { q: `You'll impress me if you can`, a: `Make a 
         <div class="mini-board">
           <div class="sq start">N</div><div class="sq dim">·</div><div class="sq">C</div><div class="sq dim">·</div><div class="sq dim">·</div>
           <div class="sq dim">·</div><div class="sq dim">·</div><div class="sq dim">·</div><div class="sq dim">·</div><div class="sq">E</div>
@@ -286,12 +289,12 @@ S E A O N E X
     tags:['penguin','translated']
   },
   {
-    id:'p4', name:'Marie', age:31, role:'Editor', loc:'Coal Harbour', avatar:'🔤',
+    id:'p4', name:'Marie', age:31, role:'Editor at CMY Industries', loc:'Coal Harbour', avatar:'🔤',
     photo:'img/hinge/p4.png',
     photos:['🖨️','🎨','📚'],
     prompts: [
-      { q: 'Work', a: 'CMY Industries — brand palette indexing: C=1, M=2, Y=3, G=4, P=5, Grey=6.' },
-      { q: 'A few of my favourite words', a: `
+      { q: `I'm most proud of`, a: `My job. It isn't always as easy as 123, but there are so many oppourtunities to add value.`},
+      { q: 'The highlights of dating me', a: `
         <span class="hl c">title</span>
         <span class="hl m">audit</span>
         <span class="hl y">correct</span>
@@ -309,12 +312,14 @@ S E A O N E X
     tags:['penguin']
   },
   {
-    id:'p5', name:'Gavin', age:30, role:'Transit ops', loc:'Fairview', avatar:'📱', // TODO: Themeing
-    photo:'img/hinge/p5.png',
+    id:'p5', name:'Gavin', age:30, role:'Transit ops', loc:'Fairview', avatar:'📱',
+    photo:'img/hinge/p14.png',
     photos:['🚌','🕒','📱'],
     prompts: [
-      { q: `We'll get along if`, a: `You remember the golden era of T9` },
-      { q: 'Love language', a: 'Accurate bus ETAs. <span class="kbd">263333</span> <span class="kbd">7666</span>' },
+      { q: 'Two truths and a lie (Select the number)', a: `1) I'm very sporty
+      2) I'm really into astronomy
+      3) I have a dog` },
+      { q: 'Love language', a: 'Accurate bus ETAs' },
       { q: 'Commute read', a: 'The Little Prince (pocket edition).'}
     ],
     tags:['penguin','translated', 'posthumous']
@@ -347,7 +352,7 @@ S E A O N E X
     photo:'img/hinge/p7.png',
     photos:['⛴️','🌊','🍟'],
     prompts: [
-      { q: 'Dating me is like this element', a: `The Colonel’s buckets & the Gombe researcher
+      { q: 'Me in my element', a: `The Colonel’s buckets & the Gombe researcher
 Canadian mac-and-cheese mottos & a prairie contralto
 Rice-cereal onomatopoeia & a Spurs coach
 The crown-wearing burger chain motto & The Great One` },
@@ -357,7 +362,7 @@ The crown-wearing burger chain motto & The Great One` },
     tags:['posthumous']
   },
   {
-    id:'p8', name:'Wren', age:28, role:'Arborist', loc:'East Side', avatar:'🌳',
+    id:'p8', name:'Wren', age:28, role:'Arborist', loc:'Fairview', avatar:'🌳',
     photo:'img/hinge/p8.png',
     photos:['🌳','🍂','🪵'],
     prompts: [
@@ -376,19 +381,31 @@ The crown-wearing burger chain motto & The Great One` },
       { q: 'Desk read', a: 'The Three-Body Problem.' },
       { q: 'Hot take', a: 'Buy and hold beats day‑trading.' }
     ],
-    tags:['penguin','translated'] // TODO: This isn't translated...
+    tags:['penguin','translated'] 
   },
   {
     id:'p10', name:'Kat', age:30, role:'Barista', loc:'Mount Pleasant', avatar:'☕',
     photo:'img/hinge/p10.png',
     photos:['☕','📚','✨'],
     prompts: [
-      { q: `I bet I can guess your order`, a: `Mocha, Earl Grey, Espresso, Tea? Flat white, Oolong, Ristretto? Cortado, Oat latte, Filter, Frappé, Egg coffee
-?` },
+      { q: `I bet I can guess your order`, a: `Mocha, Earl Grey, Espresso, Tea? Flat white, Oolong, Ristretto? Cortado, Oat latte, Filter, Frappé, Egg coffee?` },
       { q: 'We’ll get along if', a: 'You like late‑night pages and early cappuccinos.' },
       { q: 'Currently reading', a: 'The Master and Margarita (after hours).'}
     ],
     tags:['posthumous','translated','penguin']
+  },
+  {
+    id:'p11', name:'Riley', age:26, role:'Cheer captain', loc:'UBC', avatar:'📣',
+    photo:'img/hinge/p11.png',
+    photos:['📣','💃','💋'],
+    prompts: [
+      { q: `We'll get along if`, a: `You also have a dirty mind 😉. Can you guess the hottest place I've done the deed? 🔥` },
+      { q: 'My ideal first date', a: `First, you work that jaw up and down till I'm satisfied (9) [1][2]
+Then, I dress up like a sailor and we navigate some new positions (7) [6][7]
+Lastly, you tease me with punishment codes (5) [5][2]` },
+      { q: 'Favorite book', a: 'Hard Times.' }
+    ],
+    tags:['penguin']
   },
 ];
 
@@ -487,8 +504,7 @@ function renderProfileCard(p){
   return card;
 }
 
-function renderUnlockCard(persona){
-  const u = persona.unlock;
+function renderUnlockCard(persona, u){
   const card = el('div',{class:'card'});
   card.append(
     el('div',{class:'hdr'},
@@ -497,7 +513,9 @@ function renderUnlockCard(persona){
         el('div',{html:`<b>${u.name}</b>`}),
         el('div',{class:'meta', html:`${u.role} • ${u.loc}`})
       ),
-      el('div',{style:'margin-left:auto;'}, el('span',{class:'pill'}, 'Final suitor'))
+      el('div',{style:'margin-left:auto; display:flex; gap:8px;'},
+        el('span',{class:'pill'}, 'New here')
+      )
     ),
     renderPhoto(u.photo, `${u.name}'s photo`, svgPlaceholder(u.name, u.avatar), 'contain'),
     el('div',{class:'body'},
@@ -540,20 +558,28 @@ function init(){
         const j = await r.json();
         ok = !!(j && j.ok && j.correct);
       } catch {}
+      if (ok) { $('#msg').classList.add('input-ok'); await new Promise(r=>setTimeout(r, 420)); }
       closeModal();
       if (ok){
+        // Fetch prize text from server and show match card
+        let prizeHtml = '';
+        try {
+          const rp = await fetch('/api/hinge-unlock?persona='+encodeURIComponent(persona.id)+'&prize=1');
+          const jp = await rp.json();
+          if (jp && jp.ok && jp.unlock && jp.unlock.prize) prizeHtml = jp.unlock.prize;
+        } catch {}
         const deck = $('#deck');
         deck.innerHTML = '';
         deck.append(
           el('div',{class:'card'},
             el('div',{class:'hdr'},
               el('div',{class:'avatar'}, '💌'),
-              el('div',{}, el('div',{html:`<b>You matched with ${persona.unlock.name}!</b>`}),
-                           el('div',{class:'meta', html:`They sent a message…`})
+              el('div',{}, el('div',{html:`<b>It’s a match!</b>`}),
+                           el('div',{class:'meta', html:`You and your final suitor unlocked…`})
               )
             ),
             el('div',{class:'body'},
-              el('div',{class:'note good', html:`${persona.unlock.prize}`}),
+              prizeHtml ? el('div',{class:'note good', html: prizeHtml}) : el('div',{class:'note'},'Prize unlocked.'),
               el('div',{class:'hr'}),
               el('div',{class:'muted small'},'Collect all three date parts across the three YOU profiles.')
             ),
@@ -600,6 +626,9 @@ function show(id){
   for (const s of document.querySelectorAll('.screen')) s.classList.add('hidden');
   $('#'+id).classList.remove('hidden');
   if (id==='screen-select') renderStarterCarousel();
+}
+function isDebug(){
+  return /(?:\?|&)debug=1(?:&|$)/.test(location.search);
 }
 function choosePersona(id){
   state.persona = PERSONAS.find(p=>p.id===id);
@@ -649,6 +678,7 @@ async function sendMessage(){
     const j = await r.json();
     ok = !!(j && j.ok && j.correct);
   } catch {}
+  if (ok) { $('#msg').classList.add('input-ok'); await new Promise(r=>setTimeout(r, 420)); }
   state.ledger.push({id:pid, right:true, msg, ok});
   closeModal();
   state.idx++;
@@ -667,36 +697,57 @@ function evaluate(){
   const missed = must.filter(id => !didRight.includes(id));
   const anyWrong = didWrongRights.length>0 || extraRights.length>0 || missed.length>0;
   if (anyWrong){
-    const bullet = arr => arr.map(id=>{
-      const p = POOL.find(q=>q.id===id);
-      return `<li>${p.name}</li>`;
-    }).join('');
-    $('#outcome-html').innerHTML = `
-      <div class="note bad"><b>No match unlocked.</b> You ran out of profiles.</div>
-      <div class="hr"></div>
-      <div class="row">
-        <div style="flex:1 1 240px; min-width:240px;">
-          <div class="section">You missed (should have matched):</div>
-          <ul>${bullet(missed) || '<li><i>None</i></li>'}</ul>
+    const debug = isDebug();
+    if (debug){
+      const bullet = arr => arr.map(id=>{
+        const p = POOL.find(q=>q.id===id);
+        return `<li>${p.name}</li>`;
+      }).join('');
+      $('#outcome-html').innerHTML = `
+        <div class="note bad"><b>No match unlocked.</b></div>
+        <div class="hr"></div>
+        <div class="row">
+          <div style="flex:1 1 240px; min-width:240px;">
+            <div class="section">You missed (should have matched):</div>
+            <ul>${bullet(missed) || '<li><i>None</i></li>'}</ul>
+          </div>
+          <div style="flex:1 1 240px; min-width:240px;">
+            <div class="section">You matched but shouldn’t have:</div>
+            <ul>${bullet(extraRights) || '<li><i>None</i></li>'}</ul>
+            <div class="section">Right-swipes with wrong messages:</div>
+            <ul>${bullet(didWrongRights) || '<li><i>None</i></li>'}</ul>
+          </div>
         </div>
-        <div style="flex:1 1 240px; min-width:240px;">
-          <div class="section">You matched but shouldn’t have:</div>
-          <ul>${bullet(extraRights) || '<li><i>None</i></li>'}</ul>
-          <div class="section">Right-swipes with wrong messages:</div>
-          <ul>${bullet(didWrongRights) || '<li><i>None</i></li>'}</ul>
-        </div>
-      </div>
-    `;
+      `;
+    } else {
+      $('#outcome-html').innerHTML = `
+        <div class="note bad">Sorry, there's no more profiles to swipe through for today and you have no matches. But don't give up hope! The one is still waiting out there for you.</div>
+      `;
+    }
     show('screen-outcome');
   } else {
     // success → show persona-specific 11th
     const deck = $('#deck');
     deck.innerHTML='';
-    deck.append(renderUnlockCard(persona));
+    // success → fetch persona-specific 11th from server
+    loadUnlock(persona);
   }
 }
+async function loadUnlock(persona){
+  const deck = $('#deck');
+  deck.innerHTML='';
+  try {
+    const r = await fetch('/api/hinge-unlock?persona='+encodeURIComponent(persona.id));
+    const j = await r.json();
+    if (j && j.ok && j.unlock) {
+      deck.append(renderUnlockCard(persona, j.unlock));
+      return;
+    }
+  } catch {}
+  // fallback minimal
+  deck.append(renderUnlockCard(persona, {name:'New match', avatar:'💌', role:'—', loc:'—', prompts:[]}));
+}
 function openFinalMessage(persona){
-  const u = persona.unlock;
   $('#modal').classList.add('show');
   $('#msg').value='';
   $('#msg').focus();

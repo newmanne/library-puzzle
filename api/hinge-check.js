@@ -15,6 +15,8 @@ const PROFILE_ANSWERS = {
   'p8': 'WILLOW',
   'p9': 'TEXT ME LATER',
   'p10': 'MEET FOR COFFEE',
+  'p11': 'MASTICATE TITULAR PENAL SEXTANT',
+  'p12': 'LOOK UP',
 };
 
 // Final suitor answers keyed by persona id
@@ -53,4 +55,3 @@ module.exports = async function(req, res) {
     return res.status(200).json({ ok: true, correct: false });
   }
 };
-
