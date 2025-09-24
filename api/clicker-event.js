@@ -15,13 +15,8 @@ module.exports = async function (req, res) {
   ];
 
   const method = (req.method || 'GET').toUpperCase();
-  if (method === 'HEAD'){
-    // Health/probe support
-    res.setHeader('cache-control', 'no-store');
-    return res.status(200).end();
-  }
   if (method !== 'GET') {
-    res.setHeader('allow', 'GET, HEAD');
+    res.setHeader('allow', 'GET');
     return res.status(405).json({ ok: false, error: 'Use GET' });
   }
 
@@ -54,5 +49,3 @@ module.exports = async function (req, res) {
     return res.status(500).json({ ok:false, error:'server_error' });
   }
 }
-// Also expose as ESM-style default for runtimes that expect it
-module.exports.default = module.exports;
