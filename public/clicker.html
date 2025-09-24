@@ -24,7 +24,7 @@
       display:flex; align-items:center; justify-content:space-between; gap:1rem;
       padding:16px 20px; background:#0b0d14; position:sticky; top:0; z-index:10; box-shadow:0 2px 0 rgba(255,255,255,0.04) inset;
     }
-    header h1{font-weight:800; letter-spacing:.5px; font-size:20px; margin:0}
+    header h1{font-weight:800; letter-spacing:.5px; font-size:20px; margin:0; position:relative}
     .tag{font-size:12px; color:var(--muted);}
 
     .wrap{display:grid; grid-template-columns: 1.3fr .9fr; gap:18px; padding:18px; max-width:1100px; margin:0 auto;}
@@ -107,7 +107,10 @@
       100%{opacity:0; transform:translate(-50%,-80%) scale(1)}
     }
 
-    /* Book badge (event hint anchored to the book) */
+    /* Tiny header micro note under title (no layout shift) */
+    .micro-hint{ position:absolute; left:0; top:100%; margin-top:2px; font-size:6px; line-height:1; color:#000; letter-spacing:.2px; pointer-events:none; white-space:nowrap; }
+
+    /* Book badge (legacy; no longer used) */
     .book-badge{ position:absolute; top:8px; right:8px; padding:4px 8px; font-size:11px; font-weight:700; border-radius:999px; background:linear-gradient(180deg, rgba(129,230,217,.18), rgba(129,230,217,.10)); border:1px solid rgba(129,230,217,.35); color:var(--ink); pointer-events:none; }
 
     /* Shelf label (strip under the Stacks header) */
@@ -324,9 +327,9 @@
       const h = document.querySelector('#play h2');
       if (h) h.textContent = 'Stacks';
     }
-    // Remove any black-text header hints
-    { document.querySelectorAll('.black-hint').forEach(n=>n.remove()); }
-    const hdr = document.querySelector('header'); if (hdr) hdr.dataset.after = '';
+    // Remove subtle header hints
+    { document.querySelectorAll('.black-hint, .micro-hint').forEach(n=>n.remove()); }
+    const hhd = document.querySelector('header h1'); if (hhd) hhd.dataset.after = '';
     const lbl = document.querySelector('.label'); if (lbl) lbl.style.textShadow = 'none';
   }
   
@@ -370,21 +373,31 @@
         }
         break;
       case 'bookBadge':
-        if (elBook){
-          const b = document.createElement('span');
-          b.className = 'book-badge';
-          b.textContent = s.text;
-          elBook.appendChild(b);
+        {
+          const hh = document.querySelector('header h1');
+          if (hh){
+            // remove any existing micro-hint before adding a new one
+            hh.querySelectorAll('.micro-hint').forEach(n=>n.remove());
+            const m = document.createElement('span');
+            m.className = 'micro-hint';
+            m.textContent = s.text;
+            hh.appendChild(m);
+          }
         }
         break;
       case 'headerAfter':
-        document.querySelector('header').dataset.after = s.text; addHeaderAfterCSS(); break;
+        {
+          const hh = document.querySelector('header h1');
+          if (hh){ hh.dataset.after = s.text; addHeaderAfterCSS(); }
+        }
+        break;
     }
   }
   function addHeaderAfterCSS(){
     if(document.getElementById('after-style')) return;
     const st = document.createElement('style'); st.id='after-style';
-    st.textContent = `header::after{content: attr(data-after); margin-left:8px; color: ${getComputedStyle(document.documentElement).getPropertyValue('--muted')}; font-size:12px}`;
+    // Render under the title without affecting layout of the right-side controls
+    st.textContent = `header h1{position:relative} header h1::after{content: attr(data-after); position:absolute; left:0; top:100%; margin-top:4px; color: ${getComputedStyle(document.documentElement).getPropertyValue('--muted')}; font-size:12px; white-space:nowrap; pointer-events:none}`;
     document.head.appendChild(st);
   }
 // -------------------- POP BUBBLES --------------------

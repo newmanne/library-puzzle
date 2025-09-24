@@ -263,7 +263,7 @@ S E A O N E X
     photo:'img/hinge/p2.png',
     photos:['🌃','📷','🌉'],
     prompts: [
-      { q: 'Emoji status', a: `🌙 🐘 ✉️ 🍵 · 🍎 🚆 · 🐬 ☂️ ☀️ 🔑` },
+      { q: 'Are you good with emojis?', a: `🌙 🐘 ✉️ 🍵 · 🍎 🚆 · 🐬 ☂️ ☀️ 🔑` },
       { q: 'Blue hour ritual', a: 'Shoot, stroll, then bookstore. Last pick: The Trial.' },
       { q: 'I’m convinced', a: 'Night coffee tastes better.' }
     ],
@@ -329,8 +329,7 @@ S E A O N E X
     photo:'img/hinge/p6.png',
     photos:['🍳','🥘','🧂'],
     prompts: [
-      { q: 'Chef tip', a: `Tonight’s test‑kitchen bowl.
-      <ul>
+      { q: 'My favourite recipe', a: `<ul>
         <li>Mince 3 cloves garlic into a bowl.</li>
         <li>Whisk in 15 mL olive oil with lemon.</li>
         <li>Let it sit 15 minutes to mellow.</li>
@@ -377,7 +376,7 @@ The crown-wearing burger chain motto & The Great One` },
     photo:'img/hinge/p9.png',
     photos:['📈','📰','💼'],
     prompts: [
-      { q: 'Ticker tease', a: `Terex, Tencent Music Entertainment, Loews, Aterian` },
+      { q: 'Ticker picks', a: `Terex, Tencent Music Entertainment, Loews, Aterian` },
       { q: 'Desk read', a: 'The Three-Body Problem.' },
       { q: 'Hot take', a: 'Buy and hold beats day‑trading.' }
     ],
@@ -388,7 +387,7 @@ The crown-wearing burger chain motto & The Great One` },
     photo:'img/hinge/p10.png',
     photos:['☕','📚','✨'],
     prompts: [
-      { q: `I bet I can guess your order`, a: `Mocha, Earl Grey, Espresso, Tea? Flat white, Oolong, Ristretto? Cortado, Oat latte, Filter, Frappé, Egg coffee?` },
+      { q: `I bet I can guess your order`, a: `Mocha, Earl Grey, Espresso, Tea? Flat white, Oolong, Ristretto? Cortado, Oat latte, Filter, Frappé, Espressino?` },
       { q: 'We’ll get along if', a: 'You like late‑night pages and early cappuccinos.' },
       { q: 'Currently reading', a: 'The Master and Margarita (after hours).'}
     ],
@@ -396,12 +395,12 @@ The crown-wearing burger chain motto & The Great One` },
   },
   {
     id:'p11', name:'Riley', age:26, role:'Cheer captain', loc:'UBC', avatar:'📣',
-    photo:'img/hinge/p11.png',
+    photo:'img/hinge/p12.png',
     photos:['📣','💃','💋'],
     prompts: [
       { q: `We'll get along if`, a: `You also have a dirty mind 😉. Can you guess the hottest place I've done the deed? 🔥` },
-      { q: 'My ideal first date', a: `First, you work that jaw up and down (9) [1][2]
-Then, I dress up like a sailor and we navigate some new positions (7) [6][7]
+      { q: 'My ideal first date', a: `First, you work that jaw up and down (9) [1][2] <br/>
+Then, I dress up like a sailor and we navigate some new positions (7) [6][7] <br/>
 Lastly, you tease me with punishment codes (5) [5][2]` },
       { q: 'Favorite book', a: 'Hard Times.' }
     ],
@@ -616,6 +615,16 @@ function init(){
   $('#btn-reset').onclick = resetAll;
   $('#btn-again').onclick = ()=>{ show('screen-select'); };
   $('#btn-retry').onclick = ()=>{ choosePersona(state.persona.id); };
+  // Enter-to-send in the message input
+  const msgInput = document.getElementById('msg');
+  if (msgInput){
+    msgInput.addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey){
+        e.preventDefault();
+        document.getElementById('btn-send').click();
+      }
+    });
+  }
   show('screen-select');
 }
 function renderStarterCarousel(){
