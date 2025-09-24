@@ -166,10 +166,13 @@ module.exports = async function (req, res) {
     const para = renderParagraph(p, pairsSlice, chosenBits, seed);
     const maskVal = bitsToInt(maskSlice);
 
-    // First paragraph epigraph with the plain/learned rule
-    const prefix = (p===0 ? `<em>The vulgar word is naught; the learned word is unity.</em> ` : "");
-    html += `<p>${prefix}${para}</p>\n`;
-    html += `<div class=\"colophon\">${intToRoman(maskVal)}</div>\n`;
+    // First paragraph epigraph with the plain/learned rule — its own paragraph
+    if(p===0){
+      html += `<p class=\"epigraph\"><em>The vulgar word is naught; the learned word is unity.</em></p>\n`;
+    }
+    // Inline roman numerals at the start of the paragraph
+    const rn = intToRoman(maskVal);
+    html += `<p class=\"has-rn\"><span class=\"rn\" aria-hidden=\"true\">${rn}</span> ${para}</p>\n`;
 
     offset += 5;
   }

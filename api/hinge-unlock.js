@@ -3,31 +3,32 @@
 
 const UNLOCKS = {
   penguin: {
-    name: 'Ivy', avatar: '📘', role: 'Reprint nerd', loc: 'Kits',
-    photo: 'img/hinge/unlock-penguin.png',
-    prompts: [
-      { q: 'Shelfie', a: 'Orange spines, perfect rows.' },
-      { q: 'Note', a: 'Your opener hit exactly my niche.' }
-    ],
-    prize: "DATE PART: <b>WHERE</b> — <span class='pill'>Kits Pool bleachers</span>",
+      name: 'Ivy', avatar: '📘', role: 'Vancouver Acquarium', loc: 'Kits',
+      photo: 'img/hinge/unlock-penguin.png',
+      prompts: [
+        { q: 'Fun fact', a: 'Contrary to many popular holiday cartoons, you’ll never see penguins and polar bears together in the wild.' },
+        { q: 'Fun fact', a: `(Yes, same prompt twice, sue me). The black and white “tuxedo” look donned by most penguin species is a clever camouflage called countershading.` },
+        { q: `I'll bet you can't guess`, a: 'My favourite animal.' },
+      ],
+      prize: "Let's go for a date at Kits Beach!"
   },
   ghost: {
-    name: 'Casper', avatar: '📜', role: 'Estate lawyer', loc: 'Downtown',
-    photo: 'img/hinge/unlock-ghost.png',
-    prompts: [
-      { q: 'Case file', a: 'Probate signed, acknowledgments read.' },
-      { q: 'Note', a: 'You chose the right word.' }
-    ],
-    prize: "DATE PART: <b>WHEN</b> — <span class='pill'>Thursday 7:00pm</span>",
+      name: 'Casper', avatar: '📜', role: 'Estate lawyer', loc: 'Downtown',
+      photo: 'img/hinge/unlock-ghost.png',
+      prompts: [
+        { q: 'Case file', a: 'Probate signed, acknowledgments read.' },
+        { q: 'Note', a: 'You chose the right word.' }
+      ],
+      prize: "Are you free in 1931?"
   },
   xlat: {
-    name: 'Sasha', avatar: '🗺️', role: 'Rights manager', loc: 'West End',
-    photo: 'img/hinge/unlock-xlat.png',
-    prompts: [
-      { q: 'Rights sheet', a: 'Original language cleared.' },
-      { q: 'Note', a: 'You nailed the title I had in mind.' }
-    ],
-    prize: "DATE PART: <b>MEET</b> — <span class='pill'>By the Inukshuk, English Bay</span>",
+      name: 'Sasha', avatar: '🗺️', role: 'Rights manager', loc: 'West End',
+      photo: 'img/hinge/unlock-xlat.png',
+      prompts: [
+        { q: 'Rights sheet', a: 'Original language cleared.' },
+        { q: 'Note', a: 'You nailed the title I had in mind.' }
+      ],
+      prize: "Que faites-vous le 15 août?"
   },
 };
 

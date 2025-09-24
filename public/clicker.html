@@ -108,10 +108,7 @@
     }
 
     /* Tiny header micro note under title (no layout shift) */
-    .micro-hint{ position:absolute; left:0; top:100%; margin-top:2px; font-size:6px; line-height:1; color:#000; letter-spacing:.2px; pointer-events:none; white-space:nowrap; }
-
-    /* Book badge (legacy; no longer used) */
-    .book-badge{ position:absolute; top:8px; right:8px; padding:4px 8px; font-size:11px; font-weight:700; border-radius:999px; background:linear-gradient(180deg, rgba(129,230,217,.18), rgba(129,230,217,.10)); border:1px solid rgba(129,230,217,.35); color:var(--ink); pointer-events:none; }
+    .micro-hint{ position:absolute; left:0; top:100%; margin-top:2px; font-size:6px; line-height:1; color:grey; letter-spacing:.2px; pointer-events:none; white-space:nowrap; }
 
     /* Shelf label (strip under the Stacks header) */
     
@@ -327,8 +324,7 @@
       elBook.style.cursor = 'pointer'; // reset from cursorTip
     }
     { const wm = getWatermark(); if(wm) wm.style.opacity = 0; const wmt = getWatermarkText(); if(wmt) wmt.textContent = ''; }
-    // remove any transient book badge
-    { const bb = document.querySelectorAll('.book-badge'); bb.forEach(n=>n.remove()); }
+    
     document.title = 'Library Clicker';
     if (elStatus){ elStatus.textContent=''; elStatus.removeAttribute('role'); elStatus.style.background = 'transparent'; }
     if (elMap){ elMap.hidden = true; elMap.removeAttribute('title'); elMap.href = '#'; }

@@ -180,16 +180,6 @@ const PERSONAS = [
       { q: 'Unusual skill', a: 'Looking great in a tux.' },
     ],
     targetTag: 'penguin',
-    unlock: {
-      name: 'Ivy', avatar: '📘', role: 'Vancouver Acquarium', loc: 'Kits',
-      photo: 'img/hinge/unlock-penguin.png',
-      prompts: [
-        { q: 'Fun fact', a: 'Contrary to many popular holiday cartoons, you’ll never see penguins and polar bears together in the wild.' },
-        { q: 'Fun fact', a: `(Yes, same prompt twice, sue me). The black and white “tuxedo” look donned by most penguin species is a clever camouflage called countershading.` },
-        { q: `I'll bet you can't guess`, a: 'My favourite animal.' },
-      ],
-      prize: "Let's go for a date at Kits Beach!"
-    }
   },
   {
     id: 'ghost',
@@ -203,15 +193,6 @@ const PERSONAS = [
       { q: 'Green flag', a: 'You live in a haunted house.' },
     ],
     targetTag: 'posthumous',
-    unlock: {
-      name: 'Casper', avatar: '📜', role: 'Estate lawyer', loc: 'Downtown',
-      photo: 'img/hinge/unlock-ghost.png',
-      prompts: [
-        { q: 'Case file', a: 'Probate signed, acknowledgments read.' },
-        { q: 'Note', a: 'You chose the right word.' }
-      ],
-      prize: "Are you free in 1931?"
-    }
   },
   {
     id: 'xlat',
@@ -225,15 +206,6 @@ const PERSONAS = [
       { q: 'Quickest way to my heart', a: 'A sexy foreign accent.' },
     ],
     targetTag: 'translated',
-    unlock: {
-      name: 'Sasha', avatar: '🗺️', role: 'Rights manager', loc: 'West End',
-      photo: 'img/hinge/unlock-xlat.png',
-      prompts: [
-        { q: 'Rights sheet', a: 'Original language cleared.' },
-        { q: 'Note', a: 'You nailed the title I had in mind.' }
-      ],
-      prize: "Que faites-vous le 15 août?"
-    }
   },
 ];
 
@@ -275,13 +247,13 @@ G U M L F H O
     photo:'img/hinge/p3.png',
     photos:['♞','⌨️','🧩'],
     prompts: [
-      { q: `You'll impress me if you can`, a: `Make a 
+      { q: `You'll impress me if you can`, a: `Start at the ♞. Make 7 legal knight moves; each time you land, take the letter. No repeats.
         <div class="mini-board">
-          <div class="sq start">N</div><div class="sq dim">·</div><div class="sq">C</div><div class="sq dim">·</div><div class="sq dim">·</div>
-          <div class="sq dim">·</div><div class="sq dim">·</div><div class="sq dim">·</div><div class="sq dim">·</div><div class="sq">E</div>
-          <div class="sq dim">·</div><div class="sq">I</div><div class="sq">V</div><div class="sq dim">·</div><div class="sq dim">·</div>
-          <div class="sq dim">·</div><div class="sq dim">·</div><div class="sq dim">·</div><div class="sq">M</div><div class="sq">E</div>
-          <div class="sq dim">·</div><div class="sq">O</div><div class="sq dim">·</div><div class="sq dim">·</div><div class="sq dim">·</div>
+          <div class="sq start">N</div><div class="sq">A</div><div class="sq">T</div><div class="sq">Q</div><div class="sq">L</div>
+          <div class="sq">E</div><div class="sq">X</div><div class="sq">I</div><div class="sq">B</div><div class="sq">R</div>
+          <div class="sq">H</div><div class="sq">D</div><div class="sq">M</div><div class="sq">K</div><div class="sq">V</div>
+          <div class="sq">P</div><div class="sq">C</div><div class="sq">E</div><div class="sq">Y</div><div class="sq">S</div>
+          <div class="sq">U</div><div class="sq">W</div><div class="sq">T</div><div class="sq">O</div><div class="sq">A</div>
         </div>
       ` },
       { q: `Let's debate this topic`, a: `What is the best opener?` },
@@ -585,8 +557,7 @@ function init(){
           el('div',{class:'card'},
             el('div',{class:'hdr'},
               el('div',{class:'avatar'}, '💌'),
-              el('div',{}, el('div',{html:`<b>It’s a match!</b>`}),
-                           el('div',{class:'meta', html:`You and your final suitor unlocked…`})
+              el('div',{}, el('div',{html:`<b>It’s a match! 🎊</b>`}))
               )
             ),
             el('div',{class:'body'},
@@ -596,11 +567,10 @@ function init(){
             ),
             el('div',{class:'body'},
               el('div',{class:'actions'},
-                el('button',{class:'btn', onclick:()=>show('screen-select')},'Pick another YOU')
+                el('button',{class:'btn', onclick:()=>show('screen-select')},'Start again with another persona?')
               )
             )
-          )
-        );
+          );
       } else {
         // final failed → outcome “no match”
         $('#outcome-html').innerHTML = `

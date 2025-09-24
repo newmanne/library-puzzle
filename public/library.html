@@ -30,7 +30,17 @@
     article{ font-family: var(--serif); font-size:18px; line-height:1.7; }
     article p{ text-indent:1.5em; margin:0 0 12px; }
     article p:first-of-type{ text-indent:0; }
-    article p:first-of-type::first-letter{ float:left; font-size:3.1em; line-height:0.95; padding:4px 6px 0 2px; color:#3a2a0a; font-weight:700; }
+    /* Remove drop-cap when roman numerals are present */
+    article p:first-of-type::first-letter{ float:none; font-size:inherit; line-height:inherit; padding:0; color:inherit; font-weight:inherit; }
+    article p.epigraph::first-letter{ float:none; font-size:inherit; line-height:inherit; padding:0; color:inherit; font-weight:inherit; }
+    /* If an epigraph precedes the story, do not apply drop cap to the next paragraph either */
+    article p.epigraph + p{ text-indent:0; }
+    article p.epigraph + p::first-letter{ float:none; font-size:inherit; line-height:inherit; padding:0; color:inherit; font-weight:inherit; }
+    /* Paragraphs with inline romans should not indent */
+    article p.has-rn{ text-indent:0; }
+    /* Inline roman numerals as a two-line initial */
+    article p .rn{ float:left; font-family: var(--mono); letter-spacing:1.5px; color:#6f5b43; opacity:0.9; font-weight:700;
+      font-size:3.2em; line-height:0.9; margin:2px 10px 0 0; }
     .frontis{ float:right; max-width:240px; margin:0 0 10px 16px; opacity:0.95; }
     @media (max-width: 720px){ .frontis{ display:none; } }
     .legend{ margin-top:10px; color:var(--muted); font-size:14px; }
