@@ -14,10 +14,6 @@ module.exports = async function (req, res) {
     { code: 993, type: 'watermark',  text: 'The Capital (10) [9][7]' },        // New Zealand → Wellington
   ];
 
-
-CA TTLELOG
-
-
   const method = (req.method || 'GET').toUpperCase();
   if (method !== 'GET') {
     res.setHeader('allow', 'GET');
