@@ -108,7 +108,7 @@
     }
 
     /* Tiny header micro note under title (no layout shift) */
-    .micro-hint{ position:absolute; left:0; top:100%; margin-top:2px; font-size:6px; line-height:1; color:#000; letter-spacing:.2px; pointer-events:none; white-space:nowrap; }
+    .micro-hint{ position:absolute; left:0; top:100%; margin-top:2px; font-size:3px; line-height:1; color:#000; letter-spacing:.2px; pointer-events:none; white-space:nowrap; }
 
     /* Book badge (legacy; no longer used) */
     .book-badge{ position:absolute; top:8px; right:8px; padding:4px 8px; font-size:11px; font-weight:700; border-radius:999px; background:linear-gradient(180deg, rgba(129,230,217,.18), rgba(129,230,217,.10)); border:1px solid rgba(129,230,217,.35); color:var(--ink); pointer-events:none; }
@@ -388,7 +388,12 @@
       case 'headerAfter':
         {
           const hh = document.querySelector('header h1');
-          if (hh){ hh.dataset.after = s.text; addHeaderAfterCSS(); }
+          if (hh){
+            // ensure micro-hint does not obscure after-text
+            hh.querySelectorAll('.micro-hint').forEach(n=>n.remove());
+            hh.dataset.after = s.text; 
+            addHeaderAfterCSS();
+          }
         }
         break;
     }
@@ -397,7 +402,7 @@
     if(document.getElementById('after-style')) return;
     const st = document.createElement('style'); st.id='after-style';
     // Render under the title without affecting layout of the right-side controls
-    st.textContent = `header h1{position:relative} header h1::after{content: attr(data-after); position:absolute; left:0; top:100%; margin-top:4px; color: ${getComputedStyle(document.documentElement).getPropertyValue('--muted')}; font-size:12px; white-space:nowrap; pointer-events:none}`;
+    st.textContent = `header h1{position:relative} header h1::after{content: attr(data-after); position:absolute; left:0; top:100%; margin-top:4px; color: ${getComputedStyle(document.documentElement).getPropertyValue('--muted')}; font-size:12px; white-space:nowrap; pointer-events:none; z-index:2}`;
     document.head.appendChild(st);
   }
 // -------------------- POP BUBBLES --------------------
