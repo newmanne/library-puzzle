@@ -210,7 +210,7 @@ const PERSONAS = [
         { q: 'Case file', a: 'Probate signed, acknowledgments read.' },
         { q: 'Note', a: 'You chose the right word.' }
       ],
-      prize: "How is your August 15th looking?"
+      prize: "Are you free in 1931?"
     }
   },
   {
@@ -232,7 +232,7 @@ const PERSONAS = [
         { q: 'Rights sheet', a: 'Original language cleared.' },
         { q: 'Note', a: 'You nailed the title I had in mind.' }
       ],
-      prize: "Are you free in 1931?"
+      prize: "Que faites-vous le 15 août?"
     }
   },
 ];
@@ -420,6 +420,7 @@ const state = {
   ledger: [],         // per-profile decisions
   
   selectIdx: 0,       // starter carousel index
+  lastMsg: {},        // remembers last message per pid (including FINAL:persona)
 };
 
 /*** RENDER HELPERS *****************************************************/
@@ -542,6 +543,11 @@ function renderUnlockCard(persona, u){
 function init(){
   // starters
   state.selectIdx = 0;
+  // load saved last messages
+  try {
+    const raw = localStorage.getItem('hinge:lastMsg');
+    if (raw) state.lastMsg = JSON.parse(raw) || {};
+  } catch {}
   renderStarterCarousel();
   // hotkeys removed
   // modal buttons
@@ -558,6 +564,9 @@ function init(){
         const j = await r.json();
         ok = !!(j && j.ok && j.correct);
       } catch {}
+      // remember last message for FINAL pid
+      state.lastMsg[pid] = msg;
+      try { localStorage.setItem('hinge:lastMsg', JSON.stringify(state.lastMsg)); } catch {}
       if (ok) { $('#msg').classList.add('input-ok'); await new Promise(r=>setTimeout(r, 420)); }
       closeModal();
       if (ok){
@@ -662,8 +671,11 @@ function swipe(profile, right){
 }
 function openMessage(profile){
   $('#modal').classList.add('show');
-  $('#msg').value='';
-  $('#msg').focus();
+  const pid = profile.id;
+  const input = $('#msg');
+  input.classList.remove('input-ok');
+  input.value = state.lastMsg[pid] || '';
+  input.focus();
   $('#modal').dataset.pid = profile.id;
 }
 function closeModal(){ $('#modal').classList.remove('show'); }
@@ -678,6 +690,9 @@ async function sendMessage(){
     const j = await r.json();
     ok = !!(j && j.ok && j.correct);
   } catch {}
+  // remember last message for this pid
+  state.lastMsg[pid] = msg;
+  try { localStorage.setItem('hinge:lastMsg', JSON.stringify(state.lastMsg)); } catch {}
   if (ok) { $('#msg').classList.add('input-ok'); await new Promise(r=>setTimeout(r, 420)); }
   state.ledger.push({id:pid, right:true, msg, ok});
   closeModal();
@@ -749,8 +764,11 @@ async function loadUnlock(persona){
 }
 function openFinalMessage(persona){
   $('#modal').classList.add('show');
-  $('#msg').value='';
-  $('#msg').focus();
+  const pid = 'FINAL:'+persona.id;
+  const input = $('#msg');
+  input.classList.remove('input-ok');
+  input.value = state.lastMsg[pid] || '';
+  input.focus();
   $('#modal').dataset.pid = 'FINAL:'+persona.id;
 }
 function sendFinal(msg){
