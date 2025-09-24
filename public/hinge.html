@@ -221,18 +221,20 @@ const POOL = [
     photo:'img/hinge/p1.png',
     photos:['🌊','🐟','🪸'],
     prompts: [ // TODO: The word search sucks and the puzzle might be broken 
-      { q: 'Sometimes my life feels like', a: `
+      { q: 'Sometimes my life feels like a jumble', a: `
+        Guess my favourite beach activity:<br/>
         <div class="kbd" style="display:block;white-space:pre;line-height:1.2em;">
-K E H U B T R
-M E N Q Q A L
-C L L G Y T S
-O W Q P V K E
-D F T E R N A
-W A V E S O B
-G U M L F H O
+Q A C H U W M O
+G V O T E R N D
+C E R H L A T B
+S E A R C Y N Q
+P L L V O K Z E
+N X T I D E R A
+W O F M A C I L
+K E L P J S U V
         </div>` },
-      { q: 'Currently reading', a: 'Moby‑Dick (because… whales).'},
-      { q: 'Fun fact', a: 'In my day to day I collect kelp, eel, ray, cod, tern, and just generally the sea. And sometimes more fun leftovers are in the mix!' }
+      { q: 'Currently reading', a: 'Moby‑Dick (because... whales).'},
+      { q: 'Fun fact', a: 'In my day to day I collect eel, ray, cod, tern, coral, and just generally the tide and the sea.' }
     ],
     tags:['penguin'] 
   },
@@ -587,7 +589,7 @@ function init(){
       } else {
         // final failed → outcome “no match”
         $('#outcome-html').innerHTML = `
-          <div class="note bad"><b>Close, but no.</b> Your final message didn’t land. You’ll need to retry this YOU.</div>
+          <div class="note bad"><b>Sorry, you have exhausted all of your matches.</div>
         `;
         show('screen-outcome');
       }
@@ -611,6 +613,17 @@ function init(){
       }
     });
   }
+  // Fallback: global Enter handler while modal is open
+  window.addEventListener('keydown', (e)=>{
+    const modalOpen = document.getElementById('modal')?.classList.contains('show');
+    const ae = document.activeElement;
+    if (!modalOpen) return;
+    if (!ae || ae.id !== 'msg') return;
+    if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey){
+      e.preventDefault();
+      document.getElementById('btn-send').click();
+    }
+  });
   show('screen-select');
 }
 function renderStarterCarousel(){

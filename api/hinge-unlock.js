@@ -7,7 +7,7 @@ const UNLOCKS = {
       photo: 'img/hinge/unlock-penguin.png',
       prompts: [
         { q: 'Fun fact', a: 'Contrary to many popular holiday cartoons, you’ll never see penguins and polar bears together in the wild.' },
-        { q: 'Fun fact', a: `(Yes, same prompt twice, sue me). The black and white “tuxedo” look donned by most penguin species is a clever camouflage called countershading.` },
+        { q: 'Fun fact', a: `(Yes, same prompt twice, sue me). The black and white "tuxedo" look donned by most penguin species is a clever camouflage called countershading.` },
         { q: `I'll bet you can't guess`, a: 'My favourite animal.' },
       ],
       prize: "Let's go for a date at Kits Beach!"
@@ -16,8 +16,9 @@ const UNLOCKS = {
       name: 'Casper', avatar: '📜', role: 'Grave Digger', loc: 'Downtown',
       photo: 'img/hinge/unlock-ghost.png',
       prompts: [
-        { q: 'Green flags I look for', a: 'You are skilled with a shovel. And you have a will.' },
-        { q: 'Note', a: 'You chose the right word.' }
+        { q: 'Green flags I look for', a: `You know a word whose first part sounds like it's about mail and the second part sounds like a spread for vegetables made from chickpeas.`},
+        S{ q: `I'll brag about you to my friends if`, a: 'You are also a time traveler.' },
+        { q: `Favourite movie`, a: 'Back to the Future' },
       ],
       prize: "Are you free in 1931?"
   },
@@ -25,8 +26,9 @@ const UNLOCKS = {
       name: 'Sasha', avatar: '🗺️', role: 'High-school teacher', loc: 'West End',
       photo: 'img/hinge/unlock-xlat.png',
       prompts: [
-        { q: 'Rights sheet', a: 'Original language cleared.' },
-        { q: 'Note', a: 'You nailed the title I had in mind.' }
+        { q: `I'll bet you can't guess`, a: 'My favourite Google service is Google _________.' },
+        { q: 'About me', a: 'I can say hello in 20 languages.' },
+        { q: 'Favourite law', a: 'Bill 101 ¯\_(ツ)_/¯' }
       ],
       prize: "Que faites-vous le 15 août?"
   },

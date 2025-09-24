@@ -5,25 +5,24 @@ const normalize = s => (s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 
 // Profile answers (keep server-side only)
 const PROFILE_ANSWERS = {
-  'p1': "LET'S DIVE",
+  'p1': 'READ',
   'p2': 'SHOOT YOUR SHOT',
   'p3': 'NICE MOVE',
   'p4': 'TURN THE PAGE',
-  'p5': 'COFFEE SOON',
+  'p5': '2',
   'p6': 'COOK WITH ME',
-  'p7': 'MEET BY THE DOCKS',
+  'p7': 'NEON',
   'p8': 'WILLOW',
   'p9': 'TEXT ME LATER',
   'p10': 'MEET FOR COFFEE',
   'p11': 'MANTLE',
-  'p12': 'LOOK UP',
 };
 
 // Final suitor answers keyed by persona id
 const FINAL_ANSWERS = {
   penguin: 'PENGUIN',
-  ghost: 'AFTERLIFE',
-  xlat: 'THE STRANGER',
+  ghost: 'POSTHUMOUS',
+  xlat: 'TRANSLATE',
 };
 
 module.exports = async function(req, res) {
