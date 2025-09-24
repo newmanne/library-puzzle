@@ -570,7 +570,7 @@ function init(){
               el('div',{class:'avatar'}, '💌'),
               el('div',{},
                 el('div',{html:`<b>It’s a match! 🎊</b>`}),
-                el('div',{class:'meta', html: unlockName ? `You and ${unlockName} unlocked…` : `You unlocked…`})
+                el('div',{class:'meta', html: unlockName ? `You and ${unlockName}` : `You unlocked…`})
               )
             ),
             el('div',{class:'body'},
@@ -581,13 +581,7 @@ function init(){
                   )
                 : el('div',{class:'note'},'Prize unlocked.'),
               el('div',{class:'hr'}),
-              el('div',{class:'muted small'},'Collect all three date parts across the three YOU profiles.')
             ),
-            el('div',{class:'body'},
-              el('div',{class:'actions'},
-                el('button',{class:'btn', onclick:()=>show('screen-select')},'Pick another YOU')
-              )
-            )
           )
         );
       } else {

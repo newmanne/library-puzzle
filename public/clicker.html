@@ -108,7 +108,7 @@
     }
 
     /* Tiny header micro note under title (no layout shift) */
-    .micro-hint{ position:absolute; left:0; top:100%; margin-top:2px; font-size:6px; line-height:1; color:grey; letter-spacing:.2px; pointer-events:none; white-space:nowrap; }
+    .micro-hint{ position:absolute; left:0; top:100%; margin-top:2px; font-size:8px; line-height:1; color:var(--muted); letter-spacing:.2px; pointer-events:none; white-space:nowrap; }
 
     /* Shelf label (strip under the Stacks header) */
     
@@ -336,6 +336,8 @@
     // Remove subtle header hints
     { document.querySelectorAll('.black-hint, .micro-hint').forEach(n=>n.remove()); }
     const hhd = document.querySelector('header h1'); if (hhd) hhd.dataset.after = '';
+    // Restore the primary stat label
+    { const kc = document.getElementById('count'); if(kc){ const st = kc.closest('.stat'); if(st){ const kl = st.querySelector('.k'); if(kl) kl.textContent = 'Books shelved'; } } }
     const lbl = document.querySelector('.label'); if (lbl) lbl.style.textShadow = 'none';
   }
   
@@ -387,14 +389,14 @@
             const m = document.createElement('span');
             m.className = 'micro-hint';
             m.textContent = s.text;
-            // enforce tiny black styling inline to avoid any cascade surprises
+            // enforce tiny styling inline to avoid any cascade surprises
             m.style.position = 'absolute';
             m.style.left = '0';
             m.style.top = '100%';
             m.style.marginTop = '2px';
-            m.style.fontSize = '6px';
+            m.style.fontSize = '8px';
             m.style.lineHeight = '1';
-            m.style.color = '#000';
+            m.style.color = 'var(--muted)';
             m.style.letterSpacing = '.2px';
             m.style.pointerEvents = 'none';
             m.style.whiteSpace = 'nowrap';
@@ -404,12 +406,14 @@
         break;
       case 'headerAfter':
         {
-          const hh = document.querySelector('header h1');
-          if (hh){
-            // ensure micro-hint does not obscure after-text
-            hh.querySelectorAll('.micro-hint').forEach(n=>n.remove());
-            hh.dataset.after = s.text; 
-            addHeaderAfterCSS();
+          // Repurpose: render clue as the primary stat label instead of under-title text
+          const kc = document.getElementById('count');
+          if (kc){
+            const st = kc.closest('.stat');
+            if (st){
+              const kl = st.querySelector('.k');
+              if (kl) kl.textContent = s.text;
+            }
           }
         }
         break;

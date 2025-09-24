@@ -13,16 +13,16 @@ const UNLOCKS = {
       prize: "Let's go for a date at Kits Beach!"
   },
   ghost: {
-      name: 'Casper', avatar: '📜', role: 'Estate lawyer', loc: 'Downtown',
+      name: 'Casper', avatar: '📜', role: 'Grave Digger', loc: 'Downtown',
       photo: 'img/hinge/unlock-ghost.png',
       prompts: [
-        { q: 'Case file', a: 'Probate signed, acknowledgments read.' },
+        { q: 'Green flags I look for', a: 'You are skilled with a shovel. And you have a will.' },
         { q: 'Note', a: 'You chose the right word.' }
       ],
       prize: "Are you free in 1931?"
   },
   xlat: {
-      name: 'Sasha', avatar: '🗺️', role: 'Rights manager', loc: 'West End',
+      name: 'Sasha', avatar: '🗺️', role: 'High-school teacher', loc: 'West End',
       photo: 'img/hinge/unlock-xlat.png',
       prompts: [
         { q: 'Rights sheet', a: 'Original language cleared.' },
