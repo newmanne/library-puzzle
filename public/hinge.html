@@ -34,14 +34,14 @@
   .prompt { background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 12px; }
   .prompt .q { font-size:12px; letter-spacing:.02em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
   .prompt .a { font-size:15px; }
-  /* CMY highlight indexing */
-  .hl { padding:0 4px; border-radius:4px; font-weight:600; }
-  .hl.c { background:#a5f3fc; color:#0e7490; }
-  .hl.m { background:#fbcfe8; color:#9d174d; }
-  .hl.y { background:#fde68a; color:#92400e; }
-  .hl.g { background:#bbf7d0; color:#065f46; }
-  .hl.p { background:#ddd6fe; color:#5b21b6; }
-  .hl.k { background:#e5e7eb; color:#374151; }
+  /* CMYBGR highlight indexing */
+  .hl { padding:0 4px; border-radius:4px; font-weight:700; }
+  .hl.c { background:#22d3ee; color:#083344; }   /* cyan */
+  .hl.m { background:#ec4899; color:#ffffff; }   /* magenta */
+  .hl.y { background:#fde047; color:#713f12; }   /* yellow */
+  .hl.b { background:#3b82f6; color:#ffffff; }   /* blue */
+  .hl.g { background:#22c55e; color:#064e3b; }   /* green */
+  .hl.r { background:#ef4444; color:#ffffff; }   /* red */
   /* tiny chess board */
   .mini-board { display:grid; grid-template-columns: repeat(5, 28px); gap:4px; margin-top:6px; }
   .mini-board .sq { width:28px; height:28px; border:1px solid var(--line); border-radius:6px; display:grid; place-items:center; font-weight:700; font-size:14px; background:#f8fafc; color:#111827; position:relative; }
@@ -178,7 +178,6 @@ const PERSONAS = [
     name: 'Avery', age: 29, role: 'Editor', loc: 'Mount Pleasant',
     avatar: '🐧',
     photo: 'img/hinge/persona-penguin.png',
-    blurb: "I really, really love penguins 🐧",
     prompts: [
       { q: 'My love language is', a: 'Mogran Freeman impressions.' },
       { q: 'We’ll get along if', a: 'You let me call you emporer and king.' },
@@ -191,11 +190,10 @@ const PERSONAS = [
     name: 'Mo', age: 31, role: 'Archivist', loc: 'Grandview',
     avatar: '👻',
     photo: 'img/hinge/persona-ghost.png',
-    blurb: "Into ghosts 👻",
     prompts: [
       { q: 'A fact about me that surprises people', a: 'I believe the dead can still impact the world.' },
-      { q: 'I go crazy for', a: 'Ectoplast.' },
-      { q: 'Green flag', a: 'You live in a haunted house.' },
+      { q: 'I go crazy for', a: 'Ectoplast and Ouija boards' },
+      { q: 'Green flag', a: 'You have great respect for spirits.' },
     ],
     targetTag: 'posthumous',
   },
@@ -204,10 +202,9 @@ const PERSONAS = [
     name: 'Ling', age: 30, role: 'Subtitler', loc: 'Strathcona',
     avatar: '🌍',
     photo: 'img/hinge/persona-xlat.png',
-    blurb: "Talk to me in many languages 🌍",
     prompts: [
-      { q: 'I’m known for', a: 'Arguing with translators in the margins.' },
-      { q: 'A life goal of mine', a: 'Read every book twice—in two languages.' },
+      { q: `We're the same type of weird if`, a: `You took French all the way up to grade 12, even when it wasn't required.` },
+      { q: 'A life goal of mine', a: 'Pass as a native speaker when travelling.' },
       { q: 'Quickest way to my heart', a: 'A sexy foreign accent.' },
     ],
     targetTag: 'translated',
@@ -254,7 +251,7 @@ K E L P J S U V
     photo:'img/hinge/p3.png',
     photos:['♞','⌨️','🧩'],
     prompts: [
-      { q: `You'll impress me if you can`, a: `Start at the ♞. Make 7 legal knight moves; each time you land, take the letter. No repeats.
+      { q: `You'll impress me if you can make a`, a: `
         <div class="mini-board">
           <div class="sq start">N</div><div class="sq">A</div><div class="sq">T</div><div class="sq">Q</div><div class="sq">L</div>
           <div class="sq">E</div><div class="sq">X</div><div class="sq">I</div><div class="sq">B</div><div class="sq">R</div>
@@ -281,8 +278,8 @@ K E L P J S U V
         <span class="hl g">kern</span>
         <span class="hl c">topline</span>
         <span class="hl m">chisel</span>
-        <span class="hl k">stroke</span>
-        <span class="hl p">sharp</span>
+        <span class="hl b">stroke</span>
+        <span class="hl r">sharp</span>
         <span class="hl c">author</span>
         <span class="hl g">program</span>
         <span class="hl y">scene</span>
@@ -327,7 +324,7 @@ K E L P J S U V
     tags:['penguin','translated']
   },
   {
-    id:'p7', name:'Skipper', age:34, role:'Ferry fan', loc:'—', avatar:'⛵',
+    id:'p7', name:'Skipper', age:34, role:'Ferry fan', loc:'English Bay', avatar:'⛵',
     photo:'img/hinge/p7.png',
     photos:['⛴️','🌊','🍟'],
     prompts: [
@@ -345,9 +342,9 @@ The crown-wearing burger chain motto & The Great One` },
     photo:'img/hinge/p8.png',
     photos:['🌳','🍂','🪵'],
     prompts: [
-      { q: 'These are a few of my favourite things', a: `Taxus, Vitis, Arbutus, Acer, Cupressus, Pseudotsuga, Tsuga, Betula, Alnus, Picea, Quercus, …` },
+      { q: 'These are a few of my favourite things', a: `Taxus, Vitis, Arbutus, Acer, Cupressus, Pseudotsuga, Tsuga, Betula, Alnus, Picea, Quercus` },
       { q: 'Together we could', a: 'Go for a stroll and see what comes next.' },
-      { q: 'Typeshelf', a: 'Frankenstein (loves a good reprint saga).'},
+      { q: 'Typeshelf', a: 'Frankenstein.'},
     ],
     tags:['penguin']
   },
