@@ -218,8 +218,7 @@ const POOL = [
   {
     id:'p1', name:'Sam', age:28, role:'Marine biologist', loc:'Vancouver', avatar:'🍣',
     photo:'img/hinge/p1.png',
-    photos:['🌊','🐟','🪸'],
-    prompts: [ // TODO: The word search sucks and the puzzle might be broken 
+    prompts: [ 
       { q: 'Sometimes my life feels like a jumble', a: `
         Guess my favourite beach activity:<br/>
         <div class="kbd" style="display:block;white-space:pre;line-height:1.2em;">
@@ -238,9 +237,8 @@ K E L P J S U V
     tags:['penguin'] 
   },
   {
-    id:'p2', name:'Leo', age:33, role:'Night shooter', loc:'West End', avatar:'🌉',
+    id:'p2', name:'Leo', age:33, role:'Night shooter', loc:'West End', avatar:'📷',
     photo:'img/hinge/p2.png',
-    photos:['🌃','📷','🌉'],
     prompts: [
       { q: 'My hobbies', a: `🐍 🏠 🍊 🐙 🌳 · 🪀 🫒 ☂️ 🚀 · 🎿 ♥️ 🦦 🚆` },
       { q: 'Blue hour ritual', a: 'Shoot, stroll, then bookstore. Last pick: The Trial.' },
@@ -249,11 +247,10 @@ K E L P J S U V
     tags:['posthumous','translated','penguin']
   },
   {
-    id:'p3', name:'Elle', age:29, role:'Chess Club President', loc:'Downtown', avatar:'⌨️',
+    id:'p3', name:'Elle', age:29, role:'Chess Club President', loc:'Downtown', avatar:'♞',
     photo:'img/hinge/p3.png',
-    photos:['♞','⌨️','🧩'],
     prompts: [
-      { q: `You'll impress me if you can make a`, a: `Start at the ♞. Take the start letter, then make 8 legal knight moves; collect letters as you land. No repeats.
+      { q: `You'll impress me if you make a`, a: `
         <div class="mini-board">
           <div class="sq start">F</div><div class="sq">A</div><div class="sq">T</div><div class="sq">L</div><div class="sq">E</div>
           <div class="sq">M</div><div class="sq">D</div><div class="sq">I</div><div class="sq">Q</div><div class="sq">S</div>
@@ -268,9 +265,8 @@ K E L P J S U V
     tags:['penguin','translated']
   },
   {
-    id:'p4', name:'Marie', age:31, role:'Editor at CMY Industries', loc:'Coal Harbour', avatar:'🔤',
+    id:'p4', name:'Marie', age:31, role:'Editor at CMY Industries', loc:'Coal Harbour', avatar:'🎨',
     photo:'img/hinge/p4.png',
-    photos:['🖨️','🎨','📚'],
     prompts: [
       { q: `I'm most proud of`, a: `My job. It isn't always as easy as 123, but there are so many oppourtunities to add value.`},
       { q: 'The highlights of dating me', a: `
@@ -291,9 +287,8 @@ K E L P J S U V
     tags:['penguin']
   },
   {
-    id:'p5', name:'Gavin', age:30, role:'Transit ops', loc:'Fairview', avatar:'📱',
+    id:'p5', name:'Gavin', age:30, role:'Transit ops', loc:'Fairview', avatar:'🚌',
     photo:'img/hinge/p14.png',
-    photos:['🚌','🕒','📱'],
     prompts: [
       { q: 'Two truths and a lie (Select the number)', a: `1) I'm very sporty
       2) I'm really into astronomy
@@ -306,7 +301,6 @@ K E L P J S U V
   {
     id:'p6', name:'Cora', age:27, role:'Chef', loc:'North Shore', avatar:'🍳',
     photo:'img/hinge/p6.png',
-    photos:['🍳','🥘','🧂'],
     prompts: [
       { q: 'My favourite recipe', a: `<ul>
         <li>Mince 3 cloves garlic into a bowl.</li>
@@ -328,7 +322,6 @@ K E L P J S U V
   {
     id:'p7', name:'Judy', age:34, role:'Serial Clubber', loc:'Granville Street', avatar:'🥂',
     photo:'img/hinge/p7.png',
-    photos:['🍾','🎵','🍟'],
     prompts: [
       { q: 'Me in my element', a: `The Colonel’s buckets motto & the Gombe researcher <br/>
 Canadian mac-and-cheese motto & a Canadian prairie contralto <br/>
@@ -342,7 +335,6 @@ The crown-wearing burger chain motto & The Great One` },
   {
     id:'p8', name:'Wren', age:28, role:'Arborist', loc:'Fairview', avatar:'🌳',
     photo:'img/hinge/p8.png',
-    photos:['🌳','🍂','🪵'],
     prompts: [
       { q: 'These are a few of my favourite things', a: `Acer, Cupressus, Pinus, Pseudotsuga, Tsuga, Betula, Alnus, Picea, Quercus` },
       { q: 'Together we could', a: 'Go for a stroll and see what comes next.' },
@@ -353,7 +345,6 @@ The crown-wearing burger chain motto & The Great One` },
   {
     id:'p9', name:'Robin', age:32, role:'Analyst', loc:'Financial District', avatar:'📈',
     photo:'img/hinge/p9.png',
-    photos:['📈','📰','💼'],
     prompts: [
       { q: 'Ticker picks', a: `Terex, Tencent Music Entertainment, Loews, Aterian` },
       { q: 'Desk read', a: 'The Three-Body Problem.' },
@@ -364,7 +355,6 @@ The crown-wearing burger chain motto & The Great One` },
   {
     id:'p10', name:'Kat', age:30, role:'Barista', loc:'Mount Pleasant', avatar:'☕',
     photo:'img/hinge/p10.png',
-    photos:['☕','📚','✨'],
     prompts: [
       { q: `I bet I can guess your order`, a: `Mocha, Earl Grey, Espresso, Tea? Flat white, Oolong, Ristretto? Cortado, Oat latte, Filter, Frappé, Espressino?` },
       { q: 'We’ll get along if', a: 'You like late‑night pages and early cappuccinos.' },
@@ -375,7 +365,6 @@ The crown-wearing burger chain motto & The Great One` },
   {
     id:'p11', name:'Riley', age:26, role:'Cheer captain', loc:'UBC', avatar:'📣',
     photo:'img/hinge/p12.png',
-    photos:['📣','💃','💋'],
     prompts: [
       { q: `We'll get along if`, a: `You also have a dirty mind 😉. Suggest a hot place we could cuddle? 🔥` },
       { q: 'My ideal first date', a: `First, you work your jaw up and down (9) [1][2] <br/>
@@ -532,8 +521,9 @@ function init(){
   // hotkeys removed
   // modal buttons
   $('#btn-cancel').onclick = closeModal;
-  // unify send handling so FINAL messages don't fall through to regular send
-  $('#btn-send').addEventListener('click', async (e)=>{
+  // unified send handler for click and Enter/submit
+  const handleSend = async (e) => {
+    if (e) e.preventDefault();
     const pid = $('#modal').dataset.pid || '';
     if (pid.startsWith('FINAL:')){
       const persona = state.persona;
@@ -588,17 +578,19 @@ function init(){
       } else {
         // final failed → outcome “no match”
         $('#outcome-html').innerHTML = `
-          <div class="note bad"><b>Sorry, you have exhausted all of your matches.</div>
+          <div class="note bad"><b>Sorry, you have exhausted all of your matches.</b></div>
         `;
         show('screen-outcome');
       }
-      e.stopImmediatePropagation();
-      e.preventDefault();
       return;
     }
     // regular profile message
     await sendMessage();
-  });
+  };
+  // Bind click and form submit to the same handler
+  $('#btn-send').addEventListener('click', handleSend);
+  const form = document.getElementById('msg-form');
+  if (form){ form.addEventListener('submit', handleSend); }
   $('#btn-reset').onclick = resetAll;
   $('#btn-again').onclick = ()=>{ show('screen-select'); };
   $('#btn-retry').onclick = ()=>{ choosePersona(state.persona.id); };

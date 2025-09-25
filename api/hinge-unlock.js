@@ -17,7 +17,7 @@ const UNLOCKS = {
       photo: 'img/hinge/unlock-ghost.png',
       prompts: [
         { q: 'Green flags I look for', a: `You know a word whose first part sounds like it's about mail and the second part sounds like a spread for vegetables made from chickpeas.`},
-        S{ q: `I'll brag about you to my friends if`, a: 'You are also a time traveler.' },
+        { q: `I'll brag about you to my friends if`, a: 'You are also a time traveler.' },
         { q: `Favourite movie`, a: 'Back to the Future' },
       ],
       prize: "Are you free in 1931?"
