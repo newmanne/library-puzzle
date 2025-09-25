@@ -100,6 +100,17 @@
   .dlg { display:flex; align-items:flex-start; gap:12px; }
   .dlg .pfp { width:48px; height:48px; border-radius:50%; overflow:hidden; flex:0 0 auto; border:1px solid var(--line); background:#e5e7eb; }
   .dlg .pfp img { width:100%; height:100%; object-fit:cover; display:block; }
+  /* split profile layout */
+  .profile-split { display:flex; gap:16px; align-items:stretch; }
+  .profile-media { flex:0 0 44%; min-width:240px; }
+  .profile-main { flex:1 1 auto; display:flex; flex-direction:column; gap:12px; }
+  .profile-actions { margin-top:auto; }
+  .profile-media .photo-wrap { height:360px; }
+  @media (max-width: 720px){
+    .profile-split { flex-direction:column; }
+    .profile-media { flex:0 0 auto; min-width:0; }
+    .profile-media .photo-wrap { height:300px; }
+  }
   .small { font-size:12px; }
   .linkish { color:#93c5fd; text-decoration:underline; cursor:pointer; }
   .hidden { display:none !important; }
@@ -453,21 +464,27 @@ function renderProfileCard(p){
         el('div',{class:'meta', html:`${p.role} • ${p.loc}`})
       )
     ),
-    renderPhoto(p.photo, `${p.name}'s photo`, svgPlaceholder(p.name, p.avatar), 'contain'),
     el('div',{class:'body'},
-      (p.prompts && p.prompts.length)
-        ? el('div',{class:'prompts'},
-            ...p.prompts.map(pa => el('div',{class:'prompt'},
-              el('div',{class:'q'}, pa.q),
-              el('div',{class:'a', html: pa.a})
-            ))
+      el('div',{class:'profile-split'},
+        el('div',{class:'profile-media'},
+          renderPhoto(p.photo, `${p.name}'s photo`, svgPlaceholder(p.name, p.avatar), 'contain')
+        ),
+        el('div',{class:'profile-main'},
+          (p.prompts && p.prompts.length)
+            ? el('div',{class:'prompts'},
+                ...p.prompts.map(pa => el('div',{class:'prompt'},
+                  el('div',{class:'q'}, pa.q),
+                  el('div',{class:'a', html: pa.a})
+                ))
+              )
+            : el('div',{}),
+          el('div',{class:'profile-actions'},
+            el('div',{class:'actions'},
+              el('button',{class:'btn btn-nope', onclick:()=>swipe(p,false)},'Swipe Left'),
+              el('button',{class:'btn btn-like', onclick:()=>openMessage(p)},'Swipe Right')
+            )
           )
-        : el('div',{})
-    ),
-    el('div',{class:'body'},
-      el('div',{class:'actions'},
-        el('button',{class:'btn btn-nope', onclick:()=>swipe(p,false)},'Swipe Left'),
-        el('button',{class:'btn btn-like', onclick:()=>openMessage(p)},'Swipe Right')
+        )
       )
     )
   );
@@ -487,20 +504,26 @@ function renderUnlockCard(persona, u){
         el('span',{class:'pill purple'}, 'New here')
       )
     ),
-    renderPhoto(u.photo, `${u.name}'s photo`, svgPlaceholder(u.name, u.avatar), 'contain'),
     el('div',{class:'body'},
-      (u.prompts && u.prompts.length)
-        ? el('div',{class:'prompts'},
-            ...u.prompts.map(pa => el('div',{class:'prompt'},
-              el('div',{class:'q'}, pa.q),
-              el('div',{class:'a', html: pa.a})
-            ))
+      el('div',{class:'profile-split'},
+        el('div',{class:'profile-media'},
+          renderPhoto(u.photo, `${u.name}'s photo`, svgPlaceholder(u.name, u.avatar), 'contain')
+        ),
+        el('div',{class:'profile-main'},
+          (u.prompts && u.prompts.length)
+            ? el('div',{class:'prompts'},
+                ...u.prompts.map(pa => el('div',{class:'prompt'},
+                  el('div',{class:'q'}, pa.q),
+                  el('div',{class:'a', html: pa.a})
+                ))
+              )
+            : el('div',{}),
+          el('div',{class:'profile-actions'},
+            el('div',{class:'actions'},
+              el('button',{class:'btn btn-like', onclick:()=>openFinalMessage(persona)},'Send Message')
+            )
           )
-        : el('div',{})
-    ),
-    el('div',{class:'body'},
-      el('div',{class:'actions'},
-        el('button',{class:'btn btn-like', onclick:()=>openFinalMessage(persona)},'Send Message')
+        )
       )
     )
   );
