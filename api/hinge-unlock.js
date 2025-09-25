@@ -2,7 +2,7 @@
 // Returns minimal display info for the final suitor, keeping content off the client until needed.
 
 const UNLOCKS = {
-  pseudonym: {
+  penguin: {
       name: 'Ivy', avatar: '🐧', role: 'Vancouver Acquarium', loc: 'Kits',
       photo: 'img/hinge/unlock-penguin.png',
       prompts: [
