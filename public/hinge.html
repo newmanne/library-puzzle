@@ -182,21 +182,20 @@
 <script>
 /*** DATA ***************************************************************/
 
-// TODO: Too many penguin books. (Use https://www.penguin.co.uk/penguin-classics/classics-list)
 
 // 3 YOU personas: each wants a specific subset of the 10 via a tag.
 const PERSONAS = [
   {
-    id: 'penguin',
-    name: 'Avery', age: 29, role: 'Editor', loc: 'Mount Pleasant',
+    id: 'alias',
+    name: 'Avery', age: 29, role: 'Costume Designer', loc: 'Mount Pleasant',
     avatar: '🐧',
     photo: 'img/hinge/persona-penguin.png',
     prompts: [
-      { q: 'My love language is', a: 'Mogran Freeman impressions.' },
-      { q: 'We’ll get along if', a: 'You let me call you emporer and king.' },
-      { q: 'Unusual skill', a: 'Looking great in a tux.' },
+      { q: 'My love language is', a: 'Snuggling while watching Alias reruns.' },
+      { q: 'What I most want to know about you is', a: 'What is your fake Starbucks name?' },
+      { q: `We're the same type of weird if`, a: `A fun part of travel for you is that no one knows who you really are.` },
     ],
-    targetTag: 'penguin',
+    targetTag: 'pseudonym',
   },
   {
     id: 'ghost',
@@ -242,10 +241,10 @@ N X T I D E R A
 W O F M A C I L
 K E L P J S U V
         </div>` },
-      { q: 'Currently reading', a: 'Moby‑Dick (because... whales).'},
+      { q: 'Currently reading', a: 'Twenty Thousand Leagues Under the Sea'},
       { q: 'Fun fact', a: 'In my day to day I collect eel, ray, cod, tern, coral, and just generally the tide and the sea.' }
     ],
-    tags:['penguin'] 
+    tags:['translated'] 
   },
   {
     id:'p2', name:'Leo', age:33, role:'Night shooter', loc:'West End', avatar:'📷',
@@ -255,7 +254,7 @@ K E L P J S U V
       { q: 'Blue hour ritual', a: 'Shoot, stroll, then bookstore. Last pick: The Trial.' },
       { q: 'I’m convinced', a: 'Night coffee tastes better.' }
     ],
-    tags:['posthumous','translated','penguin']
+    tags:['posthumous','translated']
   },
   {
     id:'p3', name:'Elle', age:29, role:'Chess Club President', loc:'Downtown', avatar:'♞',
@@ -271,9 +270,9 @@ K E L P J S U V
         </div>
       ` },
       { q: `Let's debate this topic`, a: `What is the best opener?` },
-      { q: 'Currently reading', a: 'Invisible Cities (for the UX of imagination).' }
+      { q: 'Currently reading', a: 'The Defence. Nabokov really understands chess.' }
     ],
-    tags:['penguin','translated']
+    tags:['pseudonym','translated']
   },
   {
     id:'p4', name:'Marie', age:31, role:'Editor at CMY Industries', loc:'Coal Harbour', avatar:'🎨',
@@ -293,21 +292,23 @@ K E L P J S U V
         <span class="hl g">program</span>
         <span class="hl y">scene</span>
       ` },
-      { q: 'Bookshelf', a: 'Pride and Prejudice'}
+      { q: 'Bookshelf', a: 'Middlemarch'}
     ],
-    tags:['penguin']
+    tags:['pseudonym']
   },
   {
     id:'p5', name:'Gavin', age:30, role:'Transit ops', loc:'Fairview', avatar:'🚌',
     photo:'img/hinge/p14.png',
     prompts: [
-      { q: 'Two truths and a lie (Select the number)', a: `1) I'm very sporty
-      2) I'm really into astronomy
-      3) I have a dog` },
+      { q: 'Two truths and a lie (Select the number)', a: `<ol>
+        <li>I'm very sporty</li>
+        <li>I'm really into astronomy</li>
+        <li>I have a dog</li>
+        </ol>` },
       { q: 'Love language', a: 'Accurate bus ETAs' },
-      { q: 'Commute read', a: 'The Little Prince (pocket edition).'}
+      { q: 'Commute read', a: 'The Count of Monte Cristo (I want revenge on those Not In Service busses)'}
     ],
-    tags:['penguin','translated', 'posthumous']
+    tags:['translated']
   },
   {
     id:'p6', name:'Cora', age:27, role:'Chef', loc:'North Shore', avatar:'🍳',
@@ -328,16 +329,19 @@ K E L P J S U V
       { q: 'Cookbook crush', a: 'Kitchen (Banana Yoshimoto).' },
       { q: 'Green flag', a: 'You bring lemons without being asked.' }
     ],
-    tags:['penguin','translated']
+    tags:['translated']
   },
   {
-    id:'p7', name:'Judy', age:34, role:'Serial Clubber', loc:'Granville Street', avatar:'🥂',
+    id:'p7', name:'Judy', age:27, role:'Serial Clubber', loc:'Granville Street', avatar:'🥂',
     photo:'img/hinge/p7.png',
     prompts: [
-      { q: 'Me in my element', a: `The Colonel’s buckets motto & the Gombe researcher <br/>
-Canadian mac-and-cheese motto & a Canadian prairie contralto <br/>
-Rice-cereal onomatopoeia & a Spurs coach <br/>
-The crown-wearing burger chain motto & The Great One` },
+      { q: 'Me in my element', a: `
+      <ul>
+        <li>Slogan for The Colonel’s buckets & the Gombe researcher.</li>
+        <li>Canadian mac-and-cheese motto & a Canadian prairie contralto.</li>
+        <li>Rice-cereal onomatopoeia & a Spurs coach.</li>
+        <li>The crown-wearing burger chain motto & The Great One.</li>
+      </ul>` },
       { q: 'Are you also weird like me?', a: 'When a sandwich has an odd number of slices of meat, I think the top half tastes better. But when it has an even number of slices, I prefer the bottom.'},
       { q: 'Perfect Sunday', a: 'Recovering from a night out with fries and a paperback. Currently reading A Confederacy of Dunces.' }
     ],
@@ -351,17 +355,17 @@ The crown-wearing burger chain motto & The Great One` },
       { q: 'Together we could', a: 'Go for a stroll and see what comes next.' },
       { q: 'Guilty pleasure', a: 'Frankenstein.'},
     ],
-    tags:['penguin']
+    tags:['pseudonym']
   },
   {
-    id:'p9', name:'Robin', age:32, role:'Analyst', loc:'Financial District', avatar:'📈',
+    id:'p9', name:'Roger', age:32, role:'Analyst', loc:'Financial District', avatar:'📈',
     photo:'img/hinge/p9.png',
     prompts: [
       { q: 'Ticker picks', a: `Terex, Tencent Music Entertainment, Loews, Aterian` },
-      { q: 'Desk read', a: 'The Three-Body Problem.' },
+      { q: 'Desk read', a: 'Pride and Prejudice' },
       { q: 'Hot take', a: 'Buy and hold beats day‑trading.' }
     ],
-    tags:['penguin','translated'] 
+    tags:['pseudonym'] 
   },
   {
     id:'p10', name:'Kat', age:30, role:'Barista', loc:'Mount Pleasant', avatar:'☕',
@@ -371,21 +375,21 @@ The crown-wearing burger chain motto & The Great One` },
       { q: 'We’ll get along if', a: 'You like late‑night pages and early cappuccinos.' },
       { q: 'Currently reading', a: 'The Master and Margarita (after hours).'}
     ],
-    tags:['posthumous','translated','penguin']
+    tags:['posthumous','translated']
   },
   {
     id:'p11', name:'Riley', age:26, role:'Cheer captain', loc:'UBC', avatar:'📣',
     photo:'img/hinge/p12.png',
     prompts: [
       { q: `We'll get along if`, a: `You also have a dirty mind 😉. Suggest a hot place we could cuddle? 🔥` },
-      { q: 'My ideal first date', a: `First, you work your jaw up and down (9) [1][2] <br/>
+      { q: 'My ideal first date', a: `First, you make sounds like you are pleasuring yourself as you work your molars up and down (9) [1][2] <br/>
 Then, I dress up in a cute sailor outfit and bring out a tool for us to navigate some new positions (7) [6][7] <br/>
-Next, you let me call you daddy (a title that you'll hold in name only, of course.) (7) [5] <br/>
+Next, I call you daddy (a title that you'll hold in name only, of course) (7) [5] <br/>
 Lastly, you tease me with punishment codes (5) [2] 
 ` },
-      { q: 'Dating me is most like the book', a: 'Hard Times (Charles 🍆ens)' }
+      { q: `Lately I've been thinking about`, a: 'How I seem to have universal appeal. Also, Philosophy in the Bedroom' }
     ],
-    tags:['penguin']
+    tags:['posthumous', 'translated', 'pseudonym']
   },
 ];
 
@@ -428,25 +432,31 @@ function renderStarterCard(p){
         el('div',{class:'meta', html:`${p.role} • ${p.loc}`})
       )
     ),
-    // hero photo (image if present, else SVG placeholder) — contain fit for full view
-    renderPhoto(p.photo, `${p.name}'s photo`, svgPlaceholder(p.name, p.avatar), 'contain'),
     el('div',{class:'body'},
-      (p.prompts && p.prompts.length)
-        ? el('div',{class:'prompts'},
-            ...p.prompts.map(pa => el('div',{class:'prompt'},
-              el('div',{class:'q'}, pa.q),
-              el('div',{class:'a', html: pa.a})
-            ))
-          )
-        : el('div',{class:'prompts'},
-            el('div',{class:'prompt'},
-              el('div',{class:'q'}, 'About me'),
-              el('div',{class:'a', html:p.blurb})
+      el('div',{class:'profile-split'},
+        el('div',{class:'profile-media'},
+          renderPhoto(p.photo, `${p.name}'s photo`, svgPlaceholder(p.name, p.avatar), 'contain')
+        ),
+        el('div',{class:'profile-main'},
+          (p.prompts && p.prompts.length)
+            ? el('div',{class:'prompts'},
+                ...p.prompts.map(pa => el('div',{class:'prompt'},
+                  el('div',{class:'q'}, pa.q),
+                  el('div',{class:'a', html: pa.a})
+                ))
+              )
+            : el('div',{class:'prompts'},
+                el('div',{class:'prompt'},
+                  el('div',{class:'q'}, 'About me'),
+                  el('div',{class:'a', html:p.blurb})
+                )
+              ),
+          el('div',{class:'profile-actions'},
+            el('div',{class:'actions'},
+              el('button',{class:'btn btn-ghost', onclick:()=>choosePersona(p.id)},'Be this person')
             )
-          ),
-      
-      el('div',{class:'actions'},
-        el('button',{class:'btn btn-ghost', onclick:()=>choosePersona(p.id)},'Be this person')
+          )
+        )
       )
     )
   );

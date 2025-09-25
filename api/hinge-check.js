@@ -20,7 +20,7 @@ const PROFILE_ANSWERS = {
 
 // Final suitor answers keyed by persona id
 const FINAL_ANSWERS = {
-  penguin: 'PENGUIN',
+  penguin: 'PSEUDONYM',
   ghost: 'POSTHUMOUS',
   xlat: 'TRANSLATE',
 };
