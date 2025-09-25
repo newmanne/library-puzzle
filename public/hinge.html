@@ -589,8 +589,6 @@ function init(){
   };
   // Bind click and form submit to the same handler
   $('#btn-send').addEventListener('click', handleSend);
-  const form = document.getElementById('msg-form');
-  if (form){ form.addEventListener('submit', handleSend); }
   $('#btn-reset').onclick = resetAll;
   $('#btn-again').onclick = ()=>{ show('screen-select'); };
   $('#btn-retry').onclick = ()=>{ choosePersona(state.persona.id); };
