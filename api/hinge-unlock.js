@@ -7,7 +7,7 @@ const UNLOCKS = {
       photo: 'img/hinge/unlock-penguin.png',
       prompts: [
         { q: 'Fun fact', a: 'Contrary to many popular holiday cartoons, you’ll never see penguins and polar bears together in the wild.' },
-        { q: 'Help me remember', a: `A synonym for nom de plume or a pen name. Starts off sounding like face science. Not anonymous (though I do like that too).` },
+        { q: 'Help me remember', a: `A synonym for nom de plume or a pen name. Starts off with a prefix meaning false, sham, or pretend. Not anonymous (though I do like that too).` },
         { q: `Currently reading`, a: 'The Running Man.' },
       ],
       prize: "Let's go for a date at Kits Beach!"
@@ -26,7 +26,7 @@ const UNLOCKS = {
       name: 'Sasha', avatar: '🇫🇷', role: 'High-school teacher', loc: 'West End',
       photo: 'img/hinge/unlock-xlat.png',
       prompts: [
-        { q: `My students are always cheating using`, a: 'Google _________.' },
+        { q: `My students are always cheating using`, a: 'This service that can go between English and French. Google _________.' },
         { q: 'About me', a: 'My favourite book is The Stranger.' },
         { q: 'Favourite law', a: 'Bill 101 ¯\_(ツ)_/¯' }
       ],
