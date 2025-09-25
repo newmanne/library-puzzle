@@ -7,7 +7,7 @@ const normalize = s => (s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const PROFILE_ANSWERS = {
   'p1': 'READ',
   'p2': 'SHOOT YOUR SHOT',
-  'p3': 'NICE MOVE',
+  'p3': 'FIRSTMOVE',
   'p4': 'TURN THE PAGE',
   'p5': '2',
   'p6': 'COOK WITH ME',

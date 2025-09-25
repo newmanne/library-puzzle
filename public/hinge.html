@@ -157,11 +157,13 @@
   <div class="dialog">
     <div class="head">Send a message</div>
     <div class="content">
-      <input type="text" id="msg" placeholder="Type your opener…" />
-    </div>
-    <div class="foot">
-      <button class="btn btn-nope" id="btn-cancel">Cancel</button>
-      <button class="btn btn-like" id="btn-send">Send</button>
+      <form id="msg-form">
+        <input type="text" id="msg" placeholder="Type your opener…" />
+        <div class="foot">
+          <button class="btn btn-nope" type="button" id="btn-cancel">Cancel</button>
+          <button class="btn btn-like" type="submit" id="btn-send">Send</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -247,17 +249,17 @@ K E L P J S U V
     tags:['posthumous','translated','penguin']
   },
   {
-    id:'p3', name:'Elle', age:29, role:'UX researcher', loc:'Downtown', avatar:'⌨️',
+    id:'p3', name:'Elle', age:29, role:'Chess Club President', loc:'Downtown', avatar:'⌨️',
     photo:'img/hinge/p3.png',
     photos:['♞','⌨️','🧩'],
     prompts: [
-      { q: `You'll impress me if you can make a`, a: `
+      { q: `You'll impress me if you can make a`, a: `Start at the ♞. Take the start letter, then make 8 legal knight moves; collect letters as you land. No repeats.
         <div class="mini-board">
-          <div class="sq start">N</div><div class="sq">A</div><div class="sq">T</div><div class="sq">Q</div><div class="sq">L</div>
-          <div class="sq">E</div><div class="sq">X</div><div class="sq">I</div><div class="sq">B</div><div class="sq">R</div>
-          <div class="sq">H</div><div class="sq">D</div><div class="sq">M</div><div class="sq">K</div><div class="sq">V</div>
-          <div class="sq">P</div><div class="sq">C</div><div class="sq">E</div><div class="sq">Y</div><div class="sq">S</div>
-          <div class="sq">U</div><div class="sq">W</div><div class="sq">T</div><div class="sq">O</div><div class="sq">A</div>
+          <div class="sq start">F</div><div class="sq">A</div><div class="sq">T</div><div class="sq">L</div><div class="sq">E</div>
+          <div class="sq">M</div><div class="sq">D</div><div class="sq">I</div><div class="sq">Q</div><div class="sq">S</div>
+          <div class="sq">H</div><div class="sq">G</div><div class="sq">K</div><div class="sq">V</div><div class="sq">Y</div>
+          <div class="sq">P</div><div class="sq">O</div><div class="sq">W</div><div class="sq">R</div><div class="sq">N</div>
+          <div class="sq">U</div><div class="sq">X</div><div class="sq">C</div><div class="sq">N</div><div class="sq">A</div>
         </div>
       ` },
       { q: `Let's debate this topic`, a: `What is the best opener?` },
@@ -278,7 +280,7 @@ K E L P J S U V
         <span class="hl g">kern</span>
         <span class="hl c">topline</span>
         <span class="hl m">chisel</span>
-        <span class="hl b">stroke</span>
+        <span class="hl b">preach</span>
         <span class="hl r">sharp</span>
         <span class="hl c">author</span>
         <span class="hl g">program</span>
@@ -324,16 +326,16 @@ K E L P J S U V
     tags:['penguin','translated']
   },
   {
-    id:'p7', name:'Skipper', age:34, role:'Ferry fan', loc:'English Bay', avatar:'⛵',
+    id:'p7', name:'Judy', age:34, role:'Serial Clubber', loc:'Granville Street', avatar:'🥂',
     photo:'img/hinge/p7.png',
-    photos:['⛴️','🌊','🍟'],
+    photos:['🍾','🎵','🍟'],
     prompts: [
-      { q: 'Me in my element', a: `The Colonel’s buckets & the Gombe researcher <br/>
-Canadian mac-and-cheese mottos & a prairie contralto <br/>
+      { q: 'Me in my element', a: `The Colonel’s buckets motto & the Gombe researcher <br/>
+Canadian mac-and-cheese motto & a Canadian prairie contralto <br/>
 Rice-cereal onomatopoeia & a Spurs coach <br/>
 The crown-wearing burger chain motto & The Great One` },
       { q: 'Are you also weird like me?', a: 'When a sandwich has an odd number of slices of meat, I think the top half tastes better. But when it has an even number of slices, I prefer the bottom.'},
-      { q: 'Perfect Sunday', a: 'Ferries, fries, and a paperback. Currently reading A Confederacy of Dunces (laugh-out-loud ferry read).' }
+      { q: 'Perfect Sunday', a: 'Recovering from a night out with fries and a paperback. Currently reading A Confederacy of Dunces.' }
     ],
     tags:['posthumous']
   },
@@ -342,9 +344,9 @@ The crown-wearing burger chain motto & The Great One` },
     photo:'img/hinge/p8.png',
     photos:['🌳','🍂','🪵'],
     prompts: [
-      { q: 'These are a few of my favourite things', a: `Taxus, Vitis, Arbutus, Acer, Cupressus, Pseudotsuga, Tsuga, Betula, Alnus, Picea, Quercus` },
+      { q: 'These are a few of my favourite things', a: `Acer, Cupressus, Pinus, Pseudotsuga, Tsuga, Betula, Alnus, Picea, Quercus` },
       { q: 'Together we could', a: 'Go for a stroll and see what comes next.' },
-      { q: 'Typeshelf', a: 'Frankenstein.'},
+      { q: 'Guilty pleasure', a: 'Frankenstein.'},
     ],
     tags:['penguin']
   },
@@ -600,27 +602,15 @@ function init(){
   $('#btn-reset').onclick = resetAll;
   $('#btn-again').onclick = ()=>{ show('screen-select'); };
   $('#btn-retry').onclick = ()=>{ choosePersona(state.persona.id); };
-  // Enter-to-send in the message input
-  const msgInput = document.getElementById('msg');
-  if (msgInput){
-    msgInput.addEventListener('keydown', (e)=>{
-      if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey){
-        e.preventDefault();
-        document.getElementById('btn-send').click();
-      }
+  // Enter-to-send via form submit (most robust across browsers)
+  const form = document.getElementById('msg-form');
+  if (form){
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      // Dispatch the same handler as the Send button
+      document.getElementById('btn-send').click();
     });
   }
-  // Fallback: global Enter handler while modal is open
-  window.addEventListener('keydown', (e)=>{
-    const modalOpen = document.getElementById('modal')?.classList.contains('show');
-    const ae = document.activeElement;
-    if (!modalOpen) return;
-    if (!ae || ae.id !== 'msg') return;
-    if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey){
-      e.preventDefault();
-      document.getElementById('btn-send').click();
-    }
-  });
   show('screen-select');
 }
 function renderStarterCarousel(){
