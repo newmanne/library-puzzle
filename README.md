@@ -19,7 +19,7 @@ This version fixes 404s on API routes by using **CommonJS exports** for serverle
 
 ## Notes on secrets
 - Clicker special clue texts are served by `/api/clicker-event` and not embedded in HTML.
-- Maze final answer is validated by `/api/maze-check` and letters for signals come from `/api/maze-letters`.
+- Maze final answer is validated by `/api/maze?op=check`.
 
 ## Local test
 - `npx vercel dev` then open http://localhost:3000

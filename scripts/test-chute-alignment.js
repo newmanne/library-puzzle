@@ -1,6 +1,5 @@
 // Verify chute position matches between room flags and map output
-const room = require('../api/maze-room');
-const map = require('../api/maze-map');
+const maze = require('../api/maze');
 
 function mkRes(){
   let statusCode = 200;
@@ -11,17 +10,17 @@ function mkRes(){
   };
 }
 
-async function call(handler, query){
-  const req = { query };
+async function call(op, query){
+  const req = { method:'GET', query: { ...query, op } };
   const res = mkRes();
-  return await handler(req, res);
+  return await maze(req, res);
 }
 
 async function findChuteViaRoom(){
   const WIDTH=8, HEIGHT=7;
   for(let y=0;y<HEIGHT;y++){
     for(let x=0;x<WIDTH;x++){
-      const r = await call(room, { x:String(x), y:String(y) });
+      const r = await call('room', { x:String(x), y:String(y) });
       const b = r.body || r;
       const f = (b && b.flags) || {};
       if(f.chute) return {x,y};
@@ -47,7 +46,7 @@ function parseCharFromMapLines(lines, target){
 
 async function main(){
   const roomChute = await findChuteViaRoom();
-  const m = await call(map, { x:'0', y:'0' });
+  const m = await call('map', { x:'0', y:'0' });
   const lines = (m.body || m).lines || [];
   const mapChute = parseCharFromMapLines(lines, 'C');
   const mapA = parseCharFromMapLines(lines, 'A');
@@ -61,7 +60,7 @@ async function main(){
     const WIDTH=8, HEIGHT=7;
     for(let y=0;y<HEIGHT;y++){
       for(let x=0;x<WIDTH;x++){
-        const r = await call(room, { x:String(x), y:String(y) });
+        const r = await call('room', { x:String(x), y:String(y) });
         const b = r.body || r;
         const f = (b && b.flags) || {};
         if(f[flag]) return {x,y};
