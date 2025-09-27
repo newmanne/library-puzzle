@@ -308,6 +308,8 @@
   function restartShift(){
     state.count = 0;
     if(!state.seenCrash) state.seenCrash = true; // unlock post-crash UI after first crash
+    // Reset auto accumulators so a new shift always starts clean
+    try{ autoBucket = 0; autoPopAcc = 0; lastAutoPop = performance.now(); }catch(_){ }
     save();
     updatePhaseUI();
     tickRender();
@@ -343,6 +345,8 @@
   
   let lastSpecialChecked = -1;
   async function checkSpecials(){
+    // Before first crash, suppress all special events entirely
+    if(!state.seenCrash){ return; }
     if(state.count === lastSpecialChecked) return; // avoid refetching
     lastSpecialChecked = state.count;
     clearSubtleties();
@@ -451,15 +455,17 @@ function spawnPop(text, variant='click'){
     if(!state.pauseAutos){
       autoBucket += totalRate() * dt;
       const potential = Math.floor(autoBucket);
-      if(potential>0){
-        const allowed = Math.max(0, 999 - state.count);
+      const allowed = Math.max(0, 999 - state.count);
+      if (allowed === 0){
+        // At cap: discard any accumulated autos so they don't burst after restart
+        autoBucket = 0;
+      } else if(potential>0){
         const actual = Math.min(potential, allowed);
         if (actual > 0){
           autoBucket -= actual;
           addBooks(actual, {source:'auto'});
           autoPopAcc += actual;
         }
-        // At cap, do not drain bucket or show auto pops
       }
     }
 

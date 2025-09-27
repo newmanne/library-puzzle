@@ -12,10 +12,10 @@ const PROFILE_ANSWERS = {
   'p5': '2',
   'p6': 'COOK WITH ME',
   'p7': 'NEON',
-  'p8': 'WILLOW',
+  'p8': 'OAK',
   'p9': 'TEXT ME LATER',
   'p10': 'MEET FOR COFFEE',
-  'p11': 'MANTLE',
+  'p11': 'MANTEL',
 };
 
 // Final suitor answers keyed by persona id
