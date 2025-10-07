@@ -222,9 +222,7 @@
       clearForLastOnly();
       if(data && data.ok){
         if(data.blocked){ print('Towering shelves block your way.'); return; }
-        if(data.teleported && data.reason === 'chute'){
-          print('Whee! You fly through the return chute and land elsewhere.');
-        }
+        // no special teleports
         state.x = data.x|0; state.y = data.y|0; state.inVault = !!data.inVault; state.steps++;
         visitTitle = null; await look();
       } else {
@@ -233,13 +231,13 @@
     }catch(e){ print('Error: Movement request failed.'); console.error(e); }
   }
 
-  function openThing(what){ clearForLastOnly(); if(!what){ print('Open what?'); return; } if((lastRoom && lastRoom.flags && lastRoom.flags.lost) && /(drawer|lost|found|counter)/.test(what)){ print('You slide the shallow drawer open. Inside lies a scuffed library card.'); return; } print("It doesn't seem to open."); }
+  function openThing(what){ clearForLastOnly(); if(!what){ print('Open what?'); return; } print("It doesn't seem to open."); }
   function takeThing(what){
     clearForLastOnly();
     if(!what){ print('Take what?'); return;}
-    if((lastRoom && lastRoom.flags && lastRoom.flags.lost) && /(card|library card)/.test(what)){
+    if((lastRoom && lastRoom.flags && lastRoom.flags.restroom) && /(card|library card)/.test(what)){
       if(state.hasCard){ print('You already pocketed the card.'); }
-      else { state.hasCard=true; print('Taken: a scuffed library card warm from your palm.'); }
+      else { state.hasCard=true; print('You reach under the bowl and fish out a damp, scuffed library card. Taken.'); }
       return;
     }
     if((lastRoom && lastRoom.flags && lastRoom.flags.secretBook) && /(book|secret passage)/i.test(what)){
@@ -251,7 +249,8 @@
 }
   async function readThing(obj){
     clearForLastOnly();
-    obj=(obj||'').toLowerCase();
+    obj=(obj||'').trim().toLowerCase();
+    if(!obj){ print('Read what?'); return; }
     if(/^(card|library card)$/.test(obj)){
       if(!state.hasCard){ print('You do not seem to have a card.'); return; }
     try{
@@ -281,8 +280,8 @@
       print('  "When you have deciphered the library\'s whisper, speak it here: say <WORD>."');
       return;
     }
-    
-    print('Nothing to read.'); }
+    // Generic: non-special rooms, gently decline with the requested object
+    print(`Sadly, you don't have the time to read ${obj}.`); }
 
   function sitHere(){
     clearForLastOnly();
@@ -304,7 +303,7 @@
     clearForLastOnly();
     // Disallow pulling in special rooms
     const f = (lastRoom && lastRoom.flags) || {};
-    const isSpecial = !!(f.lost || f.math || f.reading || f.vault || f.chute || f.unity || f.secretShelf || f.secretAnnex || f.secretBook);
+    const isSpecial = !!(f.restroom || f.math || f.reading || f.vault || f.unity || f.secretShelf || f.secretAnnex || f.secretBook);
     if(isSpecial){ print('You do not find any pullable books here.'); return; }
     // If we've already pulled a book in this room visit, reuse it
     if(visitTitle){

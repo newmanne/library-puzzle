@@ -23,7 +23,7 @@ module.exports = async function(req, res){
       if(method !== 'POST'){ res.setHeader('allow','POST'); return res.status(405).json({ ok:false, error:'Use POST' }); }
       const body = await readJsonBody(req);
       const word = String((body.word ?? body.guess ?? '')).toUpperCase().replace(/[^A-Z]/g,'');
-      const ACCEPTABLE = new Set(['LATEFEES']);
+      const ACCEPTABLE = new Set([COMMON.FINAL]);
       const ok = ACCEPTABLE.has(word);
       res.setHeader('cache-control','no-store');
       return res.status(200).json({ ok });
@@ -40,7 +40,7 @@ module.exports = async function(req, res){
       const x = parseInt(q.x ?? '0', 10) || 0;
       const y = parseInt(q.y ?? '0', 10) || 0;
       const { placements, signals } = world;
-      const { maths, reading, vault, chute, unity, lostFound, SECRET_SHELF, SECRET_ANNEX, SECRET_BOOK } = placements;
+      const { maths, reading, vault, unity, restroom, SECRET_SHELF, SECRET_ANNEX, SECRET_BOOK } = placements;
 
       const localSeed = (x*2654435761 ^ y*1597334677 ^ world.SEED) >>> 0; const r = COMMON.mulberry32(localSeed);
       const sig = signals.signalHere(x,y);
@@ -55,19 +55,18 @@ module.exports = async function(req, res){
       const lines = [];
       const SECRET_SHELF_KEY = `${SECRET_SHELF.x},${SECRET_SHELF.y}`;
       const SECRET_ANNEX_KEY = `${SECRET_ANNEX.x},${SECRET_ANNEX.y}`;
-      const isLost = (x===lostFound.x && y===lostFound.y);
+      const isRestroom = (x===restroom.x && y===restroom.y);
       const isMath= (x===maths.x && y===maths.y);
       const isReading = (x===reading.x && y===reading.y);
       const isVault = (x===vault.x && y===vault.y);
-      const isChute = (x===chute.x && y===chute.y);
       const isUnity = (x===unity.x && y===unity.y);
       const isSecretShelf = (`${x},${y}`===SECRET_SHELF_KEY);
       const isSecretAnnex = (`${x},${y}`===SECRET_ANNEX_KEY);
       const isSecretBook  = (`${x},${y}`===`${SECRET_BOOK.x},${SECRET_BOOK.y}`);
 
-      if (isLost){
-        lines.push(`A narrow counter bristles with bookcarts and a little sign: "Lost & Found".`);
-        lines.push('A shallow drawer is ajar.');
+      if (isRestroom){
+        lines.push('A tiled restroom hides in this corner of the stacks.');
+        lines.push('A toilet sits slightly askew; beneath the bowl you glimpse a scuffed library card.');
       } else if (isMath){
         lines.push('You enter a mathematics alcove. Chalk dust hangs in the colorless light.');
         lines.push('Diagrams sprawl over a slate. You might <read primer>.');
@@ -77,8 +76,6 @@ module.exports = async function(req, res){
       } else if (isVault){
         lines.push('An ironbound door dominates the west wall.');
         lines.push('A brass plaque reads: "When you have decrypted the library\'s whisper, <say WORD>."');
-      } else if (isChute){
-        lines.push('A humming book‑return chute yawns to the south. A paper sign: "Mind the drop."');
       } else if (isUnity){
         lines.push('You pause. The stacks here align with uncanny symmetry.');
         lines.push('You feel an overwhelming sense of oneness in this room.');
@@ -86,7 +83,7 @@ module.exports = async function(req, res){
       if(isSecretShelf){ const dirName={n:'north',e:'east',s:'south',w:'west'}[SECRET_SHELF.dir]; lines.push(`On the ${dirName} side, a shelf shows a conspicuous gap where a volume is missing.`); lines.push('A faint draft slips through the join between shelf and wall.'); }
       if(isSecretAnnex){ lines.push('A narrow secret annex hides behind a movable shelf. Dust lies untouched.'); }
 
-      const anySpecial = (isLost||isMath||isReading||isVault||isChute||isSecretShelf||isSecretAnnex||isSecretBook);
+      const anySpecial = (isRestroom||isMath||isReading||isVault||isSecretShelf||isSecretAnnex||isSecretBook);
       if(!anySpecial || isUnity){
         lines.push(`You are in the library aisles — twisty little corridors, all alike,${space}lit by ${light} lamps.`);
         lines.push(`The shelves smell faintly of must. ${dust} drift in the ${color}less light.`);
@@ -96,7 +93,7 @@ module.exports = async function(req, res){
       const exitNames = {n:'north', e:'east', s:'south', w:'west'};
       const exits = world.exitsMaze(x,y);
       const exitsLine = `Exits: ${exits.map(d=>exitNames[d]).join(', ') || '(none)'}.`;
-      const flags = { lost:isLost, math:isMath, reading:isReading, vault:isVault, chute:isChute, unity:isUnity, secretShelf:isSecretShelf, secretAnnex:isSecretAnnex, secretBook:isSecretBook };
+      const flags = { restroom:isRestroom, math:isMath, reading:isReading, vault:isVault, unity:isUnity, secretShelf:isSecretShelf, secretAnnex:isSecretAnnex, secretBook:isSecretBook };
       res.setHeader('cache-control','no-store');
       return res.status(200).json({ ok:true, lines, exitsLine, isSignal: !!sig, exits, flags });
     }
@@ -105,17 +102,16 @@ module.exports = async function(req, res){
       const cx = parseInt(q.x ?? '0', 10) || 0;
       const cy = parseInt(q.y ?? '0', 10) || 0;
       const { WIDTH, HEIGHT, MAZE, placements, signals } = world;
-      const { START, maths, reading, vault, chute, unity, lostFound } = placements;
+      const { START, maths, reading, vault, unity, restroom } = placements;
       const lines=[];
       const showSignals = String(q.signals||'0') === '1';
       const signalCells = Array.from(signals.SIGNALS.keys());
       const baseChar=(x,y)=>{
         if(x===START.x && y===START.y) return 'S';
-        if(x===lostFound.x && y===lostFound.y) return 'F';
+        if(x===restroom.x && y===restroom.y) return 'W';
         if(x===maths.x && y===maths.y) return 'A';
         if(x===reading.x && y===reading.y) return 'R';
         if(x===vault.x && y===vault.y) return 'V';
-        if(x===chute.x && y===chute.y) return 'C';
         if(x===unity.x && y===unity.y) return 'O';
         return ' ';
       };
@@ -132,7 +128,7 @@ module.exports = async function(req, res){
         lines.push(mid);
       }
       let bottom='+'; for(let x=0;x<WIDTH;x++){ const openSedge = (MAZE[`${x},${HEIGHT-1}`]||{}).s; bottom += (openSedge? '   ' : '---') + '+'; } lines.push(bottom);
-      lines.push('Legend: @ you, S start, F lost&found, A mathematics, R reading, V vault, C chute, O oneness. Wrap gaps show corridors.');
+      lines.push('Legend: @ you, S start, W restroom, A mathematics, R reading, V vault, O oneness. Wrap gaps show corridors.');
       res.setHeader('cache-control','no-store');
       return res.status(200).json({ ok:true, lines });
     }
@@ -141,7 +137,6 @@ module.exports = async function(req, res){
       let x = parseInt(q.x ?? '0', 10) || 0;
       let y = parseInt(q.y ?? '0', 10) || 0;
       const dir = String(q.dir || '').toLowerCase();
-      const steps = parseInt(q.steps ?? '0', 10) || 0; // for deterministic chute teleport
       const secretOpen = String(q.secretOpen ?? 'false') === 'true';
       const inVault = String(q.inVault ?? 'false') === 'true';
 
@@ -165,29 +160,7 @@ module.exports = async function(req, res){
         }
       }
 
-      if(dir==='s' && x===placements.chute.x && y===placements.chute.y){
-        const banned = new Set();
-        const specials = [placements.lostFound, placements.maths, placements.reading, placements.vault, placements.unity, placements.SECRET_SHELF, placements.SECRET_ANNEX, placements.chute];
-        for(const s of specials){ banned.add(`${s.x},${s.y}`); }
-        for(const key of world.signals.SIGNALS.keys()){ banned.add(key); }
-
-        let rx=-1, ry=-1; let attempts=0; const MAX_ATTEMPTS=2000;
-        while(attempts<MAX_ATTEMPTS){
-          const rloc = COMMON.mulberry32((SEED ^ 0xABCDEF ^ ((steps+1+attempts)>>>0))>>>0);
-          const tx = Math.floor(rloc()*WIDTH), ty = Math.floor(rloc()*HEIGHT);
-          if(!banned.has(`${tx},${ty}`)){ rx=tx; ry=ty; break; }
-          attempts++;
-        }
-        if(rx===-1){
-          outer: for(let yy=0; yy<HEIGHT; yy++){
-            for(let xx=0; xx<WIDTH; xx++){
-              if(!banned.has(`${xx},${yy}`)){ rx=xx; ry=yy; break outer; }
-            }
-          }
-          if(rx===-1){ rx = placements.START.x; ry = placements.START.y; }
-        }
-        return res.status(200).json({ ok:true, x:rx, y:ry, inVault:false, blocked:false, teleported:true, reason:'chute' });
-      }
+      // no special teleports
 
       const g = MAZE[`${x},${y}`] || {};
       if(g[dir]){
@@ -202,15 +175,14 @@ module.exports = async function(req, res){
       const x = parseInt(q.x ?? '0', 10) || 0;
       const y = parseInt(q.y ?? '0', 10) || 0;
       const { placements, signals } = world;
-      const { maths, reading, vault, chute, unity, lostFound, SECRET_SHELF, SECRET_ANNEX, SECRET_BOOK } = placements;
+      const { maths, reading, vault, unity, restroom, SECRET_SHELF, SECRET_ANNEX, SECRET_BOOK } = placements;
       const sig = signals.signalHere(x,y);
       const isSpecial = (
-        (x===lostFound.x && y===lostFound.y) ||
+        (x===restroom.x && y===restroom.y) ||
         (x===maths.x && y===maths.y)       ||
         (x===vault.x && y===vault.y)       ||
         (x===reading.x && y===reading.y)   ||
         (x===unity.x && y===unity.y)       ||
-        (x===chute.x && y===chute.y)       ||
         (x===SECRET_SHELF.x && y===SECRET_SHELF.y) ||
         (x===SECRET_ANNEX.x && y===SECRET_ANNEX.y) ||
         (x===SECRET_BOOK.x && y===SECRET_BOOK.y)
@@ -276,7 +248,7 @@ module.exports = async function(req, res){
         'The {ORD_TITLE} Desk Manual',
         'A Gloss of {CARD_TITLE} Misprints',
         'The {ORD_TITLE} Guide to Wayfinding',
-        '{ORD_TITLE} Steps for Unjamming the Chute',
+        // removed chute-related title
         'On the Proper Storage of {CARD_TITLE} Runes',
         'Dramatis Personae of the {ORD_TITLE} Shift',
         'The {ORD_TITLE} Ledger of Borrowed Time',
@@ -288,7 +260,7 @@ module.exports = async function(req, res){
         'Exercises for {CARD_TITLE} Whisperers',
         'The {ORD_TITLE} Handbook of Stacked Mazes',
         'Sir {CARD_TITLE} and the Catalogue Beast',
-        'The {ORD_TITLE} Inquiry into Lost & Found',
+        'The {ORD_TITLE} Inquiry into Misplaced Items',
         'Pocket Rituals for {CARD_TITLE} Patrons',
         'The {ORD_TITLE} Manual of Reading Lights',
         "A Novitiate's Guide to {CARD_TITLE} Indices",
@@ -419,4 +391,3 @@ module.exports = async function(req, res){
     return res.status(500).json({ ok:false, error:'server_error' });
   }
 }
-
