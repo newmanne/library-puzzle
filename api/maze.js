@@ -68,7 +68,7 @@ module.exports = async function(req, res){
         lines.push('A tiled restroom hides in this corner of the stacks.');
         lines.push('A toilet sits slightly askew; beneath the bowl you glimpse a scuffed library card.');
       } else if (isMath){
-        lines.push('You enter a mathematics alcove. Chalk dust hangs in the colorless light.');
+        lines.push('You enter a mathematics alcove. It smells of chalk dust.');
         lines.push('Diagrams sprawl over a slate. You might <read primer>.');
       } else if (isReading){
         lines.push('A quiet reading room opens here. A very comfy chair invites you.');
@@ -128,7 +128,7 @@ module.exports = async function(req, res){
         lines.push(mid);
       }
       let bottom='+'; for(let x=0;x<WIDTH;x++){ const openSedge = (MAZE[`${x},${HEIGHT-1}`]||{}).s; bottom += (openSedge? '   ' : '---') + '+'; } lines.push(bottom);
-      lines.push('Legend: @ you, S start, W restroom, A mathematics, R reading, V vault, O oneness. Wrap gaps show corridors.');
+      lines.push('Legend: @ you, S start, W restroom, A mathematics, R reading, V vault, O oneness.');
       res.setHeader('cache-control','no-store');
       return res.status(200).json({ ok:true, lines });
     }
@@ -164,7 +164,7 @@ module.exports = async function(req, res){
 
       const g = MAZE[`${x},${y}`] || {};
       if(g[dir]){
-        const nx=(x+COMMON.DX[dir]+WIDTH)%WIDTH, ny=(y+COMMON.DY[dir]+HEIGHT)%HEIGHT;
+        const nx=x+COMMON.DX[dir], ny=y+COMMON.DY[dir];
         return res.status(200).json({ ok:true, x:nx, y:ny, inVault:false, blocked:false });
       } else {
         return res.status(200).json({ ok:true, x, y, inVault:false, blocked:true });
@@ -292,7 +292,7 @@ module.exports = async function(req, res){
         'Lexicon of Lantern Gutterings',
         'Bindings: A Field Survey',
         'Spines & Whispers',
-        'Collected Errata, Vol. III',
+        'Collected Errata',
         'The Politeness of Bookends',
         "On the Care of Paper Snakes",
         'A Short History of Dust',
@@ -362,8 +362,9 @@ module.exports = async function(req, res){
         const lines = [
           'Primer on the Vigenère Cipher:',
           '  1) Ciphertext should be letters A–Z.',
-          '  2) You will need a CODE to decrypt.',
-          '  3) Encrypt/decrypt by shifting each letter by the keyword letter.'
+          '  2) In addition to the ciphertext, you will need a KEY to decrypt.',
+          '  3) Encrypt/decrypt by shifting each letter by the keyword letter.',
+          'Note: Many online tools will do this decryption for you.'
         ];
         return res.status(200).json({ ok:true, lines });
       }

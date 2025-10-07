@@ -249,8 +249,7 @@
 }
   async function readThing(obj){
     clearForLastOnly();
-    obj=(obj||'').trim().toLowerCase();
-    if(!obj){ print('Read what?'); return; }
+    obj=(obj||'').toLowerCase();
     if(/^(card|library card)$/.test(obj)){
       if(!state.hasCard){ print('You do not seem to have a card.'); return; }
     try{
@@ -280,8 +279,7 @@
       print('  "When you have deciphered the library\'s whisper, speak it here: say <WORD>."');
       return;
     }
-    // Generic: non-special rooms, gently decline with the requested object
-    print(`Sadly, you don't have the time to read ${obj}.`); }
+    print('Nothing to read.'); }
 
   function sitHere(){
     clearForLastOnly();
@@ -314,7 +312,7 @@
         print('You pull a cracked volume from the shelf. Its title reads:');
       }
       print(`  "${visitTitle}."`);
-      print('You replace it carefully.');
+      print('You replace it carefully --- there is no time to read it.');
       return;
     }
     try{
