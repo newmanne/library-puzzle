@@ -110,6 +110,7 @@
   // Dimensions handled server-side
   const urlParams = new URLSearchParams(location.search);
   const runSelfTestsParam = urlParams.get('selftest') === '1';
+  const settingsEnabled = /^(1|true|yes)$/i.test(urlParams.get('debug')||'');
 
   
   /********************
@@ -158,7 +159,11 @@
   let typing=false, skipCurrent=false, typeSpeed=Number(speedInput.value);
   document.addEventListener('keydown', (e)=>{ if (e.key==='Escape' && typing){ skipCurrent=true; } });
   speedInput.addEventListener('change', ()=>{ typeSpeed = Math.max(0, Number(speedInput.value)||0); });
-  btnSettings.addEventListener('click', ()=> settingsDialog.showModal());
+  if(settingsEnabled){
+    btnSettings.addEventListener('click', ()=> settingsDialog.showModal());
+  } else {
+    if(btnSettings) btnSettings.style.display = 'none';
+  }
   btnHelp.addEventListener('click', ()=> issue('help'));
   btnLook.addEventListener('click', ()=> issue('look'));
   lastOnlyToggle.addEventListener('change', ()=>{ view.style.overflow = lastOnlyToggle.checked? 'hidden':'auto'; });
@@ -385,7 +390,7 @@
     if(['w','west'].includes(cmd)) return move('w');
     if(['l','look','examine','x'].includes(cmd)) return look();
     if(cmd==='help'||cmd==='?') return help();
-    if(cmd==='settings'){ settingsDialog.showModal(); return; }
+    if(cmd==='settings'){ if(settingsEnabled){ settingsDialog.showModal(); } else { print(`I don't understand "${cmd}".`); print('Try: help'); } return; }
     
     if(cmd==='maze'){ clearForLastOnly(); printMaze(); return; }
     if(cmd==='selftest'){ clearForLastOnly(); runSelfTests(); return; }
