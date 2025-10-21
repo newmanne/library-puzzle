@@ -56,6 +56,81 @@
     <h1>The Library of Babel</h1>
     <div class="subtitle">Jorge Luis Borges imagined an infinite library...</div>
     <div class="legend tiny">If you are in doubt, earlier sentences are <em>more significant</em>. </div>
+    <figure class="frontis" aria-hidden="true">
+      <!-- Inline SVG: library stacks illustration -->
+      <svg viewBox="0 0 260 180" width="240" height="166" role="img" aria-label="Library stacks">
+        <defs>
+          <linearGradient id="wood" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#9b7a51"/><stop offset="1" stop-color="#7e6040"/>
+          </linearGradient>
+          <linearGradient id="page" x1="0" x2="1">
+            <stop offset="0" stop-color="#fffdf8"/><stop offset="1" stop-color="#f1e7d7"/>
+          </linearGradient>
+          <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#000" flood-opacity="0.12"/>
+          </filter>
+        </defs>
+        <rect x="8" y="10" width="8" height="160" fill="url(#wood)" rx="2"/>
+        <rect x="244" y="10" width="8" height="160" fill="url(#wood)" rx="2"/>
+        <g fill="url(#wood)">
+          <rect x="8" y="40" width="244" height="6" rx="2"/>
+          <rect x="8" y="92" width="244" height="6" rx="2"/>
+          <rect x="8" y="144" width="244" height="6" rx="2"/>
+        </g>
+        <g filter="url(#soft)">
+          <g>
+            <rect x="20" y="14" width="14" height="26" fill="#b97d6d"/>
+            <rect x="36" y="16" width="10" height="24" fill="#7a95a6"/>
+            <rect x="48" y="18" width="18" height="22" fill="#d3b47f"/>
+            <rect x="68" y="12" width="12" height="28" fill="#6f8b6f"/>
+            <rect x="82" y="17" width="10" height="23" fill="#b07fa5"/>
+            <rect x="94" y="14" width="12" height="26" fill="#9f6b4f"/>
+            <rect x="108" y="20" width="16" height="20" fill="#7d6b9f"/>
+            <rect x="126" y="12" width="8" height="28" fill="#c0a27a"/>
+            <rect x="136" y="16" width="22" height="24" fill="#6e8fa0"/>
+            <rect x="160" y="18" width="10" height="22" fill="#a88d7a"/>
+            <rect x="172" y="14" width="12" height="26" fill="#8aa38b"/>
+            <rect x="186" y="19" width="14" height="21" fill="#c08b7e"/>
+            <rect x="202" y="13" width="9" height="27" fill="#9aa6b2"/>
+            <rect x="213" y="16" width="16" height="24" fill="#b8a07a"/>
+            <rect x="231" y="15" width="11" height="25" fill="#78907a"/>
+          </g>
+          <g>
+            <rect x="22" y="66" width="12" height="24" fill="#7f97a8"/>
+            <rect x="36" y="60" width="16" height="30" fill="#caa77a"/>
+            <rect x="54" y="64" width="10" height="26" fill="#8a6f9b"/>
+            <rect x="66" y="58" width="14" height="32" fill="#6c8e76"/>
+            <rect x="82" y="62" width="18" height="28" fill="#a37f6b"/>
+            <rect x="102" y="66" width="12" height="24" fill="#9aa7b6"/>
+            <rect x="116" y="60" width="9" height="30" fill="#b98b7b"/>
+            <rect x="127" y="63" width="15" height="27" fill="#6e8aa0"/>
+            <rect x="144" y="62" width="12" height="28" fill="#a58d7a"/>
+            <rect x="158" y="66" width="10" height="24" fill="#8f9f8b"/>
+            <rect x="170" y="58" width="20" height="32" fill="#c29082"/>
+            <rect x="192" y="65" width="9" height="25" fill="#9aa6b2"/>
+            <rect x="203" y="62" width="17" height="28" fill="#b6a07b"/>
+            <rect x="222" y="64" width="12" height="26" fill="#6f8f7c"/>
+          </g>
+          <g>
+            <rect x="20" y="118" width="14" height="24" fill="#a6907c"/>
+            <rect x="36" y="112" width="10" height="30" fill="#7b96a5"/>
+            <rect x="48" y="116" width="18" height="26" fill="#c8a67a"/>
+            <rect x="68" y="110" width="12" height="32" fill="#6e8d72"/>
+            <rect x="82" y="115" width="10" height="27" fill="#a27fa0"/>
+            <rect x="94" y="118" width="12" height="24" fill="#9e6b50"/>
+            <rect x="108" y="114" width="16" height="28" fill="#7d6b9f"/>
+            <rect x="126" y="110" width="8" height="32" fill="#c0a27a"/>
+            <rect x="136" y="116" width="22" height="26" fill="#6e8fa0"/>
+            <rect x="160" y="118" width="10" height="24" fill="#a88d7a"/>
+            <rect x="172" y="112" width="12" height="30" fill="#8aa38b"/>
+            <rect x="186" y="117" width="14" height="25" fill="#c08b7e"/>
+            <rect x="202" y="111" width="9" height="31" fill="#9aa6b2"/>
+            <rect x="213" y="115" width="16" height="27" fill="#b8a07a"/>
+            <rect x="231" y="116" width="11" height="26" fill="#78907a"/>
+          </g>
+        </g>
+      </svg>
+    </figure>
     <div class="controls">
       <label>Book ID:
         <input id="seedInput" type="number" value="12345" />
@@ -76,37 +151,6 @@
         <div></div>
         <div class="mono" id="catalogStr"></div>
       </div>
-
-      <figure class="frontis" aria-hidden="true">
-        <!-- Inline SVG: library stacks illustration -->
-        <svg viewBox="0 0 260 180" width="240" height="166" role="img" aria-label="Library stacks">
-          <defs>
-            <linearGradient id="wood" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stop-color="#9b7a51"/><stop offset="1" stop-color="#7e6040"/>
-            </linearGradient>
-            <linearGradient id="page" x1="0" x2="1">
-              <stop offset="0" stop-color="#fffdf8"/><stop offset="1" stop-color="#f1e7d7"/>
-            </linearGradient>
-            <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
-              <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#000" flood-opacity="0.12"/>
-            </filter>
-          </defs>
-          <rect x="8" y="10" width="8" height="160" fill="url(#wood)" rx="2"/><rect x="244" y="10" width="8" height="160" fill="url(#wood)" rx="2"/>
-          <g fill="url(#wood)"><rect x="8" y="40" width="244" height="6" rx="2"/><rect x="8" y="92" width="244" height="6" rx="2"/><rect x="8" y="144" width="244" height="6" rx="2"/></g>
-          <g filter="url(#soft)">
-            <g>
-              <rect x="20" y="14" width="14" height="26" fill="#b97d6d"/><rect x="36" y="16" width="10" height="24" fill="#7a95a6"/><rect x="48" y="18" width="18" height="22" fill="#d3b47f"/><rect x="68" y="12" width="12" height="28" fill="#6f8b6f"/><rect x="82" y="17" width="10" height="23" fill="#b07fa5"/><rect x="94" y="14" width="12" height="26" fill="#9f6b4f"/><rect x="108" y="20" width="16" height="20" fill="#7d6b9f"/><rect x="126" y="12" width="8" height="28" fill="#c0a27a"/><rect x="136" y="16" width="22" height="24" fill="#6e8fa0"/><rect x="160" y="18" width="10" height="22" fill="#a88d7a"/><rect x="172" y="14" width="12" height="26" fill="#8aa38b"/><rect x="186" y="19" width="14" height="21" fill="#c08b7e"/><rect x="202" y="13" width="9" height="27" fill="#9aa6b2"/><rect x="213" y="16" width="16" height="24" fill="#b8a07a"/><rect x="231" y="15" width="11" height="25" fill="#78907a"/>
-            </g>
-            <g>
-              <rect x="22" y="66" width="12" height="24" fill="#7f97a8"/><rect x="36" y="60" width="16" height="30" fill="#caa77a"/><rect x="54" y="64" width="10" height="26" fill="#8a6f9b"/><rect x="66" y="58" width="14" height="32" fill="#6c8e76"/><rect x="82" y="62" width="18" height="28" fill="#a37f6b"/><rect x="102" y="66" width="12" height="24" fill="#9aa7b6"/><rect x="116" y="60" width="9" height="30" fill="#b98b7b"/><rect x="127" y="63" width="15" height="27" fill="#6e8aa0"/><rect x="144" y="62" width="12" height="28" fill="#a58d7a"/><rect x="158" y="66" width="10" height="24" fill="#8f9f8b"/><rect x="170" y="58" width="20" height="32" fill="#c29082"/><rect x="192" y="65" width="9" height="25" fill="#9aa6b2"/><rect x="203" y="62" width="17" height="28" fill="#b6a07b"/><rect x="222" y="64" width="12" height="26" fill="#6f8f7c"/>
-            </g>
-            <g>
-              <rect x="20" y="118" width="14" height="24" fill="#a6907c"/><rect x="36" y="112" width="10" height="30" fill="#7b96a5"/><rect x="48" y="116" width="18" height="26" fill="#c8a67a"/><rect x="68" y="110" width="12" height="32" fill="#6e8d72"/><rect x="82" y="115" width="10" height="27" fill="#a27fa0"/><rect x="94" y="118" width="12" height="24" fill="#9e6b50"/><rect x="108" y="114" width="16" height="28" fill="#7d6b9f"/><rect x="126" y="110" width="8" height="32" fill="#c0a27a"/><rect x="136" y="116" width="22" height="26" fill="#6e8fa0"/><rect x="160" y="118" width="10" height="24" fill="#a88d7a"/><rect x="172" y="112" width="12" height="30" fill="#8aa38b"/><rect x="186" y="117" width="14" height="25" fill="#c08b7e"/><rect x="202" y="111" width="9" height="31" fill="#9aa6b2"/><rect x="213" y="115" width="16" height="27" fill="#b8a07a"/><rect x="231" y="116" width="11" height="26" fill="#78907a"/>
-            </g>
-          </g>
-        </svg>
-      </figure>
-
       <article id="story"></article>
 
       <div class="legend tiny">Romans <em>aut exclusivum</em></div>
