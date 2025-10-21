@@ -275,7 +275,7 @@ K E L P J S U V
     tags:['pseudonym','translated']
   },
   {
-    id:'p4', name:'Marie', age:31, role:'Editor at CMY Industries', loc:'Coal Harbour', avatar:'🎨',
+    id:'p4', name:'Marie', age:31, role:'Colour Mixer at CMY Industries', loc:'Coal Harbour', avatar:'🎨',
     photo:'img/hinge/p4.png',
     prompts: [
       { q: `I'm most proud of`, a: `My job. Working at CMY isn't always as easy as 123, but there are so many opportunities to add value.`},
@@ -739,6 +739,17 @@ function evaluate(){
   const didWrongRights = state.ledger.filter(x=>x.right && !x.ok).map(x=>x.id);
   const extraRights = didRight.filter(id => !must.includes(id));
   const missed = must.filter(id => !didRight.includes(id));
+
+  const matchedEverything = state.ledger.length === POOL.length &&
+    state.ledger.every(entry => entry.right && entry.ok);
+  if (matchedEverything){
+    $('#outcome-html').innerHTML = `
+      <div class="note">You get an overwhelming amount of matches and are paralyzed by choice. As you complain to a friend over a beer, they remark that perhaps you should try dating more intentionally.</div>
+    `;
+    show('screen-outcome');
+    return;
+  }
+
   const anyWrong = didWrongRights.length>0 || extraRights.length>0 || missed.length>0;
   if (anyWrong){
     const debug = isDebug();

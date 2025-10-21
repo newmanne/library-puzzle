@@ -3,6 +3,78 @@
 
 const COMMON = require('../lib/maze-common');
 
+// ===== Static Map Editor (edit here) =====
+// Define a single canonical map for the maze by editing the strings below.
+// Leave a string empty ('') to use the procedural default.
+//
+// Placements format: KEY=x,y;KEY=x,y;...
+//   Keys: S=start, A=math, R=reading, V=vault, O=unity, W=restroom,
+//         SS=secret shelf x,y:DIR (e.g., 2,3:E), SA=secret annex, SB=secret book
+// Example: 'S=0,0;A=4,0;R=5,1;V=6,5;O=4,0;W=6,3;SS=2,2:E;SA=2,3;SB=5,4'
+const EDIT_PLACE = '';
+
+// ASCII map format: the same +---+ grid printed by the map view.
+// Provide all lines in one string (\n separated), sized for WIDTH x HEIGHT (7x6).
+// Example skeleton (7x6):
+// +---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+\n ... (repeat rows) ...
+const EDIT_MAP_ASCII = '';
+
+// -----------------------------------------
+function parsePlacements(str, base){
+  if(!str || typeof str !== 'string') return base;
+  const p = JSON.parse(JSON.stringify(base));
+  const tok = str.split(/\s*;\s*/).filter(Boolean);
+  const parseXY = (v)=>{ const m=String(v||'').match(/^(\d+)\s*,\s*(\d+)$/); if(!m) return null; return {x:parseInt(m[1],10), y:parseInt(m[2],10)}; };
+  for(const t of tok){
+    const m = t.match(/^([A-Za-z]{1,2})\s*=\s*(.+)$/);
+    if(!m) continue; const key=m[1].toUpperCase(); const val=m[2];
+    if(key==='S'){ const xy=parseXY(val); if(xy) p.START=xy; }
+    else if(key==='A'){ const xy=parseXY(val); if(xy) p.maths=xy; }
+    else if(key==='R'){ const xy=parseXY(val); if(xy) p.reading=xy; }
+    else if(key==='V'){ const xy=parseXY(val); if(xy) p.vault=xy; }
+    else if(key==='O'){ const xy=parseXY(val); if(xy) p.unity=xy; }
+    else if(key==='W'){ const xy=parseXY(val); if(xy) p.restroom=xy; }
+    else if(key==='SA'){ const xy=parseXY(val); if(xy) p.SECRET_ANNEX=xy; }
+    else if(key==='SB'){ const xy=parseXY(val); if(xy) p.SECRET_BOOK=xy; }
+    else if(key==='SS'){
+      const m2 = String(val||'').match(/^(\d+)\s*,\s*(\d+)\s*:\s*([NESWnesw])$/);
+      if(m2){ p.SECRET_SHELF={ x:parseInt(m2[1],10), y:parseInt(m2[2],10), dir:m2[3].toLowerCase() }; }
+    }
+  }
+  return p;
+}
+
+function parseAsciiMaze(text){
+  if(!text || typeof text !== 'string') return null;
+  const lines = text.replace(/\r\n?/g,'\n').split('\n').filter(s=>s.length>0);
+  const H = COMMON.HEIGHT, W = COMMON.WIDTH;
+  if(lines.length < (H*2+1)) return null;
+  const grid={}; for(let y=0;y<H;y++){ for(let x=0;x<W;x++){ grid[`${x},${y}`]={}; } }
+  function ensure(x,y){ const k=`${x},${y}`; grid[k]=grid[k]||{}; return grid[k]; }
+  for(let y=0;y<H;y++){
+    const top = lines[2*y] || '';
+    // parse north openings for row y
+    for(let x=0;x<W;x++){
+      const seg = top.slice(1 + x*4, 1 + x*4 + 3);
+      const openN = (seg === '   ');
+      if(openN){ ensure(x,y).n = true; if(y>0) ensure(x,y-1).s = true; }
+    }
+    const mid = lines[2*y+1] || '';
+    for(let x=0;x<W;x++){
+      const ch = mid.charAt(x*4);
+      const openW = (ch===' ');
+      if(openW){ ensure(x,y).w = true; if(x>0) ensure(x-1,y).e = true; }
+    }
+    const bot = lines[2*y+2] || '';
+    for(let x=0;x<W;x++){
+      const seg = bot.slice(1 + x*4, 1 + x*4 + 3);
+      const openS = (seg === '   ');
+      if(openS){ ensure(x,y).s = true; if(y<H-1) ensure(x,y+1).n = true; }
+    }
+  }
+  return grid;
+}
+
 async function readJsonBody(req){
   try{
     if (req.body && typeof req.body === 'object') return req.body;
@@ -35,11 +107,17 @@ module.exports = async function(req, res){
     // Shared params
     const seedStr = String(q.seed ?? COMMON.DEFAULT_SEED_STR);
     const world = COMMON.buildWorld(seedStr);
+    // Apply static overrides from constants above
+    let placements = world.placements;
+    let MAZE = world.MAZE;
+    if(EDIT_PLACE){ placements = parsePlacements(EDIT_PLACE, placements); }
+    if(EDIT_MAP_ASCII){ const g=parseAsciiMaze(EDIT_MAP_ASCII); if(g) MAZE=g; }
+    let signals = world.signals;
+    if(EDIT_PLACE){ signals = COMMON.computeSignals(world.SEED, placements); }
 
     if(op === 'room'){
       const x = parseInt(q.x ?? '0', 10) || 0;
       const y = parseInt(q.y ?? '0', 10) || 0;
-      const { placements, signals } = world;
       const { maths, reading, vault, unity, restroom, SECRET_SHELF, SECRET_ANNEX, SECRET_BOOK } = placements;
 
       const localSeed = (x*2654435761 ^ y*1597334677 ^ world.SEED) >>> 0; const r = COMMON.mulberry32(localSeed);
@@ -91,7 +169,7 @@ module.exports = async function(req, res){
       }
 
       const exitNames = {n:'north', e:'east', s:'south', w:'west'};
-      const exits = world.exitsMaze(x,y);
+      const exits = COMMON.exitsMaze(MAZE, x, y);
       const exitsLine = `Exits: ${exits.map(d=>exitNames[d]).join(', ') || '(none)'}.`;
       const flags = { restroom:isRestroom, math:isMath, reading:isReading, vault:isVault, unity:isUnity, secretShelf:isSecretShelf, secretAnnex:isSecretAnnex, secretBook:isSecretBook };
       res.setHeader('cache-control','no-store');
@@ -101,7 +179,7 @@ module.exports = async function(req, res){
     if(op === 'map'){
       const cx = parseInt(q.x ?? '0', 10) || 0;
       const cy = parseInt(q.y ?? '0', 10) || 0;
-      const { WIDTH, HEIGHT, MAZE, placements, signals } = world;
+      const WIDTH = COMMON.WIDTH, HEIGHT = COMMON.HEIGHT;
       const { START, maths, reading, vault, unity, restroom } = placements;
       const lines=[];
       const showSignals = String(q.signals||'0') === '1';
@@ -142,14 +220,13 @@ module.exports = async function(req, res){
 
       const SEED = COMMON.hashStringToInt(seedStr);
       const WIDTH = COMMON.WIDTH, HEIGHT = COMMON.HEIGHT;
-      const placements = world.placements;
-      const MAZE = JSON.parse(JSON.stringify(world.MAZE));
+      const mazeCopy = JSON.parse(JSON.stringify(MAZE));
 
       if(secretOpen){
         const SECRET = { x:placements.SECRET_SHELF.x, y:placements.SECRET_SHELF.y, dir:placements.SECRET_SHELF.dir, nx:placements.SECRET_ANNEX.x, ny:placements.SECRET_ANNEX.y };
         const a=`${SECRET.x},${SECRET.y}`, b=`${SECRET.nx},${SECRET.ny}`;
-        if(!MAZE[a]) MAZE[a]={}; if(!MAZE[b]) MAZE[b]={};
-        MAZE[a][SECRET.dir]=true; MAZE[b][COMMON.OPP[SECRET.dir]]=true;
+        if(!mazeCopy[a]) mazeCopy[a]={}; if(!mazeCopy[b]) mazeCopy[b]={};
+        mazeCopy[a][SECRET.dir]=true; mazeCopy[b][COMMON.OPP[SECRET.dir]]=true;
       }
 
       if(inVault){
@@ -162,7 +239,7 @@ module.exports = async function(req, res){
 
       // no special teleports
 
-      const g = MAZE[`${x},${y}`] || {};
+      const g = mazeCopy[`${x},${y}`] || {};
       if(g[dir]){
         const nx=x+COMMON.DX[dir], ny=y+COMMON.DY[dir];
         return res.status(200).json({ ok:true, x:nx, y:ny, inVault:false, blocked:false });
@@ -174,7 +251,6 @@ module.exports = async function(req, res){
     if(op === 'pull'){
       const x = parseInt(q.x ?? '0', 10) || 0;
       const y = parseInt(q.y ?? '0', 10) || 0;
-      const { placements, signals } = world;
       const { maths, reading, vault, unity, restroom, SECRET_SHELF, SECRET_ANNEX, SECRET_BOOK } = placements;
       const sig = signals.signalHere(x,y);
       const isSpecial = (

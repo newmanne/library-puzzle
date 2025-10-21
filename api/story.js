@@ -152,7 +152,8 @@ module.exports = async function (req, res) {
     // Cleanup: fix any stray ".," and ensure sentence starts after punctuation are capitalized
     out = out.trim().replace(/\.\s*,/g, '. ');
     out = out.replace(/(^|[.!?]\s+)([a-z])/g, (_,lead,ch)=> lead + ch.toUpperCase());
-    return out;
+    const sentences = out.trim().split(/(?<=\.)\s+/).filter(Boolean);
+    return sentences.join('<br/>');
   }
 
   // --- Build whole story ---
