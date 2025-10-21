@@ -25,7 +25,7 @@ module.exports = async function (req, res) {
   // --- Lexicons (trimmed, deterministic flavor only) ---
   const ADJ = [
     "antique","dusty","quiet","hexagonal","pensive","endless","narrow","infinite","luminous",
-    "archival","baroque","austere","gilded","musty","incunabular","esoteric","scholastic",
+    "archival","baroque","austere","gilded","musty","incunabular","scholastic",
     "vellum","brittle","sepulchral","palimpsestic","marginal","illuminated","foxed","dog-eared",
     "leather-bound","scholarly","oblique","cryptic","stately","murmurous","cavernous","cobwebbed","latticed",
     "oak-paneled","ink-stained","tattered","forgotten","rare","forbidden","catalogued","quietus","dust-laden"
@@ -56,7 +56,7 @@ module.exports = async function (req, res) {
   // --- Synonym pairs (25 total; left=plain 0, right=learned 1) ---
   const PAIRS = [
     ["maze","labyrinth"], ["sleep","somnolence"], ["shadow","umbra"], ["light","lumen"], ["sound","sonority"],
-    ["list","enumeration"], ["change","alteration"], ["split","bifurcation"], ["obscure","esoteric"], ["source","provenance"],
+    ["list","enumeration"], ["change","alteration"], ["split","bifurcation"], ["unclear","esoteric"], ["source","provenance"],
     ["image","simulacrum"], ["thread","filament"], ["network","lattice"], ["letter","grapheme"], ["beginning","commencement"],
     ["answer","rejoinder"], ["hidden","occult"], ["word","lexeme"], ["smell","olfaction"], ["teacher","pedagogue"],
     ["taste","gustation"], ["lie","prevarication"], ["record","chronicle"], ["pattern","motif"], ["name","appellation"],
